@@ -128,6 +128,7 @@ Derived/
 
 ### Tuist managed dependencies ###
 Tuist/.build
+Tuist/Package.resolved
 
 # Tuist Config
 Tuist/Config/Config.xcconfig
