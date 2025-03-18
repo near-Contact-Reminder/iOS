@@ -69,20 +69,27 @@ tuist generate
     	- InfoPlist
     	- Sources
     	
-    - SwypAppwnd
+    - SwypApp2nd
     	- Resources
-    		- Assets.xcassets
+    		- Assets.xcassets: 이미지, 아이콘 및 리소스 에셋 관리
     	- Sources
     		- Views
-    		  - ex) Home
-    		    - HomeView.swift
-    		    - Components (하위 컴포넌트)
-    		- ViewModels
+				- 각 화면을 구성하는 UI 코드가 위치하며 화면 단위로 구분합니다.
+				- 예시: Home
+					- HomeView.swift: 홈 화면의 뷰를 구현한 파일입니다.
+					- Components: 홈 화면에 사용되는 하위 컴포넌트(예: 버튼, 카드, 리스트 등)가 모여 있습니다.
+			- ViewModels
+				- 뷰와 모델 사이에서 데이터를 처리하며, 뷰가 화면에 필요한 데이터를 손쉽게 표시할 수 있도록 비즈니스 로직을 구현하는 코드가 포함됩니다.
 			- CommonComponents
-    		- Models
-    		- Networks
-    		- Services
-    		- Tests
+				- 앱 전반에서 재사용 가능한 공통 UI 컴포넌트(예: 커스텀 버튼, 네비게이션바, 탭바 등)가 정의되어 있습니다.
+			- Models
+				- 앱에서 사용하는 데이터 모델, 데이터 구조체 등을 정의하며, API 응답 데이터를 파싱한 모델도 포함될 수 있습니다.
+			- Networks
+				- Alamofire 또는 URLSession을 활용하여 외부 API와의 통신을 담당하는 네트워크 계층 코드가 포함되어 있습니다. (ex: NetworkService.swift, Endpoint.swift 등)
+			- Services
+				- 비즈니스 로직을 처리하는 서비스 계층 코드로서, 네트워크에서 받은 데이터를 가공하거나 추가적인 로직을 처리하는 서비스 코드가 포함됩니다.
+			- Tests
+				- 유닛 테스트 및 UI 테스트 코드가 포함된 폴더로, XCTest를 활용하여 각 컴포넌트 및 기능을 테스트할 수 있습니다.
     ```
     
 
