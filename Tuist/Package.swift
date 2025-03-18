@@ -19,7 +19,8 @@ let package = Package(
         .package(
             url: "https://github.com/onevcat/Kingfisher.git",
             from: "7.0.0"
-        )
+        ),
+        .package(url: "https://github.com/kakao/kakao-ios-sdk", from: "2.24.0")
         // Add your own dependencies here:
         // .package(url: "https://github.com/Alamofire/Alamofire", from: "5.0.0"),
         // You can read more about dependencies here: https://docs.tuist.io/documentation/tuist/dependencies
