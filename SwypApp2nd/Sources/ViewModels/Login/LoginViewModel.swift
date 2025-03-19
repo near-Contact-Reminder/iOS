@@ -1,3 +1,4 @@
+import AuthenticationServices
 import Foundation
 import Combine
 import KakaoSDKUser
@@ -54,5 +55,67 @@ class LoginViewModel: ObservableObject {
     }
     
     // MARK: - AppleLogin
-    // TODO: - 애플 로그인 추가
+    func handleAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
+        request.requestedScopes = [.fullName, .email] // 이름, 이메일 요청
+    }
+
+    func handleAppleCompletion(_ result: Result<ASAuthorization, Error>) {
+        switch result {
+        case .success(let auth):
+            if let appleIDCredential = auth.credential as? ASAuthorizationAppleIDCredential {
+                let userId = appleIDCredential.user
+                let identityToken = appleIDCredential.identityToken
+                let authorizationCode = appleIDCredential.authorizationCode
+
+                if let tokenData = identityToken, let tokenString = String(
+                    data: tokenData,
+                    encoding: .utf8
+                ) {
+                    sendToServer(userId: userId, identityToken: tokenString)
+                }
+            }
+        case .failure(let error):
+            print("Apple Login Error : \(error.localizedDescription)")
+        }
+    }
+
+    private func sendToServer(userId: String, identityToken: String) {
+        AuthService.shared
+            .requestAppleLogin(userId: userId, identityToken: identityToken)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { completion in
+                if case .failure(let error) = completion {
+                    print("server certification fali error: \(error.localizedDescription)")
+                }
+            }, receiveValue: { success in
+                self.isLogin = success
+            })
+            .store(in: &cancellable)
+    }
+}
+
+class AuthService {
+    static let shared = AuthService()
+
+    func requestAppleLogin(userId: String, identityToken: String) -> AnyPublisher<Bool, Error> {
+        let url = URL(string: "서버url")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "user_id": userId,
+            "identity_token": identityToken
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .tryMap { output in
+                guard let response = output.response as? HTTPURLResponse, response.statusCode == 200 else {
+                    throw URLError(.badServerResponse)
+                }
+                return true
+            }
+            .eraseToAnyPublisher()
+    }
 }

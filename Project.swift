@@ -45,6 +45,7 @@ let project = Project(
                 "SwypApp2nd/Sources/CommonComponents/**",
             ],
             resources: ["SwypApp2nd/Resources/**"],
+            entitlements: "Tuist/SignInWithApple.entitlements",
             dependencies: [
                 .external(name: "Alamofire"),
                 .external(name: "Kingfisher"),
