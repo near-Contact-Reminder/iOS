@@ -4,7 +4,7 @@ import Combine
 import KakaoSDKUser
 
 class LoginViewModel: ObservableObject {
-    @Published var isLogin = false
+
     private var cancellable = Set<AnyCancellable>()
     
     // MARK: - KakaoLogin
@@ -20,8 +20,16 @@ class LoginViewModel: ObservableObject {
                 else {
                     print("loginWithKakaoAccount() success.")
                     // TODO: - 성공 시 동작 구현 서버와 연동
-                    if let accessToken = oauthToken?.accessToken {
+                    if (oauthToken?.accessToken) != nil {
                         // 서버에서 유저정보 반환 받기
+                        print("카카오 로그인 성공 토큰: \(String(describing: oauthToken?.accessToken))")
+                        
+                        // TODO: - 로그인 성공후 id, name 생각하기.
+                        let user = User(id: "", name: "", loginType: .kakao)
+                        DispatchQueue.main.async {
+                            UserSession.shared.isLoggedIn = true
+                            UserSession.shared.updateUser(user)
+                        }
                     }
                 }
             }
@@ -34,22 +42,19 @@ class LoginViewModel: ObservableObject {
                 else {
                     print("loginWithKakaoAccount() success.")
                     // TODO: - 성공 시 동작 구현 서버와 연동
-                    if let accessToken = oauthToken?.accessToken {
+                    if (oauthToken?.accessToken) != nil {
                         // 서버에서 유저정보 반환 받기
+                        print("카카오 로그인 성공 토큰: \(String(describing: oauthToken?.accessToken))")
+                        
+                        // TODO: - 로그인 성공후 id, name 생각하기.
+                        let user = User(id: "", name: "", loginType: .kakao)
+                        DispatchQueue.main.async {
+                            UserSession.shared.isLoggedIn = true
+                            UserSession.shared.updateUser(user)
+                        }
                     }
                     
                 }
-            }
-        }
-    }
-    
-    func logoutWithKakaoAccount() {
-        UserApi.shared.logout {(error) in
-            if let error = error {
-                print(error)
-            }
-            else {
-                print("logout() success.")
             }
         }
     }
@@ -66,12 +71,32 @@ class LoginViewModel: ObservableObject {
                 let userId = appleIDCredential.user
                 let identityToken = appleIDCredential.identityToken
                 let authorizationCode = appleIDCredential.authorizationCode
-
+                let fullName = appleIDCredential.fullName
+                let name =  (fullName?.familyName ?? "") + (
+                    fullName?.givenName ?? ""
+                )
+                let email = appleIDCredential.email
+                let IdentityToken = String(
+                    data: appleIDCredential.identityToken!,
+                    encoding: .utf8
+                )
+                let AuthorizationCode = String(
+                    data: appleIDCredential.authorizationCode!,
+                    encoding: .utf8
+                )
+                
                 if let tokenData = identityToken, let tokenString = String(
                     data: tokenData,
                     encoding: .utf8
                 ) {
                     sendToServer(userId: userId, identityToken: tokenString)
+                    
+                    // TODO: - 로그인 성공후 id, name 생각하기.
+                    let user = User(id: "", name: "", loginType: .apple)
+                    DispatchQueue.main.async {
+                        UserSession.shared.isLoggedIn = true
+                        UserSession.shared.updateUser(user)
+                    }
                 }
             }
         case .failure(let error):
@@ -88,7 +113,7 @@ class LoginViewModel: ObservableObject {
                     print("server certification fali error: \(error.localizedDescription)")
                 }
             }, receiveValue: { success in
-                self.isLogin = success
+                // 서버에서 받은 데이터..
             })
             .store(in: &cancellable)
     }
