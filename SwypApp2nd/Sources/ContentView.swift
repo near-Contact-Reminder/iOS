@@ -1,11 +1,24 @@
 import SwiftUI
+import KakaoSDKCommon
+import KakaoSDKAuth
 
 public struct ContentView: View {
-    public init() {}
+    @StateObject private var userSession = UserSession.shared
+    
+    public init() {
+        // Kakao SDK 초기화
+        KakaoSDK.initSDK(appKey: Bundle.main.infoDictionary?["KAKAO_APP_KEY"] as? String ?? "")
+    }
 
     public var body: some View {
-        Text("Hello, World!")
-            .padding()
+        Group {
+            if userSession.isLoggedIn {
+                HomeView()
+            } else {
+                LoginView()
+            }
+        }
+        .environmentObject(userSession)
     }
 }
 
