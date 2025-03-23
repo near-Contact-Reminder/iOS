@@ -1,11 +1,46 @@
 import SwiftUI
+import AuthenticationServices
 
 public struct LoginView: View {
-    public init() {}
+    @StateObject var loginViewModel = LoginViewModel()
+    @EnvironmentObject var userSession: UserSession
 
     public var body: some View {
-        Text("Hello, World!")
+        if userSession.isLoggedIn {
+            // TODO: - 로그인 완료시 이동 뷰 재설정
+            HomeView()
+                .environmentObject(UserSession.shared)
+            
+        } else {
+            VStack(spacing: 16) {
+                    
+                // 카카오 로그인
+                Button(action: {
+                    loginViewModel.loginWithKakaoAccount()
+                }) {
+                    Image("kakao_login_large_wide")
+                        .resizable()
+                        .scaledToFit()
+                }
+                .frame(height: 44)
+                .frame(maxWidth: .infinity)
+                    
+                // 애플 로그인
+                SignInWithAppleButton(
+                    onRequest: { request in
+                        loginViewModel.handleAppleRequest(request)
+                    },
+                    onCompletion: { result in
+                        loginViewModel.handleAppleCompletion(result)
+                        
+                    }
+                )
+                .frame(height: 44)
+                .frame(maxWidth: .infinity)
+                .signInWithAppleButtonStyle(.black)
+            }
             .padding()
+        }
     }
 }
 
@@ -13,5 +48,6 @@ public struct LoginView: View {
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {
         LoginView()
+            .environmentObject(UserSession.shared)
     }
 }
