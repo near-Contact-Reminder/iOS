@@ -90,6 +90,8 @@ class LoginViewModel: ObservableObject {
                     encoding: .utf8
                 ) {
                     sendToServer(userId: userId, identityToken: tokenString)
+                    print("애플 로그인 성공 identityToken: \(String(describing: tokenString))")
+                    print("애플 로그인 성공 AuthorizationCode: \(String(describing: AuthorizationCode))")
                     
                     // TODO: - 로그인 성공후 id, name 생각하기.
                     let user = User(id: "", name: "", loginType: .apple)
