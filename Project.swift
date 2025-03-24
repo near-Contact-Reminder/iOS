@@ -9,6 +9,16 @@ let project = Project(
         textSettings: 
                 .textSettings(usesTabs: false, indentWidth: 4, tabWidth: 4)
     ),
+    settings: .settings(
+        base: [:],
+        configurations: [
+            .debug(name: "Debug", xcconfig: "Tuist/Config/Config.xcconfig"),
+            .release(
+                name: "Release",
+                xcconfig: "Tuist/Config/Config.xcconfig"
+            )
+        ]
+    ),
     targets: [
         .target(
             name: "SwypApp2nd",
@@ -22,21 +32,18 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
+                    "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)"
                 ]
             ),
             sources: [
                 "SwypApp2nd/Sources/**",
-                "SwypApp2nd/Sources/Views/**",
-                "SwypApp2nd/Sources/ViewModels/**",
-                "SwypApp2nd/Sources/Models/**",
-                "SwypApp2nd/Sources/Networks/**",
-                "SwypApp2nd/Sources/Services/**",
-                "SwypApp2nd/Sources/CommonComponents/**",
             ],
             resources: ["SwypApp2nd/Resources/**"],
+            entitlements: "Tuist/SignInWithApple.entitlements",
             dependencies: [
                 .external(name: "Alamofire"),
-                .external(name: "Kingfisher")
+                .external(name: "Kingfisher"),
+                .external(name: "KakaoSDK")
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app"
