@@ -37,12 +37,6 @@ let project = Project(
             ),
             sources: [
                 "SwypApp2nd/Sources/**",
-                "SwypApp2nd/Sources/Views/**",
-                "SwypApp2nd/Sources/ViewModels/**",
-                "SwypApp2nd/Sources/Models/**",
-                "SwypApp2nd/Sources/Networks/**",
-                "SwypApp2nd/Sources/Services/**",
-                "SwypApp2nd/Sources/CommonComponents/**",
             ],
             resources: ["SwypApp2nd/Resources/**"],
             entitlements: "Tuist/SignInWithApple.entitlements",
