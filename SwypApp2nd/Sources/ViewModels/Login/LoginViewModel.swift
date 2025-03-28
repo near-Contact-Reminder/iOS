@@ -14,7 +14,6 @@ class LoginViewModel: ObservableObject {
     private func updateUserSession(with user: User) {
         DispatchQueue.main.async {
             UserSession.shared.updateUser(user)
-            UserSession.shared.isLoggedIn = true
         }
     }
        
