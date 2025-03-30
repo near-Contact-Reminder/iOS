@@ -16,7 +16,7 @@ public struct LoginView: View {
                     
                 // 카카오 로그인
                 Button(action: {
-                    loginViewModel.loginWithKakaoAccount()
+                    loginViewModel.loginWithKakao()
                 }) {
                     Image("kakao_login_large_wide")
                         .resizable()
@@ -27,13 +27,8 @@ public struct LoginView: View {
                     
                 // 애플 로그인
                 SignInWithAppleButton(
-                    onRequest: { request in
-                        loginViewModel.handleAppleRequest(request)
-                    },
-                    onCompletion: { result in
-                        loginViewModel.handleAppleCompletion(result)
-                        
-                    }
+                    onRequest: loginViewModel.handleAppleRequest,
+                    onCompletion: loginViewModel.handleAppleCompletion
                 )
                 .frame(height: 44)
                 .frame(maxWidth: .infinity)

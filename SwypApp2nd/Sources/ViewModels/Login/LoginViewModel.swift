@@ -5,144 +5,110 @@ import KakaoSDKUser
 
 class LoginViewModel: ObservableObject {
 
-    private var cancellable = Set<AnyCancellable>()
-    
-    // MARK: - KakaoLogin
-    // TODO: - 카카오계정 가입 후 로그인 추후 진행
-    /// 카카오톡 로그인 로직
-    func loginWithKakaoAccount() {
-        if (UserApi.isKakaoTalkLoginAvailable()) {
-            // 카카오톡 앱으로 로그인
-            UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
-                if let error = error {
-                    print(error)
-                }
-                else {
-                    print("loginWithKakaoAccount() success.")
-                    // TODO: - 성공 시 동작 구현 서버와 연동
-                    if (oauthToken?.accessToken) != nil {
-                        // 서버에서 유저정보 반환 받기
-                        print("카카오 로그인 성공 토큰: \(String(describing: oauthToken?.accessToken))")
-                        
-                        // TODO: - 로그인 성공후 id, name 생각하기.
-                        let user = User(id: "", name: "", loginType: .kakao)
-                        DispatchQueue.main.async {
-                            UserSession.shared.isLoggedIn = true
-                            UserSession.shared.updateUser(user)
-                        }
-                    }
-                }
-            }
-        } else {
-            // 카카오톡 웹으로 로그인
-            UserApi.shared.loginWithKakaoAccount{ oauthToken, error in
-                if let error = error {
-                    print(error)
-                }
-                else {
-                    print("loginWithKakaoAccount() success.")
-                    // TODO: - 성공 시 동작 구현 서버와 연동
-                    if (oauthToken?.accessToken) != nil {
-                        // 서버에서 유저정보 반환 받기
-                        print("카카오 로그인 성공 토큰: \(String(describing: oauthToken?.accessToken))")
-                        
-                        // TODO: - 로그인 성공후 id, name 생각하기.
-                        let user = User(id: "", name: "", loginType: .kakao)
-                        DispatchQueue.main.async {
-                            UserSession.shared.isLoggedIn = true
-                            UserSession.shared.updateUser(user)
-                        }
-                    }
-                    
-                }
-            }
+    @Published var isLoading: Bool = false
+    @Published var errorMessage: String?
+       
+    private var cancellables = Set<AnyCancellable>()
+
+    // 로그인 후 UserSession 업데이트
+    private func updateUserSession(with user: User) {
+        DispatchQueue.main.async {
+            UserSession.shared.updateUser(user)
         }
     }
-    
-    // MARK: - AppleLogin
+       
+    // MARK: - 카카오 로그인 흐름
+    func loginWithKakao() {
+        isLoading = true
+        SnsAuthService.shared.loginWithKakao { oauthToken in
+            guard let token = oauthToken else {
+                self.errorMessage = "카카오 로그인 실패"
+                self.isLoading = false
+                return
+            }
+
+            // 1. 토큰 저장
+            TokenManager.shared.save(token: token.accessToken, for: .kakao)
+            TokenManager.shared
+                .save(token: token.refreshToken, for: .kakao, isRefresh: true)
+
+            // 2. 서버 로그인 요청
+            BackEndAuthService.shared
+                .loginWithKakao(accessToken: token.accessToken) { result in
+                    self.isLoading = false
+                    switch result {
+                    case .success(let user):
+                        // 서버 토큰 저장
+                        TokenManager.shared
+                            .save(token: user.serverAccessToken, for: .server)
+                        TokenManager.shared
+                            .save(
+                                token: user.serverRefreshToken,
+                                for: .server,
+                                isRefresh: true
+                            )
+                        self.updateUserSession(with: user)
+                    case .failure(let error):
+                        self.errorMessage = "서버 로그인 실패: \(error.localizedDescription)"
+                    }
+                }
+            
+            // TODO: - Test (서버연결이 안되어있어 UserSession의 isLoggedIn변경이 안됨)
+            let user = User(id: "", name: "", loginType: .kakao, serverAccessToken: "", serverRefreshToken: "")
+            self.updateUserSession(with: user)
+        }
+    }
+
+    // MARK: - 애플 로그인 요청 세팅
     func handleAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
-        request.requestedScopes = [.fullName, .email] // 이름, 이메일 요청
+        SnsAuthService.shared.configureAppleRequest(request)
     }
 
+    // MARK: - 애플 로그인 흐름
     func handleAppleCompletion(_ result: Result<ASAuthorization, Error>) {
-        switch result {
-        case .success(let auth):
-            if let appleIDCredential = auth.credential as? ASAuthorizationAppleIDCredential {
-                let userId = appleIDCredential.user
-                let identityToken = appleIDCredential.identityToken
-                let authorizationCode = appleIDCredential.authorizationCode
-                let fullName = appleIDCredential.fullName
-                let name =  (fullName?.familyName ?? "") + (
-                    fullName?.givenName ?? ""
-                )
-                let email = appleIDCredential.email
-                let IdentityToken = String(
-                    data: appleIDCredential.identityToken!,
-                    encoding: .utf8
-                )
-                let AuthorizationCode = String(
-                    data: appleIDCredential.authorizationCode!,
-                    encoding: .utf8
-                )
-                
-                if let tokenData = identityToken, let tokenString = String(
-                    data: tokenData,
-                    encoding: .utf8
-                ) {
-                    sendToServer(userId: userId, identityToken: tokenString)
-                    print("애플 로그인 성공 identityToken: \(String(describing: tokenString))")
-                    print("애플 로그인 성공 AuthorizationCode: \(String(describing: AuthorizationCode))")
-                    
-                    // TODO: - 로그인 성공후 id, name 생각하기.
-                    let user = User(id: "", name: "", loginType: .apple)
-                    DispatchQueue.main.async {
-                        UserSession.shared.isLoggedIn = true
-                        UserSession.shared.updateUser(user)
+        isLoading = true
+        SnsAuthService.shared
+            .handleAppleResult(result) {
+                userId,
+                identityToken in
+                guard let userId = userId,
+                      let identityToken = identityToken else {
+                    self.errorMessage = "애플 로그인 실패"
+                    self.isLoading = false
+                    return
+                }
+
+                // 1. 토큰 저장 (애플은 identityToken만)
+                TokenManager.shared.save(token: identityToken, for: .apple)
+
+                // 2. 서버에 로그인 요청
+                BackEndAuthService.shared
+                    .loginWithApple(
+                        userId: userId,
+                        identityToken: identityToken
+                    ) { result in
+                        self.isLoading = false
+                        switch result {
+                        case .success(let user):
+                            TokenManager.shared
+                                .save(
+                                    token: user.serverAccessToken,
+                                    for: .server
+                                )
+                            TokenManager.shared
+                                .save(
+                                    token: user.serverRefreshToken,
+                                    for: .server,
+                                    isRefresh: true
+                                )
+                            self.updateUserSession(with: user)
+                        case .failure(let error):
+                            self.errorMessage = "서버 로그인 실패: \(error.localizedDescription)"
+                        }
                     }
-                }
+                // TODO: - Test (서버연결이 안되어있어 UserSession의 isLoggedIn변경이 안됨)
+                let user = User(id: "", name: "", loginType: .kakao, serverAccessToken: "", serverRefreshToken: "")
+                self.updateUserSession(with: user)
             }
-        case .failure(let error):
-            print("Apple Login Error : \(error.localizedDescription)")
-        }
-    }
-
-    private func sendToServer(userId: String, identityToken: String) {
-        AuthService.shared
-            .requestAppleLogin(userId: userId, identityToken: identityToken)
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { completion in
-                if case .failure(let error) = completion {
-                    print("server certification fali error: \(error.localizedDescription)")
-                }
-            }, receiveValue: { success in
-                // 서버에서 받은 데이터..
-            })
-            .store(in: &cancellable)
-    }
-}
-
-class AuthService {
-    static let shared = AuthService()
-
-    func requestAppleLogin(userId: String, identityToken: String) -> AnyPublisher<Bool, Error> {
-        let url = URL(string: "서버url")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body: [String: Any] = [
-            "user_id": userId,
-            "identity_token": identityToken
-        ]
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
-        return URLSession.shared.dataTaskPublisher(for: request)
-            .tryMap { output in
-                guard let response = output.response as? HTTPURLResponse, response.statusCode == 200 else {
-                    throw URLError(.badServerResponse)
-                }
-                return true
-            }
-            .eraseToAnyPublisher()
     }
 }
