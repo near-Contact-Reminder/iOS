@@ -22,6 +22,9 @@ public struct ContentView: View {
                     .transition(.move(edge: .leading))
             }
         }
+        .onAppear {
+            userSession.tryAutoLogin()
+        }
         .animation(.easeInOut(duration: 0.4), value: userSession.isLoggedIn)
         .environmentObject(userSession)
     }
