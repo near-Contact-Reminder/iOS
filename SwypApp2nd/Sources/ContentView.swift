@@ -4,6 +4,8 @@ import KakaoSDKAuth
 
 public struct ContentView: View {
     @StateObject private var userSession = UserSession.shared
+    @StateObject private var loginViewModel = LoginViewModel()
+    @StateObject private var homeViewModel = HomeViewModel()
     
     public init() {
         // Kakao SDK 초기화
@@ -13,11 +15,14 @@ public struct ContentView: View {
     public var body: some View {
         Group {
             if userSession.isLoggedIn {
-                HomeView()
+                HomeView(homeViewModel: homeViewModel)
+                    .transition(.move(edge: .leading))
             } else {
-                LoginView()
+                LoginView(loginViewModel: loginViewModel)
+                    .transition(.move(edge: .leading))
             }
         }
+        .animation(.easeInOut(duration: 0.4), value: userSession.isLoggedIn)
         .environmentObject(userSession)
     }
 }
