@@ -5,14 +5,6 @@ import Foundation
 import KakaoSDKUser
 import KakaoSDKAuth
 
-struct TokenResponse: Decodable {
-    let accessToken: String
-    
-    enum CodingKeys: String, CodingKey {
-        case accessToken = "access_token"
-    }
-}
-
 class SnsAuthService {
     static let shared = SnsAuthService()
     
