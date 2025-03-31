@@ -6,8 +6,8 @@ let project = Project(
         automaticSchemesOptions: .disabled,
         defaultKnownRegions: ["en", "ko"],
         developmentRegion: "ko",
-        textSettings: 
-                .textSettings(usesTabs: false, indentWidth: 4, tabWidth: 4)
+        textSettings:
+            .textSettings(usesTabs: false, indentWidth: 4, tabWidth: 4)
     ),
     settings: .settings(
         base: [:],
@@ -16,7 +16,7 @@ let project = Project(
             .release(
                 name: "Release",
                 xcconfig: "Tuist/Config/Config.xcconfig"
-            )
+            ),
         ]
     ),
     targets: [
@@ -36,14 +36,14 @@ let project = Project(
                 ]
             ),
             sources: [
-                "SwypApp2nd/Sources/**",
+                "SwypApp2nd/Sources/**"
             ],
             resources: ["SwypApp2nd/Resources/**"],
             entitlements: "Tuist/SignInWithApple.entitlements",
             dependencies: [
                 .external(name: "Alamofire"),
                 .external(name: "Kingfisher"),
-                .external(name: "KakaoSDK")
+                .external(name: "KakaoSDK"),
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app"
