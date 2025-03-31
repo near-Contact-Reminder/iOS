@@ -69,7 +69,7 @@ final class BackEndAuthService {
     func refreshAccessToken(refreshToken: String, completion: @escaping (Result<String, Error>) -> Void) {
         // TODO: - Server api 확인후 변경
         let url = "\(baseURL)/auth/renew"
-        let params = ["refresh_token": refreshToken]
+        let params = ["refreshToken": refreshToken]
 
         AF.request(url, method: .post, parameters: params, encoding: JSONEncoding.default)
             .validate(statusCode: 200..<300)
