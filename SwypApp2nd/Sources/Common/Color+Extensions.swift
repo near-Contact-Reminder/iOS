@@ -22,4 +22,6 @@ extension Color {
     
     // TODO: - 사용할 색상 미리 저장
     static let mainYellow = Color(hex: "#FFFFF")
+    
+    static let kakaoBackgroundColor = Color(hex: "#FAE64D")
 }
