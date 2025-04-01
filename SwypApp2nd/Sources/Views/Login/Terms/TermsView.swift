@@ -3,6 +3,8 @@ import Combine
 
 public struct TermsView: View {
     @ObservedObject var viewModel = TermsViewModel()
+    
+    let completion: () -> Void
 
     public var body: some View {
         VStack(spacing: 0) {
@@ -44,7 +46,9 @@ public struct TermsView: View {
             Spacer()
 
             Button(action: {
+                /// 약관 동의 유무 UserDefaults에 저장
                 UserDefaults.standard.set(true, forKey: "didAgreeToTerms")
+                completion()
             }) {
                 Text("확인")
                     .foregroundColor(.white)
@@ -99,5 +103,7 @@ public struct TermsView: View {
 }
 
 #Preview {
-    TermsView(viewModel: TermsViewModel())
+    TermsView(viewModel: TermsViewModel()) {
+        
+    }
 }
