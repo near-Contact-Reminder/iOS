@@ -2,21 +2,22 @@ import SwiftUI
 import Combine
 import WebKit
 
+struct AgreementDetail: Identifiable, Equatable {
+    let id = UUID()
+    let title: String
+    let urlString: String
+}
+
 public struct TermsView: View {
     @ObservedObject var viewModel = TermsViewModel()
     
     // 약관 상세를 보여주기 위한 상태 관리
-    /// 약관 상세 모달 Bool
-    @State private var showingDetail = false
-    /// 약관 상세 타이틀
-    @State private var detailTitle = ""
-    /// 약관 상세 웹 URL
-    @State private var detailURLString = ""
+    @State private var selectedAgreement: AgreementDetail?
     
     let completion: () -> Void
 
     public var body: some View {
-        VStack(spacing: 0) {
+        VStack {
             Capsule()
                 .fill(Color.secondary)
                 .frame(width: 40, height: 5)
@@ -26,31 +27,47 @@ public struct TermsView: View {
                 .font(.headline)
                 .padding(.top, 16)
 
-            VStack(spacing: 12) {
+            LazyVStack(spacing: 12) {
                 agreementRow(
                     isChecked: .constant(viewModel.isAllAgreed),
                     title: "약관 전체 동의",
-                    isBold: true,
-                    action: viewModel.toggleAllAgreed
+                    checkBoxTappedClosure: {
+                        viewModel.toggleAllAgreed()
+                    },
+                    onDetailTappedClosure: nil
                 )
+                
                 agreementRow(
                     isChecked: $viewModel.isServiceTermsAgreed,
                     title: "서비스 이용 약관 상세",
+                    isBold: false,
                     showDetail: true,
-                    detailURLString: "https://www.naver.com/"
-                )
+                    detailURLString: "https://example.com/") {
+                        // checkbox closure
+                    } onDetailTappedClosure: { title, url in
+                        self.selectedAgreement = AgreementDetail(title: title, urlString: url)
+                    }
+                
                 agreementRow(
                     isChecked: $viewModel.isPersonalInfoTermsAgreed,
                     title: "개인정보 수집 및 이용 동의서 상세",
+                    isBold: false,
                     showDetail: true,
-                    detailURLString: "https://www.naver.com/"
-                )
+                    detailURLString: "https://example.com/") {
+                        // checkbox closure
+                    } onDetailTappedClosure: { title, url in
+                        self.selectedAgreement = AgreementDetail(title: title, urlString: url)
+                    }
                 agreementRow(
                     isChecked: $viewModel.isPrivacyPolicyAgreed,
                     title: "개인정보 처리방침 상세",
+                    isBold: false,
                     showDetail: true,
-                    detailURLString: "https://www.naver.com/"
-                )
+                    detailURLString: "https://example.com/") {
+                        // checkbox closure
+                    } onDetailTappedClosure: { title, url in
+                        self.selectedAgreement = AgreementDetail(title: title, urlString: url)
+                    }
             }
             .padding(.horizontal, 20)
             .padding(.top, 24)
@@ -76,45 +93,58 @@ public struct TermsView: View {
         }
         .background(Color.white)
         .cornerRadius(24)
-        .fullScreenCover(isPresented: $showingDetail) {
+        .sheet(item: $selectedAgreement) { agreement in
             NavigationStack {
                 TermsDetailView(
-                    title: detailTitle,
-                    urlString: detailURLString
+                    title: agreement.title,
+                    urlString: agreement.urlString
                 )
                 .toolbar {
-                    ToolbarItem {
-                        HStack (alignment: .center) {
-                            Text(detailTitle)
-                                .font(.headline)
-                            
-                            Spacer()
-                            
-                            Button("X") {
-                                showingDetail = false
-                            }
-                            .foregroundStyle(Color.black)
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("닫기") {
+                            selectedAgreement = nil
                         }
-                        
+                        .foregroundStyle(.black)
                     }
                 }
             }
         }
     }
+}
+/// 이용 약관 Row
+public struct agreementRow: View {
+    var isChecked: Binding<Bool>
+    var title: String
+    var isBold: Bool = false
+    var showDetail: Bool = false
+    var detailURLString: String? = nil
     
-    // MARK: - 이용 약관 Row
-    private func agreementRow(
-        isChecked: Binding<Bool>,
-        title: String,
-        isBold: Bool = false,
-        showDetail: Bool = false,
-        detailURLString: String? = nil,
-        action: (() -> Void)? = nil
-    ) -> some View {
+    var checkBoxTappedClosure: (() -> Void)? = nil
+    var onDetailTappedClosure: ((String, String) -> Void)?
+    
+    public init(
+            isChecked: Binding<Bool>,
+            title: String,
+            isBold: Bool = false,
+            showDetail: Bool = false,
+            detailURLString: String? = nil,
+            checkBoxTappedClosure: (() -> Void)? = nil,
+            onDetailTappedClosure: ((String, String) -> Void)? = nil
+        ) {
+            self.isChecked = isChecked
+            self.title = title
+            self.isBold = isBold
+            self.showDetail = showDetail
+            self.detailURLString = detailURLString
+            self.checkBoxTappedClosure = checkBoxTappedClosure
+            self.onDetailTappedClosure = onDetailTappedClosure
+        }
+    
+    public var body: some View {
         HStack {
             Button(action: {
                 isChecked.wrappedValue.toggle()
-                action?()
+                checkBoxTappedClosure?()
             }) {
                 Image(
                     systemName: isChecked.wrappedValue ? "checkmark.square.fill" : "square"
@@ -123,17 +153,15 @@ public struct TermsView: View {
                 .frame(width: 24, height: 24)
                 .foregroundColor(.black)
             }
-
+            
             Text(title)
                 .font(isBold ? .body.bold() : .body)
-
+            
             Spacer()
-
+            
             if showDetail, let detailURLString = detailURLString {
                 Button {
-                    detailTitle = title
-                    self.detailURLString = detailURLString
-                    showingDetail = true
+                    onDetailTappedClosure?(title, detailURLString)
                 } label: {
                     Image(systemName: "chevron.right")
                         .foregroundColor(.gray)
@@ -147,31 +175,90 @@ public struct TermsView: View {
 }
 
 struct TermsDetailView: View {
-    let title: String
-    let urlString: String
+    let title: String?
+    let urlString: String?
+    
+    @State private var isLoading = true
 
     var body: some View {
         VStack {
-            if let url = URL(string: urlString) {
+            if isLoading {
+                VStack {
+                    Spacer()
+                    ProgressView("로딩 중...")
+                    Spacer()
+                }
+            }
+            
+            if let urlString = urlString, let url = URL(string: urlString) {
                 WebView(url: url)
-            } else {
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .opacity(isLoading ? 0 : 1)
+            } else if !isLoading {
                 Text("유효하지 않은 URL입니다.")
                     .foregroundColor(.red)
+                    .padding()
+                    .opacity(isLoading ? 0 : 1)
+                let _ = print("🔴 [TermsDetailView] 유효하지 않은 URL 입니다. ")
+            }
+            
+        }
+        .onAppear {
+            if let urlString = urlString, let url = URL(string: urlString) {
+                print("🟢 [TermsDetailView] URL 파싱 성공: \(url)")
+                isLoading = false
+            } else {
+                print(
+                    "🔴 [TermsDetailView] URL 파싱 실패: \(String(describing: urlString))"
+                )
+                isLoading = false
             }
         }
+        .navigationTitle(title ?? "")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 struct WebView: UIViewRepresentable {
     let url: URL
-
+        
     func makeUIView(context: Context) -> WKWebView {
-        return WKWebView()
+        let webView = WKWebView()
+        webView.navigationDelegate = context.coordinator
+        return webView
     }
-
+        
     func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
         uiView.load(request)
+    }
+        
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+        
+    class Coordinator: NSObject, WKNavigationDelegate {
+        func webView(
+            _ webView: WKWebView,
+            didStartProvisionalNavigation navigation: WKNavigation!
+        ) {
+            print("🟡 웹뷰 로딩 시작")
+        }
+            
+        func webView(
+            _ webView: WKWebView,
+            didFinish navigation: WKNavigation!
+        ) {
+            print("🟢 웹뷰 로딩 완료")
+        }
+            
+        func webView(
+            _ webView: WKWebView,
+            didFail navigation: WKNavigation!,
+            withError error: Error
+        ) {
+            print("🔴 웹뷰 로딩 실패: \(error.localizedDescription)")
+        }
     }
 }
 
