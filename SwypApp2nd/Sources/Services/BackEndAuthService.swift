@@ -40,11 +40,13 @@ final class BackEndAuthService {
     }
 
     /// 백엔드: 애플 로그인 처리
-    func loginWithApple(userId: String, identityToken: String, completion: @escaping (Result<TokenResponse, Error>) -> Void) {
+    func loginWithApple(userId: String, identityToken: String, authorizationCode: String, completion: @escaping (Result<TokenResponse, Error>) -> Void) {
         let url = "\(baseURL)/auth/social"
-        // TODO: - Server api accessToken, providerType 확인 요청
-        let params = ["accessToken": identityToken,
-                      "providerType": "APPLE"]
+        let params = [
+            "identityToken": identityToken,
+            "authorizationCode": authorizationCode,
+            "providerType": "APPLE"
+        ]
 
         AF.request(url, method: .post, parameters: params, encoding: JSONEncoding.default)
             .validate(statusCode: 200..<300)

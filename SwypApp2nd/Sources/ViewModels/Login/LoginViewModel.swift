@@ -71,11 +71,10 @@ class LoginViewModel: ObservableObject {
     func handleAppleCompletion(_ result: Result<ASAuthorization, Error>) {
         isLoading = true
         SnsAuthService.shared
-            .handleAppleResult(result) {
-                userId,
-                identityToken in
+            .handleAppleResult(result) { userId, identityToken, authorizationCode in
                 guard let userId = userId,
-                      let identityToken = identityToken else {
+                      let identityToken = identityToken,
+                        let authorizationCode = authorizationCode else {
                     self.errorMessage = "애플 로그인 실패"
                     self.isLoading = false
                     return
@@ -86,10 +85,7 @@ class LoginViewModel: ObservableObject {
 
                 // 2. 서버에 로그인 요청
                 BackEndAuthService.shared
-                    .loginWithApple(
-                        userId: userId,
-                        identityToken: identityToken
-                    ) { result in
+                    .loginWithApple(userId: userId, identityToken: identityToken, authorizationCode: authorizationCode) { result in
                         self.isLoading = false
                         switch result {
                         case .success(let tokenResponse):
