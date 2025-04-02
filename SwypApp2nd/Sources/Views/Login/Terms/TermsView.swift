@@ -17,15 +17,13 @@ public struct TermsView: View {
     let completion: () -> Void
 
     public var body: some View {
-        VStack {
-            Capsule()
-                .fill(Color.secondary)
-                .frame(width: 40, height: 5)
-                .padding(.top, 8)
+        VStack(alignment: .leading) {
 
             Text("서비스 약관 동의")
-                .font(.headline)
-                .padding(.top, 16)
+                .font(.title3)
+                .bold()
+                .padding(.leading, 20)
+                .padding(.top, 44)
 
             LazyVStack(spacing: 12) {
                 agreementRow(
@@ -70,7 +68,7 @@ public struct TermsView: View {
                     }
             }
             .padding(.horizontal, 20)
-            .padding(.top, 24)
+            .padding(.top, 8)
 
             Spacer()
 

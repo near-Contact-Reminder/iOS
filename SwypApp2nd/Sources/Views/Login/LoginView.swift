@@ -75,10 +75,8 @@ public struct LoginView: View {
                     userSession.isLoggedIn = true
                 }
             }
-            .interactiveDismissDisabled()
             .presentationDetents([.medium])
-            .presentationDragIndicator(.hidden)
-            
+            .presentationDragIndicator(.visible)
         }
     }
 }
