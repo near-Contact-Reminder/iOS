@@ -76,7 +76,16 @@ public struct TermsView: View {
 
             Button(action: {
                 // MARK: - 약관 동의 유무 UserDefaults에 저장
-                UserDefaults.standard.set(true, forKey: "didAgreeToTerms")
+                if UserSession.shared.user?.loginType == .kakao {
+                    UserDefaults.standard
+                        .set(true, forKey: "didAgreeToKakaoTerms")
+                    print("🟢 [TermsView] didAgreeToKakaoTerms 저장됨: \(UserDefaults.standard.bool(forKey: "didAgreeToKakaoTerms"))")
+                } else if UserSession.shared.user?.loginType == .apple {
+                    UserDefaults.standard
+                        .set(true, forKey: "didAgreeToAppleTerms")
+                    print("🟢 [TermsView] didAgreeToAppleTerms 저장됨: \(UserDefaults.standard.bool(forKey: "didAgreeToAppleTerms"))")
+                }
+                
                 completion()
             }) {
                 Text("확인")

@@ -12,10 +12,8 @@ class LoginViewModel: ObservableObject {
 
     // 로그인 후 UserSession 업데이트
     private func updateUserSession(with user: User) {
-        DispatchQueue.main.async {
-            print("updateUserSession 호출됨")
+            print("🟢 [LoginViewModel] updateUserSession 호출됨")
             UserSession.shared.updateUser(user)
-        }
     }
        
     // MARK: - 카카오 로그인 흐름

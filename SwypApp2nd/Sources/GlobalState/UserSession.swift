@@ -24,9 +24,32 @@ class UserSession: ObservableObject {
     }
     /// 로그인 상태 업데이트
     func updateUser(_ user: User) {
-        self.user = user
-        self.isLoggedIn = true
-        self.shouldShowTerms = !UserDefaults.standard.bool(forKey: "didAgreeToTerms")
+        DispatchQueue.main.async {
+            print("🟢 [UserSession] updateUser 호출 - loginType 확인: \(user.loginType)")
+
+            self.user = user
+            
+            // 로그인 타입에 따른 약관 동의 확인
+            switch user.loginType {
+            case .kakao: // 카카오 로그인의 경우
+                print("🟢 [UserSession] updateUser 호출 - didAgreeToTerms 값: \(UserDefaults.standard.bool(forKey: "didAgreeToKakaoTerms"))")
+                if !UserDefaults.standard.bool(forKey: "didAgreeToKakaoTerms") {
+                    self.shouldShowTerms = true
+                    self.isLoggedIn = false
+                } else {
+                    self.isLoggedIn = true
+                }
+            case .apple: // 애플 로그인의 경우
+                print("🟢 [UserSession] updateUser 호출 - didAgreeToTerms 값: \(UserDefaults.standard.bool(forKey: "didAgreeToAppleTerms"))")
+                if !UserDefaults.standard.bool(forKey: "didAgreeToAppleTerms") {
+                    self.shouldShowTerms = true
+                    self.isLoggedIn = false
+                } else {
+                    self.isLoggedIn = true
+                }
+            }
+            
+        }
     }
 
     /// 로그아웃 처리
@@ -55,7 +78,9 @@ class UserSession: ObservableObject {
         print("🟡 [UserSession] 카카오 로그인 시도")
 
         // 카카오 access token 유효성 검사
-        UserApi.shared.accessTokenInfo { _, error in
+        UserApi.shared.accessTokenInfo {
+ _,
+ error in
             if let error = error {
                 print("🔴 [UserSession] 카카오 accessToken 유효하지 않음: \(error.localizedDescription)")
                 self.logout()
@@ -68,6 +93,24 @@ class UserSession: ObservableObject {
             if TokenManager.shared.get(for: .server) != nil {
                 print("🟢 [UserSession] 서버 accessToken 존재 → 로그인 유지")
                 self.isLoggedIn = true
+                
+//                // TODO: - 서버에서 유저정보 가져와야함.
+//                let user = User(
+//                    id: "kakao_user",
+//                    name: "카카오 유저",
+//                    email: nil,
+//                    profileImageURL: nil,
+//                    loginType: .kakao,
+//                    serverAccessToken: TokenManager.shared.get(
+//                        for: .server,
+//                        isRefresh: false
+//                    ) ?? "",
+//                    serverRefreshToken: TokenManager.shared.get(
+//                        for: .server,
+//                        isRefresh: true
+//                    ) ?? ""
+//                )
+//                self.updateUser(user)
                 return
             }
 
@@ -90,6 +133,7 @@ class UserSession: ObservableObject {
                             TokenManager.shared
                                 .save(token: newAccessToken, for: .server)
                             self.isLoggedIn = true
+                            // TODO: - 서버에 유저 정보 요청하는 로직 추가해야함
                         case .failure(let error):
                             print("🔴 [UserSession] 서버 토큰 재발급 실패: \(error.localizedDescription)")
                             self.logout()

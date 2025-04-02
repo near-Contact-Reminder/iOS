@@ -3,8 +3,9 @@ import SwiftUI
 
 public struct LoginView: View {
     @ObservedObject var loginViewModel: LoginViewModel
+    @StateObject private var termsViewModel = TermsViewModel()
     @EnvironmentObject var userSession: UserSession
-
+    
     public var body: some View {
         VStack(spacing: 44) {
 
@@ -63,6 +64,21 @@ public struct LoginView: View {
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
+        }
+        .sheet(isPresented: Binding<Bool>(
+            get: { userSession.shouldShowTerms },
+            set: { newValue in userSession.shouldShowTerms = newValue }
+        )) {
+            TermsView(viewModel: termsViewModel) {
+                DispatchQueue.main.async {
+                    userSession.shouldShowTerms = false
+                    userSession.isLoggedIn = true
+                }
+            }
+            .interactiveDismissDisabled()
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.hidden)
+            
         }
     }
 }
