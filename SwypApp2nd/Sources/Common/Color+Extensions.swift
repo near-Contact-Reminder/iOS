@@ -20,8 +20,34 @@ extension Color {
         self.init(red: r, green: g, blue: b)
     }
     
-    // TODO: - 사용할 색상 미리 저장
-    static let mainYellow = Color(hex: "#FFFFF")
+    // GrayScale
+    static let gray01 = Color("Gray01_Text")
+    static let gray02 = Color("Gray02_Disable")
+    static let gray03 = Color("Gray03_Line")
+    static let gray04 = Color("Gray04_DisableBg")
+    static let black = Color("Black")
+    static let white = Color("White")
+
+    // Primary
+    static let blue01 = Color("Blue01")
+    static let blue02 = Color("Blue02")
+
+    // Semantic
+    static let negative = Color("Negative")
+
+    // Background
+    static let bg01 = Color("Bg01")
+    static let bg02 = Color("Bg02")
+
+    // Dimmed
+    static let dimmed60 = Color("Dimmed_60")
     
+    // 카카오톡 버튼
     static let kakaoBackgroundColor = Color(hex: "#FAE64D")
 }
+
+// MARK: - Example
+/*
+Text("Near")
+    .foregroundStyle(Color.blue01)
+*/
