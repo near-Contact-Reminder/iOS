@@ -45,3 +45,11 @@ extension Font {
         }
     }
 }
+
+// MARK: - Example
+/*
+Text("Example")
+   .font(Font.Pretendard.h1Bold())
+   .tracking(-0.25)
+   .lineSpacing(10)
+*/
