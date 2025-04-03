@@ -28,43 +28,67 @@ public struct TermsView: View {
                 AgreementRow(
                     isChecked: .constant(viewModel.isAllAgreed),
                     title: "약관 전체 동의",
+                    isBold: true,
                     checkBoxTappedClosure: {
                         viewModel.toggleAllAgreed()
                     },
                     onDetailTappedClosure: nil
                 )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.gray02, lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
                 
-                AgreementRow(
-                    isChecked: $viewModel.isServiceTermsAgreed,
-                    title: "[필수] 서비스 이용 약관",
-                    isBold: false,
-                    showDetail: true,
-                    detailURLString: "https://example.com/") {
-                        // checkbox closure
-                    } onDetailTappedClosure: { title, url in
-                        self.selectedAgreement = AgreementDetail(title: title, urlString: url)
-                    }
-                
-                AgreementRow(
-                    isChecked: $viewModel.isPersonalInfoTermsAgreed,
-                    title: "[필수] 개인정보 수집 및 이용 동의서",
-                    isBold: false,
-                    showDetail: true,
-                    detailURLString: "https://example.com/") {
-                        // checkbox closure
-                    } onDetailTappedClosure: { title, url in
-                        self.selectedAgreement = AgreementDetail(title: title, urlString: url)
-                    }
-                AgreementRow(
-                    isChecked: $viewModel.isPrivacyPolicyAgreed,
-                    title: "[필수] 개인정보 처리방침",
-                    isBold: false,
-                    showDetail: true,
-                    detailURLString: "https://example.com/") {
-                        // checkbox closure
-                    } onDetailTappedClosure: { title, url in
-                        self.selectedAgreement = AgreementDetail(title: title, urlString: url)
-                    }
+                VStack(spacing: 0) {
+                    AgreementRow(
+                        isChecked: $viewModel.isServiceTermsAgreed,
+                        title: "[필수] 서비스 이용 약관",
+                        isBold: false,
+                        showDetail: true,
+                        detailURLString: "https://example.com/") {
+                            // checkbox closure
+                        } onDetailTappedClosure: { title, url in
+                            self.selectedAgreement = AgreementDetail(title: title, urlString: url)
+                        }
+                    
+                    Divider()
+                        .background(Color.gray02)
+                        .padding(.horizontal, 24)
+                    
+                    AgreementRow(
+                        isChecked: $viewModel.isPersonalInfoTermsAgreed,
+                        title: "[필수] 개인정보 수집 및 이용 동의서",
+                        isBold: false,
+                        showDetail: true,
+                        detailURLString: "https://example.com/") {
+                            // checkbox closure
+                        } onDetailTappedClosure: { title, url in
+                            self.selectedAgreement = AgreementDetail(title: title, urlString: url)
+                        }
+                    
+                    Divider()
+                        .background(Color.gray02)
+                        .padding(.horizontal, 24)
+                        
+                    
+                    AgreementRow(
+                        isChecked: $viewModel.isPrivacyPolicyAgreed,
+                        title: "[필수] 개인정보 처리방침",
+                        isBold: false,
+                        showDetail: true,
+                        detailURLString: "https://example.com/") {
+                            // checkbox closure
+                        } onDetailTappedClosure: { title, url in
+                            self.selectedAgreement = AgreementDetail(title: title, urlString: url)
+                        }
+                }
+                .background(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.gray02, lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -90,12 +114,11 @@ public struct TermsView: View {
                     .font(Font.Pretendard.b1Bold())
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .background(Color.blue01)
+                    .background(viewModel.canProceed ? Color.blue01 : Color.gray02)
                     .cornerRadius(8)
             }
             .padding(20)
             .disabled(!viewModel.canProceed)
-            .opacity(viewModel.canProceed ? 1 : 0.5)
         }
         .background(Color.white)
         .cornerRadius(24)
@@ -152,23 +175,41 @@ public struct AgreementRow: View {
                 isChecked.wrappedValue.toggle()
                 checkBoxTappedClosure?()
             }) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(isChecked.wrappedValue ? Color.blue01 : Color.gray02, lineWidth: 2)
-                        .frame(width: 24, height: 24)
-                        .background(isChecked.wrappedValue ? Color.blue01 : Color.clear)
-                        .cornerRadius(6)
+                if isBold {
+                    // 전체 동의용 체크박스 스타일
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(
+                                isChecked.wrappedValue ? Color.blue01 : Color.gray02,
+                                lineWidth: 2
+                            )
+                            .frame(width: 24, height: 24)
+                            .background(
+                                isChecked.wrappedValue ? Color.blue01 : Color.white
+                            )
+                            .cornerRadius(6)
 
-                    if isChecked.wrappedValue {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.white)
+                        if isChecked.wrappedValue {
+                            Image(systemName: "checkmark")
+                                .font(Font.Pretendard.b1Bold())
+                                .foregroundColor(.white)
+                        }
                     }
+                } else {
+                    // 하단 3개의 약관 체크 아이콘
+                    Image(systemName: "checkmark")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
+                        .foregroundColor(
+                            isChecked.wrappedValue ? Color.blue01 : Color.gray02
+                        )
+                        .frame(width: 24, height: 24)
                 }
             }
             
             Text(title)
-                .font(isBold ? .body.bold() : .body)
+                .font(isBold ? .Pretendard.b1Bold() : .Pretendard.b1Medium())
             
             Spacer()
             
@@ -182,7 +223,7 @@ public struct AgreementRow: View {
             }
         }
         .padding()
-        .background(Color(UIColor.systemGray6))
+        .background(Color.white)
         .cornerRadius(8)
     }
 }
