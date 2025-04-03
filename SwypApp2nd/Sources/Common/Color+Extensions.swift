@@ -25,8 +25,6 @@ extension Color {
     static let gray02 = Color("Gray02_Disable")
     static let gray03 = Color("Gray03_Line")
     static let gray04 = Color("Gray04_DisableBg")
-    static let black = Color("Black")
-    static let white = Color("White")
 
     // Primary
     static let blue01 = Color("Blue01")
