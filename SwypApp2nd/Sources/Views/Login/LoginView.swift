@@ -10,25 +10,22 @@ public struct LoginView: View {
         VStack(spacing: 44) {
 
             Spacer()
-                .frame(height: 14)
 
-            VStack(spacing: 12) {
+            VStack(alignment: .center, spacing: 8) {
+                Image.Character.success
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 160, height: 160)
+                
                 Text("Near")
-                    .font(.system(size: 36, weight: .bold))
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(Font.Pretendard.h1Bold(size: 48))
+                    .foregroundStyle(Color.blue02)
 
-                Text("소중한 사람들과\n더 가까워지는 스마트 리마인더")
-                    .font(.system(size: 16))
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("소중한 사람들과 더 가까워지는 시간")
+                    .font(Font.Pretendard.b1Medium())
+                    .foregroundStyle(Color.gray02)
             }
             .padding(.horizontal, 24)
-
-            Spacer()
-
-            Circle()
-                .fill(Color(UIColor.systemGray5))
-                .frame(width: 200, height: 200)
 
             Spacer()
 
