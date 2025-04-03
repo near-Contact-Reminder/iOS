@@ -20,13 +20,12 @@ public struct TermsView: View {
         VStack(alignment: .leading) {
 
             Text("서비스 약관 동의")
-                .font(.title3)
-                .bold()
+                .font(Font.Pretendard.h2Bold())
                 .padding(.leading, 20)
                 .padding(.top, 44)
 
             LazyVStack(spacing: 12) {
-                agreementRow(
+                AgreementRow(
                     isChecked: .constant(viewModel.isAllAgreed),
                     title: "약관 전체 동의",
                     checkBoxTappedClosure: {
@@ -35,9 +34,9 @@ public struct TermsView: View {
                     onDetailTappedClosure: nil
                 )
                 
-                agreementRow(
+                AgreementRow(
                     isChecked: $viewModel.isServiceTermsAgreed,
-                    title: "서비스 이용 약관 상세",
+                    title: "[필수] 서비스 이용 약관",
                     isBold: false,
                     showDetail: true,
                     detailURLString: "https://example.com/") {
@@ -46,9 +45,9 @@ public struct TermsView: View {
                         self.selectedAgreement = AgreementDetail(title: title, urlString: url)
                     }
                 
-                agreementRow(
+                AgreementRow(
                     isChecked: $viewModel.isPersonalInfoTermsAgreed,
-                    title: "개인정보 수집 및 이용 동의서 상세",
+                    title: "[필수] 개인정보 수집 및 이용 동의서",
                     isBold: false,
                     showDetail: true,
                     detailURLString: "https://example.com/") {
@@ -56,9 +55,9 @@ public struct TermsView: View {
                     } onDetailTappedClosure: { title, url in
                         self.selectedAgreement = AgreementDetail(title: title, urlString: url)
                     }
-                agreementRow(
+                AgreementRow(
                     isChecked: $viewModel.isPrivacyPolicyAgreed,
-                    title: "개인정보 처리방침 상세",
+                    title: "[필수] 개인정보 처리방침",
                     isBold: false,
                     showDetail: true,
                     detailURLString: "https://example.com/") {
@@ -86,12 +85,12 @@ public struct TermsView: View {
                 
                 completion()
             }) {
-                Text("확인")
+                Text("가입")
                     .foregroundColor(.white)
-                    .fontWeight(.semibold)
+                    .font(Font.Pretendard.b1Bold())
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .background(Color.black)
+                    .background(Color.blue01)
                     .cornerRadius(8)
             }
             .padding(20)
@@ -119,7 +118,7 @@ public struct TermsView: View {
     }
 }
 /// 이용 약관 Row
-public struct agreementRow: View {
+public struct AgreementRow: View {
     var isChecked: Binding<Bool>
     var title: String
     var isBold: Bool = false
@@ -153,12 +152,19 @@ public struct agreementRow: View {
                 isChecked.wrappedValue.toggle()
                 checkBoxTappedClosure?()
             }) {
-                Image(
-                    systemName: isChecked.wrappedValue ? "checkmark.square.fill" : "square"
-                )
-                .resizable()
-                .frame(width: 24, height: 24)
-                .foregroundColor(.black)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(isChecked.wrappedValue ? Color.blue01 : Color.gray02, lineWidth: 2)
+                        .frame(width: 24, height: 24)
+                        .background(isChecked.wrappedValue ? Color.blue01 : Color.clear)
+                        .cornerRadius(6)
+
+                    if isChecked.wrappedValue {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                }
             }
             
             Text(title)
