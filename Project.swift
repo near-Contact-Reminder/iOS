@@ -43,6 +43,7 @@ let project = Project(
                         "Pretendard-SemiBold.otf",
                         "Pretendard-Thin.otf",
                     ],
+                    "CFBundleIconName": "AppIcon",
                     "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)"
                 ]
             ),
@@ -57,7 +58,9 @@ let project = Project(
                 .external(name: "KakaoSDK"),
             ],
             settings: .settings(base: [
-                "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app"
+                "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
+                "MARKETING_VERSION": "0.1.0",
+                "CURRENT_PROJECT_VERSION": "1"
             ])
         ),
         .target(
