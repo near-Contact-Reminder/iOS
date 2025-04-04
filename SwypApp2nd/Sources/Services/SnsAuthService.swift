@@ -5,14 +5,6 @@ import Foundation
 import KakaoSDKUser
 import KakaoSDKAuth
 
-struct TokenResponse: Decodable {
-    let accessToken: String
-    
-    enum CodingKeys: String, CodingKey {
-        case accessToken = "access_token"
-    }
-}
-
 class SnsAuthService {
     static let shared = SnsAuthService()
     
@@ -49,23 +41,24 @@ class SnsAuthService {
     /// 애플 로그인 결과 처리
     func handleAppleResult(
         _ result: Result<ASAuthorization, Error>,
-        completion: @escaping (
-            _ userId: String?,
-            _ identityToken: String?
-        ) -> Void
+        completion: @escaping ( _ userId: String?, _ identityToken: String?, _ authorizationCode: String?) -> Void
     ) {
         switch result {
         case .success(let auth):
             if let credential = auth.credential as? ASAuthorizationAppleIDCredential,
                let tokenData = credential.identityToken,
-               let tokenString = String(data: tokenData, encoding: .utf8) {
-                completion(credential.user, tokenString)
+               let tokenString = String(data: tokenData, encoding: .utf8),
+               let codeData = credential.authorizationCode,
+               let codeString = String(data: codeData, encoding: .utf8) {
+                print("🧪 [애플 토큰 테스트] tokenString: \(tokenString)")
+                print("🧪 [애플 토큰 테스트] codeString: \(codeString)")
+                completion(credential.user, tokenString, codeString)
             } else {
-                completion(nil, nil)
+                completion(nil, nil, nil)
             }
         case .failure(let error):
             print("애플 로그인 실패: \(error)")
-            completion(nil, nil)
+            completion(nil, nil, nil)
         }
     }
 }

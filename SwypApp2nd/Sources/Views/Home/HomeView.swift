@@ -5,7 +5,7 @@ import KakaoSDKUser
 import AuthenticationServices
 
 public struct HomeView: View {
-
+    @ObservedObject var homeViewModel: HomeViewModel
     @EnvironmentObject var userSession: UserSession
     
     public var body: some View {
@@ -37,13 +37,5 @@ public struct HomeView: View {
                 }
             }
         }
-    }
-}
-
-
-struct HomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        HomeView()
-            .environmentObject(UserSession.shared)
     }
 }
