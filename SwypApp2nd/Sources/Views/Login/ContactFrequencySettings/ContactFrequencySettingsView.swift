@@ -99,7 +99,6 @@ struct ContactFrequencySettingsView: View {
                 }
                 .padding(.horizontal, 24)
             }
-            Spacer()
 
             // 하단 버튼
             HStack(spacing: 12) {
@@ -126,7 +125,7 @@ struct ContactFrequencySettingsView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .background(
-                            !viewModel.canComplete ? Color.blue01 : Color.gray01
+                            viewModel.canComplete ? Color.blue01 : Color.gray01
                         )
                         .cornerRadius(12)
                 }
@@ -147,6 +146,8 @@ struct ContactFrequencySettingsView: View {
                     showFrequencyPicker = false
                 }
             )
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
         }
     }
 }
@@ -159,9 +160,16 @@ struct FrequencyRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image("img_32_contact_square")
-                .resizable()
-                .frame(width: 32, height: 32)
+            if person.source == .kakao {
+                Image("img_32_kakao_square")
+                    .resizable()
+                    .frame(width: 32, height: 32)
+            } else {
+                Image("img_32_contact_square")
+                    .resizable()
+                    .frame(width: 32, height: 32)
+            }
+            
             Text(person.name)
                 .font(.Pretendard.b2Medium())
             Spacer()
@@ -182,37 +190,112 @@ struct FrequencyRow: View {
 
 // MARK: - 주기 설정 바텀 시트
 struct FrequencyPickerView: View {
+    @Environment(\.dismiss) var dismiss
+    @State private var tempSelected: CheckInFrequency?
+    
     let selected: CheckInFrequency?
     let onSelect: (CheckInFrequency) -> Void
 
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(CheckInFrequency.allCases) { frequency in
-                    HStack {
-                        Text(frequency.rawValue)
-                        Spacer()
-                        if frequency == selected {
-                            Image(systemName: "checkmark")
-                                .foregroundColor(.blue)
+        
+        VStack(alignment: .leading) {
+
+            Text("주기 설정")
+                .font(.headline)
+                .padding(.top, 16)
+                .padding(.leading, 16)
+            
+            if let selected = tempSelected {
+                let today = Date()
+                let weekday = today.weekdayKorean()
+                let nextDate = today.nextCheckInDate(for: selected)
+                
+                
+                HStack {
+                    Text("매주 ")
+                        .font(.body)
+                        .foregroundColor(.gray02)
+
+                    Text(weekday)
+                        .font(.body)
+                        .foregroundColor(.blue01)
+
+                    Spacer()
+
+                    Text("다음 주기: \(nextDate)")
+                        .font(.caption)
+                        .foregroundColor(.gray02)
+                }
+                .padding()
+                .background(Color.bg01)
+                .cornerRadius(12)
+                .padding(.horizontal)
+                .padding(.top, 8)
+            }
+            
+     
+            VStack(spacing: 0) {
+                ForEach(CheckInFrequency.allCases.dropFirst()) { frequency in
+                    Button(action: {
+                        tempSelected = frequency
+                    }) {
+                        HStack {
+                            Text(frequency.rawValue)
+                                .font(.Pretendard.b2Medium())
+                                .foregroundColor(.black)
+                            Spacer()
+                            if frequency == tempSelected {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.blue01)
+                            }
                         }
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        onSelect(frequency)
+                        .padding(.horizontal, 24)
+                        .frame(height: 44)
                     }
                 }
             }
-            .navigationTitle("주기 설정")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("완료") {
-                        // done handled in tap
+            .listStyle(.inset)
+            .background(Color.white)
+            
+            // 하단 버튼
+            HStack(spacing: 12) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    Text("취소")
+                        .font(.body.bold())
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(Color.white)
+                        .foregroundColor(.black)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(
+                                    Color.gray.opacity(0.3),
+                                    lineWidth: 1
+                                )
+                        )
+                }
+
+                Button(action: {
+                    if let selected = tempSelected {
+                        onSelect(selected)
                     }
+                    dismiss()
+                }) {
+                    Text("완료")
+                        .font(.body.bold())
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(Color.blue01)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
             }
+            .padding(.horizontal, 24)
         }
+        .background(Color.white)
+        .cornerRadius(20)
     }
 }
 
@@ -220,17 +303,12 @@ struct FrequencyPickerView: View {
     let viewModel: ContactFrequencySettingsViewModel = {
         let vm = ContactFrequencySettingsViewModel()
         vm.people = [
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none),
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none),
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none),
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none),
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none),
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none),
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none),
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none),
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none),
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none),
-            CheckInPerson(id: UUID(), name: "정종원", frequency: CheckInFrequency.none)
+            CheckInPerson(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
+            CheckInPerson(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
+            CheckInPerson(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
+            CheckInPerson(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
+            CheckInPerson(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
+            CheckInPerson(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none)
         ]
         return vm
     }()
