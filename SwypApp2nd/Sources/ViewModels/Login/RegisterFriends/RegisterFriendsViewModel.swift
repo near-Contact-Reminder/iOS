@@ -11,6 +11,7 @@ struct Contact: Identifiable, Equatable, Hashable {
     let name: String
     let image: UIImage?
     let source: ContactSource
+    var frequency: CheckInFrequency?
 }
 
 enum ContactSource {
@@ -61,40 +62,46 @@ class RegisterFriendsViewModel: ObservableObject {
         let converted: [Contact] = contacts.compactMap {
             let name = $0.familyName + $0.givenName
             let image = $0.thumbnailImageData.flatMap { UIImage(data: $0) }
-            return Contact(id: UUID(), name: name, image: image, source: .phone)
+            return Contact(id: UUID(), name: name, image: image, source: .phone, frequency: CheckInFrequency.none)
         }
+        DispatchQueue.main.async {
+            let existingNonPhone = self.selectedContacts.filter { $0.source != .phone }
+            let merged = existingNonPhone + converted
+            let deduped = Array(Set(merged)).prefix(5)
         
-        let existingNonPhone = selectedContacts.filter { $0.source != .phone }
-        let merged = existingNonPhone + converted
-        let deduped = Array(Set(merged)).prefix(5)
-        self.selectedContacts = Array(deduped)
+            self.selectedContacts = Array(deduped)
+        }
         print("🟢 [RegisterFriendsViewModel] 연락처 가져옴: \(self.selectedContacts)")
     }
     
     // MARK: - kakao 연락처 연동
     func fetchContactsFromKakao() {
         // MARK: - Test
-        print("fetchContactsFromKakao 호출됨")
         // Kakao 토큰이 없으면 로그인 연동 먼저 진행
         
         // 1. 카카오 로그인 (애플 로그인시에 카카오톡 로그인만 해서 친구 데이터만 가져오기)
         // 2. 토큰 관리..? -> 애플로그인이 진행됐으니 토큰은 필요없나,, 카카오 서버 토큰은 필요할듯
         // 3. 카카오 친구목록 호출
-        SnsAuthService.shared.loginWithKakao { oauthToken in
-            guard let token = oauthToken else {
-                print("🔴 [RegisterFriendsViewModel] 카카오 로그인 실패")
-                return
-            }
-            
-            TokenManager.shared.save(token: token.accessToken, for: .kakao)
-            TokenManager.shared
-                .save(
-                    token: token.refreshToken,
-                    for: .kakao,
-                    isRefresh: true
-                )
+        print("🟡 [RegisterFriendsViewModel] fetchContactsFromKakao 호출됨")
 
+        if TokenManager.shared.get(for: .kakao) != nil {
+            print("🟢 [RegisterFriendsViewModel] 기존 Kakao 토큰 있음 → 친구목록 요청")
             self.requestKakaoFriends()
+        } else {
+            print("🟡 [RegisterFriendsViewModel] Kakao 토큰 없음 → 로그인 시도")
+            SnsAuthService.shared.loginWithKakao { oauthToken in
+                guard let token = oauthToken else {
+                    print("🔴 [RegisterFriendsViewModel] 카카오 로그인 실패")
+                    return
+                }
+
+                TokenManager.shared.save(token: token.accessToken, for: .kakao)
+                TokenManager.shared
+                    .save(token: token.refreshToken, for: .kakao, isRefresh: true)
+
+                print("🟢 [RegisterFriendsViewModel] 카카오 로그인 성공 → 친구목록 요청")
+                self.requestKakaoFriends()
+            }
         }
     }
     
@@ -127,16 +134,17 @@ class RegisterFriendsViewModel: ObservableObject {
                         id: UUID(),
                         name: $0.profileNickname ?? "이름 없음",
                         image: nil,
-                        source: .kakao
+                        source: .kakao,
+                        frequency: CheckInFrequency.none
                     )
                 }
-
                 DispatchQueue.main.async {
-                    let existingPhone = self.selectedContacts.filter {
-                        $0.source == .phone
-                    }
-                    let merged = existingPhone + kakaoContacts
-                    let deduped = Array(Set(merged)).prefix(10)
+                let existingPhone = self.selectedContacts.filter {
+                    $0.source == .phone
+                }
+                let merged = existingPhone + kakaoContacts
+                let deduped = Array(Set(merged)).prefix(10)
+               
                     self.selectedContacts = Array(deduped)
                 }
             }
