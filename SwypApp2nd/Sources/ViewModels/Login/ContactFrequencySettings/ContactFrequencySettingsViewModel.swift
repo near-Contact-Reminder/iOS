@@ -1,9 +1,12 @@
 import Foundation
 import Combine
+import UIKit
 
 struct CheckInPerson: Identifiable, Hashable {
     let id: UUID
     let name: String
+    let image: UIImage?
+    let source: ContactSource
     var frequency: CheckInFrequency?
 }
 
@@ -48,8 +51,15 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         unifiedFrequency = frequency
         if isUnified {
             people = people.map {
-                CheckInPerson(id: $0.id, name: $0.name, frequency: frequency)
+                CheckInPerson(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: frequency)
             }
+        }
+    }
+    
+    // RegisterViewModel에서 선택한 연락처 받아오는 메소드
+    func setPeople(from contacts: [Contact]) {
+        self.people = contacts.map {
+            CheckInPerson(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: $0.frequency)
         }
     }
 }
