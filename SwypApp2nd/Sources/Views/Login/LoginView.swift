@@ -62,19 +62,6 @@ public struct LoginView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
-        .sheet(isPresented: Binding<Bool>(
-            get: { userSession.shouldShowTerms },
-            set: { newValue in userSession.shouldShowTerms = newValue }
-        )) {
-            TermsView(viewModel: termsViewModel) {
-                DispatchQueue.main.async {
-                    userSession.shouldShowTerms = false
-                    userSession.isLoggedIn = true
-                }
-            }
-            .presentationDetents([.medium])
-            .presentationDragIndicator(.visible)
-        }
     }
 }
 #Preview {
