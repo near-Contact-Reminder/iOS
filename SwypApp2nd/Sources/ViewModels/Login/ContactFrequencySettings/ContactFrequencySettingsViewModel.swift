@@ -2,14 +2,6 @@ import Foundation
 import Combine
 import UIKit
 
-struct CheckInPerson: Identifiable, Hashable {
-    let id: UUID
-    let name: String
-    let image: UIImage?
-    let source: ContactSource
-    var frequency: CheckInFrequency?
-}
-
 enum CheckInFrequency: String, CaseIterable, Identifiable {
     case none = "주기 선택"
     case daily = "매일"
@@ -22,7 +14,7 @@ enum CheckInFrequency: String, CaseIterable, Identifiable {
 }
 
 class ContactFrequencySettingsViewModel: ObservableObject {
-    @Published var people: [CheckInPerson] = []
+    @Published var people: [Contact] = []
     @Published var isUnified: Bool = false
     @Published var unifiedFrequency: CheckInFrequency? = nil
     
@@ -42,7 +34,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         isUnified = enabled
     }
     
-    func updateFrequency(for person: CheckInPerson, to frequency: CheckInFrequency) {
+    func updateFrequency(for person: Contact, to frequency: CheckInFrequency) {
         guard let index = people.firstIndex(of: person) else { return }
         people[index].frequency = frequency
     }
@@ -51,7 +43,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         unifiedFrequency = frequency
         if isUnified {
             people = people.map {
-                CheckInPerson(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: frequency)
+                Contact(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: frequency)
             }
         }
     }
@@ -59,7 +51,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
     // RegisterViewModel에서 선택한 연락처 받아오는 메소드
     func setPeople(from contacts: [Contact]) {
         self.people = contacts.map {
-            CheckInPerson(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: $0.frequency)
+            Contact(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: $0.frequency)
         }
     }
 }
