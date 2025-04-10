@@ -28,10 +28,7 @@ let project = Project(
             deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(
                 with: [
-                    "UILaunchScreen": [
-                        "UIColorName": "",
-                        "UIImageName": "",
-                    ],
+                    "UILaunchStoryboardName": "LaunchScreen",
                     "UIAppFonts": [
                         "Pretendard-Black.otf",
                         "Pretendard-Bold.otf",
