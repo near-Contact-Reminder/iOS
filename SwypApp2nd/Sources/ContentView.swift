@@ -11,13 +11,23 @@ enum AppStep {
     case home
 }
 
+// TODO: - AppRoute
+enum AppRoute: Hashable {
+    case inbox
+    case person(PersonEntity)
+}
+
 public struct ContentView: View {
     @StateObject private var userSession = UserSession.shared
     @StateObject private var loginViewModel = LoginViewModel()
     @StateObject private var homeViewModel = HomeViewModel()
     @StateObject private var termsViewModel = TermsViewModel()
+    @StateObject private var notificationViewModel = NotificationViewModel()
     @StateObject private var registerFriendsViewModel = RegisterFriendsViewModel()
     @StateObject private var contactFrequencyViewModel = ContactFrequencySettingsViewModel()
+    
+    private let skipLoginForTesting: Bool = true
+    @State private var path: [AppRoute] = []
     
     public init() {
         // Kakao SDK 초기화
@@ -29,7 +39,7 @@ public struct ContentView: View {
             switch userSession.appStep {
             case .login, .terms:
                 LoginView(loginViewModel: loginViewModel)
-
+                
             case .registerFriends:
                 RegisterFriendView(viewModel: registerFriendsViewModel, proceed: {
                     contactFrequencyViewModel.setPeople(from: registerFriendsViewModel.selectedContacts) // 선택된 연락처 전달
@@ -37,7 +47,7 @@ public struct ContentView: View {
                 }, skip: {
                     userSession.appStep = .home
                 })
-
+                
             case .setFrequency:
                 ContactFrequencySettingsView(viewModel: contactFrequencyViewModel, back: {
                     userSession.appStep = .registerFriends
@@ -45,9 +55,21 @@ public struct ContentView: View {
                     // TODO: - BackEnd 서버에 친구 목록 전달해주는 API 호출 필요
                     userSession.appStep = .home
                 })
-
+                
             case .home:
-                HomeView(homeViewModel: homeViewModel)
+                //                HomeView(homeViewModel: homeViewModel, notificationViewModel: notificationViewModel, path: )
+                NavigationStack(path: $path) {
+                    HomeView(homeViewModel: homeViewModel, notificationViewModel: notificationViewModel, path: $path)
+                        .transition(.move(edge: .leading))
+                        .navigationDestination(for: AppRoute.self) { route in
+                            switch route {
+                            case .inbox:
+                                NotificationInboxView(path: $path)
+                            case .person(let person):
+                                ProfileDetailView(person: person)
+                            }
+                        }
+                }
             }
         }
         .sheet(isPresented: Binding<Bool>(
@@ -71,8 +93,8 @@ public struct ContentView: View {
 }
 
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
+//struct ContentView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ContentView()
+//    }
+//}

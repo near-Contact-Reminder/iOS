@@ -28,10 +28,7 @@ let project = Project(
             deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(
                 with: [
-                    "UILaunchScreen": [
-                        "UIColorName": "",
-                        "UIImageName": "",
-                    ],
+                    "UILaunchStoryboardName": "LaunchScreen",
                     "UIAppFonts": [
                         "Pretendard-Black.otf",
                         "Pretendard-Bold.otf",
@@ -60,8 +57,8 @@ let project = Project(
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
-                "MARKETING_VERSION": "0.1.0",
-                "CURRENT_PROJECT_VERSION": "1"
+                "MARKETING_VERSION": "0.1.1",
+                "CURRENT_PROJECT_VERSION": "2"
             ])
         ),
         .target(

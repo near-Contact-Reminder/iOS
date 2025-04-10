@@ -7,23 +7,25 @@ import AuthenticationServices
 public struct HomeView: View {
 
     @ObservedObject var homeViewModel: HomeViewModel
+    @ObservedObject var notificationViewModel: NotificationViewModel
 
     @State private var showInbox = false
     @Binding var path:[AppRoute]
 
     @EnvironmentObject var userSession: UserSession
-    @EnvironmentObject var notificationViewModel: NotificationViewModel
+    
     
     public var body: some View {
             VStack {
                 // MARK: - Test
                 ForEach(notificationViewModel.reminders, id: \.self) { reminder in
-                            }
-                    Button(action: {
-                        notificationViewModel.deleteAllReminders()
-                    }) {
-                        Label("전체 삭제하기", systemImage: "trash")
-                    }
+                }
+                
+                Button(action: {
+                    notificationViewModel.deleteAllReminders()
+                }) {
+                    Label("전체 삭제하기", systemImage: "trash")
+                }
                     
                 if userSession.user?.loginType == .kakao {
                     // 카카오 로그아웃 버튼
