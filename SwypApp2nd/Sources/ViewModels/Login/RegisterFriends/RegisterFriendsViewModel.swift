@@ -6,18 +6,6 @@ import KakaoSDKFriend
 import Combine
 import Contacts
 
-struct Contact: Identifiable, Equatable, Hashable {
-    let id: UUID
-    let name: String
-    let image: UIImage?
-    let source: ContactSource
-    var frequency: CheckInFrequency?
-}
-
-enum ContactSource {
-    case phone, kakao
-}
-
 class RegisterFriendsViewModel: ObservableObject {
     @Published var selectedContacts: [Contact] = []
     
