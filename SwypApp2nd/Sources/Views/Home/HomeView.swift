@@ -87,14 +87,14 @@ struct CustomNavigationBar: View {
                 } label: {
                     if badgeCount > 0 {
                         Button(action: onTapBell) {
-                            Image("icon_32_bell_dot")
-                                .resizable()
+                            Image(systemName: "bell.badge.fill")
+                                .foregroundStyle(Color.white)
                                 .frame(width: 32, height: 32)
                         }
                     } else {
                         Button(action: onTapBell) {
-                            Image("icon_32_bell")
-                                .resizable()
+                            Image(systemName: "bell.fill")
+                                .foregroundStyle(Color.white)
                                 .frame(width: 32, height: 32)
                         }
                     }
@@ -254,7 +254,7 @@ struct ThisMonthContactCell: View {
 // MARK: - 내 사람들
 struct MyPeopleSection: View {
     @State private var currentPage = 0
-    var peoples: [Contact]
+    @State var peoples: [Contact]
     private var pages: [[Contact]] {
         stride(from: 0, to: peoples.count, by: 5).map {
             Array(peoples[$0..<min($0 + 5, peoples.count)])
@@ -278,7 +278,7 @@ struct MyPeopleSection: View {
                     // 내 사람들 없는 경우
                     VStack(alignment: .center, spacing: 8) {
                         Button {
-                            
+                            // TODO: - 연락처 추가 뷰 연결
                         } label: {
                             Image(systemName: "plus")
                                 .font(.title)
@@ -298,7 +298,8 @@ struct MyPeopleSection: View {
                     VStack(alignment: .center, spacing: 10) {
                         TabView(selection: $currentPage) {
                             ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
-                                StarPositionLayout(peoples: page) { selected in
+                                StarPositionLayout(peoples: $peoples , pageIndex: index) { selected in
+                                    // TODO: - 친구 상세 뷰 이동
                                     print("\(selected.name) tapped")
                                 }
                                 .tag(index)
@@ -326,30 +327,94 @@ struct MyPeopleSection: View {
 }
 
 struct StarPositionLayout: View {
-    let peoples: [Contact]
+    @Binding var peoples: [Contact]
+    let pageIndex: Int
     let onTap: (Contact) -> Void
+        
+    @State private var dragOffset: CGSize = .zero
+    @State private var draggingIndex: Int? = nil
+
+    let positions: [CGPoint] = [
+        CGPoint(x: 0, y: -120),
+        CGPoint(x: -110, y: -30),
+        CGPoint(x: 110, y: -30),
+        CGPoint(x: -60, y: 110),
+        CGPoint(x: 60, y: 110)
+    ]
     
     var body: some View {
         ZStack {
-            if peoples.count > 0 {
-                PersonCircleView(people: peoples[0], onTap: onTap)
-                    .offset(y: -120)
-            }
-            if peoples.count > 1 {
-                PersonCircleView(people: peoples[1], onTap: onTap)
-                    .offset(x: -110, y: -30)
-            }
-            if peoples.count > 2 {
-                PersonCircleView(people: peoples[2], onTap: onTap)
-                    .offset(x: 110, y: -30)
-            }
-            if peoples.count > 3 {
-                PersonCircleView(people: peoples[3], onTap: onTap)
-                    .offset(x: -60, y: 110)
-            }
-            if peoples.count > 4 {
-                PersonCircleView(people: peoples[4], onTap: onTap)
-                    .offset(x: 60, y: 110)
+            let start = pageIndex * 5
+            let end = min(start + 5, peoples.count)
+            ForEach(start..<end, id: \.self) { i in
+                let indexInPage = i - start
+                let person = peoples[i]
+                let isDragging = draggingIndex == i
+                let offset = isDragging ? dragOffset : .zero
+
+                PersonCircleView(people: person, onTap: onTap)
+                    .offset(
+                        x: positions[indexInPage].x + offset.width,
+                        y: positions[indexInPage].y + offset.height
+                    )
+                    .gesture(
+                        LongPressGesture(minimumDuration: 0.2)
+                            .onEnded { _ in
+                                draggingIndex = i
+                            }
+                            .sequenced(before: DragGesture())
+                            .onChanged { value in
+                                switch value {
+                                case .second(true, let drag?):
+                                    dragOffset = drag.translation
+                                default: break
+                                }
+                            }
+                            .onEnded { _ in
+                                guard let dragging = draggingIndex else { return }
+
+                                let draggingInPage = dragging - start
+                                let draggingPos = positions[draggingInPage]
+                                let currentPosition = CGPoint(
+                                    x: draggingPos.x + dragOffset.width,
+                                    y: draggingPos.y + dragOffset.height
+                                )
+
+                                var closest = draggingInPage
+                                var minDist = CGFloat.infinity
+                                for (j, pos) in positions.enumerated() {
+                                    if j == draggingInPage { continue } // 자기 자신 제외
+                                    let dist = hypot(pos.x - currentPosition.x, pos.y - currentPosition.y)
+                                    if dist < minDist {
+                                        minDist = dist
+                                        closest = j
+                                    }
+                                }
+
+                                let targetIndex = start + closest
+                                if targetIndex != dragging,
+                                   peoples.indices.contains(dragging),
+                                   peoples.indices.contains(targetIndex) {
+                                    peoples.swapAt(dragging, targetIndex)
+                                    for (idx, _) in peoples.enumerated() {
+                                        peoples[idx].position = idx
+                                    }
+                                    
+                                    print("=== 현재 position 순서 ===")
+                                    for contact in peoples {
+                                        print(
+                                            "\(contact.name): position \(contact.position ?? -1)"
+                                        )
+                                    }
+                                    // TODO: - 서버에 변경된 순서 전송.
+                                }
+
+                                draggingIndex = nil
+                                dragOffset = .zero
+                                
+                            }
+                    )
+                    .animation(.spring(), value: dragOffset)
             }
         }
         .frame(height: 240)
@@ -455,7 +520,7 @@ struct HomeView_Previews: PreviewProvider {
             vm.peoples = [
                 Contact(
                     id: UUID(),
-                    name: "정종원",
+                    name: "정종원1",
                     image: nil,
                     imageURL: nil,
                     source: .kakao,
@@ -470,7 +535,7 @@ struct HomeView_Previews: PreviewProvider {
                 ),
                 Contact(
                     id: UUID(),
-                    name: "정종원",
+                    name: "정종원2",
                     image: nil,
                     imageURL: nil,
                     source: .phone,
@@ -485,7 +550,7 @@ struct HomeView_Previews: PreviewProvider {
                 ),
                 Contact(
                     id: UUID(),
-                    name: "정종원",
+                    name: "정종원3",
                     image: nil,
                     imageURL: nil,
                     source: .kakao,
@@ -500,7 +565,7 @@ struct HomeView_Previews: PreviewProvider {
                 ),
                 Contact(
                     id: UUID(),
-                    name: "정종원",
+                    name: "정종원4",
                     image: nil,
                     imageURL: nil,
                     source: .phone,
@@ -515,7 +580,7 @@ struct HomeView_Previews: PreviewProvider {
                 ),
                 Contact(
                     id: UUID(),
-                    name: "정종원",
+                    name: "정종원5",
                     image: nil,
                     imageURL: nil,
                     source: .phone,
@@ -530,7 +595,7 @@ struct HomeView_Previews: PreviewProvider {
                 ),
                 Contact(
                     id: UUID(),
-                    name: "정종원",
+                    name: "정종원6",
                     image: nil,
                     imageURL: nil,
                     source: .phone,
@@ -545,7 +610,7 @@ struct HomeView_Previews: PreviewProvider {
                 ),
                 Contact(
                     id: UUID(),
-                    name: "정종원",
+                    name: "정종원7",
                     image: nil,
                     imageURL: nil,
                     source: .phone,
