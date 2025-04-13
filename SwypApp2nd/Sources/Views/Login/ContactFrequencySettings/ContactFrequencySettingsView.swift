@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContactFrequencySettingsView: View {
     @ObservedObject var viewModel: ContactFrequencySettingsViewModel
-    @State private var selectedPerson: Contact?
+    @State private var selectedPerson: Friend?
     @State private var showFrequencyPicker: Bool = false
     
     let back: () -> Void
@@ -154,7 +154,7 @@ struct ContactFrequencySettingsView: View {
 
 // MARK: - 사람별 주기설정 셀
 struct FrequencyRow: View {
-    let person: Contact
+    let person: Friend
     let isUnified: Bool
     let onSelect: () -> Void
 
@@ -303,12 +303,12 @@ struct FrequencyPickerView: View {
     let viewModel: ContactFrequencySettingsViewModel = {
         let vm = ContactFrequencySettingsViewModel()
         vm.people = [
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none)
+            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
+            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
+            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
+            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
+            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
+            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none)
         ]
         return vm
     }()

@@ -14,7 +14,7 @@ enum CheckInFrequency: String, CaseIterable, Identifiable {
 }
 
 class ContactFrequencySettingsViewModel: ObservableObject {
-    @Published var people: [Contact] = []
+    @Published var people: [Friend] = []
     @Published var isUnified: Bool = false
     @Published var unifiedFrequency: CheckInFrequency? = nil
     
@@ -34,7 +34,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         isUnified = enabled
     }
     
-    func updateFrequency(for person: Contact, to frequency: CheckInFrequency) {
+    func updateFrequency(for person: Friend, to frequency: CheckInFrequency) {
         guard let index = people.firstIndex(of: person) else { return }
         people[index].frequency = frequency
     }
@@ -43,15 +43,15 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         unifiedFrequency = frequency
         if isUnified {
             people = people.map {
-                Contact(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: frequency)
+                Friend(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: frequency)
             }
         }
     }
     
     // RegisterViewModel에서 선택한 연락처 받아오는 메소드
-    func setPeople(from contacts: [Contact]) {
+    func setPeople(from contacts: [Friend]) {
         self.people = contacts.map {
-            Contact(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: $0.frequency)
+            Friend(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: $0.frequency)
         }
     }
 }

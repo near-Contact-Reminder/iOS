@@ -1,8 +1,8 @@
 import Foundation
 import UIKit
 
-// TODO: - Friend로 변경
-struct Contact: Identifiable, Equatable, Hashable {
+// TODO: - Friend로 변경 관계, 생일, 기념일, 메모, 챙김기록..? 추가.
+struct Friend: Identifiable, Equatable, Hashable {
     var id: UUID
     var name: String
     var image: UIImage?

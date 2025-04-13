@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 class HomeViewModel: ObservableObject {
-    @Published var peoples: [Contact] = []
+    @Published var peoples: [Friend] = []
     
 //    init() {
 //        loadPeoplesFromUserSession()

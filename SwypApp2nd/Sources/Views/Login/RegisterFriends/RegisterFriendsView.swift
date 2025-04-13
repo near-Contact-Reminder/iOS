@@ -177,7 +177,7 @@ struct CardButton: View {
 
 // MARK: - 가져온 연락처 Row
 struct ContactRow: View {
-    let contact: Contact
+    let contact: Friend
     let onDelete: () -> Void
 
     var iconImage: Image {
