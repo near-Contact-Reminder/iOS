@@ -48,9 +48,9 @@ class LoginViewModel: ObservableObject {
                             )
                         // TODO: - id, name 서버에서 받을건지 요청
                         let user = User(
-                            id: "",
+                            id: UUID().uuidString,
                             name: "",
-                            loginType: .kakao,
+                            friends: [], loginType: .kakao,
                             serverAccessToken: tokenResponse.accessToken,
                             serverRefreshToken: tokenResponse.refreshTokenInfo.token
                         )
@@ -104,7 +104,7 @@ class LoginViewModel: ObservableObject {
                             let user = User(
                                 id: "",
                                 name: "",
-                                loginType: .apple,
+                                friends: [], loginType: .apple,
                                 serverAccessToken: tokenResponse.accessToken,
                                 serverRefreshToken: tokenResponse.refreshTokenInfo.token
                             )
