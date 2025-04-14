@@ -52,7 +52,6 @@ public struct ContentView: View {
                 ContactFrequencySettingsView(viewModel: contactFrequencyViewModel, back: {
                     userSession.appStep = .registerFriends
                 }, complete: {
-                    // TODO: - BackEnd 서버에 친구 목록 전달해주는 API 호출 필요
                     userSession.appStep = .home
                 })
                 
