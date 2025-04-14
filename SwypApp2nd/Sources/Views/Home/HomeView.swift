@@ -59,6 +59,9 @@ public struct HomeView: View {
                 .frame(maxHeight: .infinity)
             }
         }
+        .onAppear {
+            homeViewModel.loadPeoplesFromUserSession()
+        }
     }
 }
 
@@ -262,6 +265,8 @@ struct MyPeopleSection: View {
     }
 
     var body: some View {
+        let _ = print("📌 MyPeopleSection peoples count: \(peoples.count)")
+        let _ = peoples.forEach { print("\($0.name), position: \($0.position ?? -1)") }
         VStack(spacing: 8) {
             HStack {
                 Text("내 사람들")

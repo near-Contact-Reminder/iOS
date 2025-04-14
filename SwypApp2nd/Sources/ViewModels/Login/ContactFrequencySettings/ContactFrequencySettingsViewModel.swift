@@ -48,8 +48,9 @@ class ContactFrequencySettingsViewModel: ObservableObject {
     func applyUnifiedFrequency(_ frequency: CheckInFrequency) {
         unifiedFrequency = frequency
         if isUnified {
+            let nextDate = calculateNextContactDate(for: frequency)
             people = people.map {
-                Friend(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: frequency)
+                Friend(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: frequency, nextContactAt: nextDate)
             }
         }
     }
