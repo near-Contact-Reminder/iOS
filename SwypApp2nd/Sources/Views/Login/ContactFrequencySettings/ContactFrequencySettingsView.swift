@@ -118,7 +118,17 @@ struct ContactFrequencySettingsView: View {
                         )
                 }
 
-                Button(action: complete) {
+                Button{
+                    // 카카오는 이미지 저장 후 BackEnd 서버에 전송
+                    viewModel.downloadKakaoImageData { friendsWithImages in
+                        DispatchQueue.main.async {
+                            viewModel.uploadAllFriendsToServer(friendsWithImages)
+                        }
+                        
+                    }
+                    complete()
+                }
+                label: {
                     Text("완료")
                         .font(.body.bold())
                         .foregroundColor(.white)
