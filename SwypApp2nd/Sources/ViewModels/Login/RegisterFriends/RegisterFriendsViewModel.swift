@@ -50,7 +50,30 @@ class RegisterFriendsViewModel: ObservableObject {
         let converted: [Friend] = contacts.compactMap {
             let name = $0.familyName + $0.givenName
             let image = $0.thumbnailImageData.flatMap { UIImage(data: $0) }
-            return Friend(id: UUID(), name: name, image: image, source: .phone, frequency: CheckInFrequency.none)
+            let birthDay = $0.birthday?.date
+            let anniversaryDay = $0.dates.first?.value as? Date
+            let anniversaryDayTitle = $0.dates.first?.label
+            let relationship = $0.contactRelations.first?.value
+            let phoneNumber =  $0.phoneNumbers.first?.value.stringValue
+            return Friend(
+                        id: UUID(),
+                        name: name,
+                        image: image,
+                        imageURL: nil,
+                        source: .phone,
+                        frequency: CheckInFrequency.none,
+                        remindCategory: nil,
+                        phoneNumber: phoneNumber,
+                        relationship: relationship?.name,
+                        birthDay: birthDay,
+                        anniversary: AnniversaryModel(
+                            title: anniversaryDayTitle ?? nil,
+                            Date: anniversaryDay ?? nil),
+                        nextContactAt: nil,
+                        lastContactAt: nil,
+                        checkRate: nil,
+                        position: nil
+                    )
         }
         DispatchQueue.main.async {
             let existingNonPhone = self.selectedContacts.filter { $0.source != .phone }
@@ -121,7 +144,7 @@ class RegisterFriendsViewModel: ObservableObject {
                     Friend(
                         id: UUID(),
                         name: $0.profileNickname ?? "이름 없음",
-                        image: nil, // $0.profileThumbnailImage 은 urlString
+                        imageURL: $0.profileThumbnailImage?.absoluteString,
                         source: .kakao,
                         frequency: CheckInFrequency.none
                     )
