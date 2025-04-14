@@ -1,6 +1,7 @@
 import Foundation
 import KakaoSDKAuth
 import XCTest
+//import Alamofire
 //@testable import SwypApp2nd
 //
 //final class SwypApp2ndTests: XCTestCase {
@@ -76,3 +77,63 @@ import XCTest
 //    }
 //}
 //
+//
+//final class ContactFrequencySettingsViewModelTests: XCTestCase {
+//    var viewModel: ContactFrequencySettingsViewModel!
+//
+//    override func setUp() {
+//        super.setUp()
+//        viewModel = ContactFrequencySettingsViewModel()
+//
+//        // 임시 사용자 토큰 설정
+//        let mockUser = User(
+//            id: "user-id",
+//            name: "Test User",
+//            email: "test@example.com",
+//            profileImageURL: nil,
+//            friends: [],
+//            loginType: .kakao,
+//            serverAccessToken: "",
+//            serverRefreshToken: "REFRESH_TOKEN"
+//        )
+//        UserSession.shared.user = mockUser
+//    }
+//
+//    func testUploadAllFriendsToServer() {
+//        // Given: 테스트용 Friend
+//        let friend = Friend(
+//            id: UUID(),
+//            name: "테스트 친구",
+//            image: UIImage(systemName: "person"),
+//            imageURL: nil,
+//            source: .kakao,
+//            frequency: .weekly,
+//            remindCategory: nil,
+//            phoneNumber: "01012345678",
+//            relationship: "친구",
+//            birthDay: Date(),
+//            anniversary: nil,
+//            memo: "테스트 메모",
+//            nextContactAt: Date(),
+//            lastContactAt: nil,
+//            checkRate: nil,
+//            position: 1
+//        )
+//
+//        let expectation = self.expectation(description: "업로드 완료")
+//        
+//        print("📦 테스트 시작: 서버에 Friend 업로드를 시도합니다.")
+//        
+//        // When
+//        viewModel.uploadAllFriendsToServer([friend])
+//
+//        // 서버에 전송 확인은 콘솔 출력 or 로그 확인 필요
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+//            print("🟢 테스트 완료: 서버 응답 로그를 확인하세요.")
+//            expectation.fulfill()
+//        }
+//
+//        // Then
+//        waitForExpectations(timeout: 5.0, handler: nil)
+//    }
+//}
