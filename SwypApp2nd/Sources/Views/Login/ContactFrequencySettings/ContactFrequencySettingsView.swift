@@ -126,6 +126,7 @@ struct ContactFrequencySettingsView: View {
                         }
                         
                     }
+                    UserSession.shared.user?.friends = viewModel.people
                     complete()
                 }
                 label: {
