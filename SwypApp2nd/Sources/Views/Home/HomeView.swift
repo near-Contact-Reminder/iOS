@@ -278,7 +278,7 @@ struct MyPeopleSection: View {
                     // 내 사람들 없는 경우
                     VStack(alignment: .center, spacing: 8) {
                         Button {
-                            // TODO: - 연락처 추가 뷰 연결
+                            UserSession.shared.appStep = .registerFriends
                         } label: {
                             Image(systemName: "plus")
                                 .font(.title)
