@@ -258,6 +258,7 @@ struct ThisMonthContactCell: View {
 struct MyPeopleSection: View {
     @State private var currentPage = 0
     @State var peoples: [Friend]
+    @State private var showEllipsisOptions = false
     private var pages: [[Friend]] {
         stride(from: 0, to: peoples.count, by: 5).map {
             Array(peoples[$0..<min($0 + 5, peoples.count)])
@@ -265,15 +266,31 @@ struct MyPeopleSection: View {
     }
 
     var body: some View {
-        let _ = print("📌 MyPeopleSection peoples count: \(peoples.count)")
-        let _ = peoples.forEach { print("\($0.name), position: \($0.position ?? -1)") }
         VStack(spacing: 8) {
             HStack {
                 Text("내 사람들")
                     .font(Font.Pretendard.h1Bold())
                     .foregroundStyle(Color.black)
                 Spacer()
-                Image(systemName: "ellipsis")
+                Button {
+                    showEllipsisOptions = true
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .rotationEffect(.degrees(90))
+                        .font(Font.Pretendard.h2Bold())
+                        .foregroundStyle(Color.black)
+                }
+                .confirmationDialog("옵션 선택", isPresented: $showEllipsisOptions, titleVisibility: .visible) {
+                    Button("사람 추가") {
+                        UserSession.shared.appStep = .registerFriends
+                    }
+                    // TODO: - 순서 편집으로 내 사람들 순서 변경 로직 추가하기.
+//                    Button("순서 편집") {
+//                        // 순서 편집 로직
+//                        print("순서 편집")
+//                    }
+                    Button("취소", role: .cancel) { }
+                }
             }
             .padding(.top)
             .padding(.horizontal, 24)
