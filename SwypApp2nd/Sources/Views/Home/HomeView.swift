@@ -131,7 +131,7 @@ struct GreetingSection: View {
 
 // MARK: - 이번달 챙길 사람
 struct ThisMonthSection: View {
-    var peoples: [Contact]
+    var peoples: [Friend]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -183,8 +183,8 @@ struct ThisMonthSection: View {
 }
 
 struct ThisMonthContactCell: View {
-    let contact: Contact
-    let onTap: (Contact) -> Void
+    let contact: Friend
+    let onTap: (Friend) -> Void
 
     var body: some View {
         Button {
@@ -254,8 +254,8 @@ struct ThisMonthContactCell: View {
 // MARK: - 내 사람들
 struct MyPeopleSection: View {
     @State private var currentPage = 0
-    @State var peoples: [Contact]
-    private var pages: [[Contact]] {
+    @State var peoples: [Friend]
+    private var pages: [[Friend]] {
         stride(from: 0, to: peoples.count, by: 5).map {
             Array(peoples[$0..<min($0 + 5, peoples.count)])
         }
@@ -327,9 +327,9 @@ struct MyPeopleSection: View {
 }
 
 struct StarPositionLayout: View {
-    @Binding var peoples: [Contact]
+    @Binding var peoples: [Friend]
     let pageIndex: Int
-    let onTap: (Contact) -> Void
+    let onTap: (Friend) -> Void
         
     @State private var dragOffset: CGSize = .zero
     @State private var draggingIndex: Int? = nil
@@ -422,8 +422,8 @@ struct StarPositionLayout: View {
 }
 
 struct PersonCircleView: View {
-    let people: Contact
-    let onTap: (Contact) -> Void
+    let people: Friend
+    let onTap: (Friend) -> Void
     
     var emojiImageName: String {
         guard let rate = people.checkRate else {
@@ -518,7 +518,7 @@ struct HomeView_Previews: PreviewProvider {
         let viewModel: HomeViewModel = {
             let vm = HomeViewModel()
             vm.peoples = [
-                Contact(
+                Friend(
                     id: UUID(),
                     name: "정종원1",
                     image: nil,
@@ -533,7 +533,7 @@ struct HomeView_Previews: PreviewProvider {
                     checkRate: 20,
                     position: 0
                 ),
-                Contact(
+                Friend(
                     id: UUID(),
                     name: "정종원2",
                     image: nil,
@@ -548,7 +548,7 @@ struct HomeView_Previews: PreviewProvider {
                     checkRate: 45,
                     position: 1
                 ),
-                Contact(
+                Friend(
                     id: UUID(),
                     name: "정종원3",
                     image: nil,
@@ -563,7 +563,7 @@ struct HomeView_Previews: PreviewProvider {
                     checkRate: 65,
                     position: 2
                 ),
-                Contact(
+                Friend(
                     id: UUID(),
                     name: "정종원4",
                     image: nil,
@@ -578,7 +578,7 @@ struct HomeView_Previews: PreviewProvider {
                     checkRate: 85,
                     position: 3
                 ),
-                Contact(
+                Friend(
                     id: UUID(),
                     name: "정종원5",
                     image: nil,
@@ -593,7 +593,7 @@ struct HomeView_Previews: PreviewProvider {
                     checkRate: 30,
                     position: 4
                 ),
-                Contact(
+                Friend(
                     id: UUID(),
                     name: "정종원6",
                     image: nil,
@@ -608,7 +608,7 @@ struct HomeView_Previews: PreviewProvider {
                     checkRate: 85,
                     position: 3
                 ),
-                Contact(
+                Friend(
                     id: UUID(),
                     name: "정종원7",
                     image: nil,

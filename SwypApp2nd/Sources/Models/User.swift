@@ -5,6 +5,7 @@ struct User: Codable, Identifiable {
     var name: String  // 이름
     var email: String?  // 이메일
     var profileImageURL: String?  // 프로필 사진 URL
+    var friends: [Friend] // 챙길 친구들
     var loginType: LoginType  // 애플, 카카오
     let serverAccessToken: String // 서버 access token
     let serverRefreshToken: String // 서버 refresh token
