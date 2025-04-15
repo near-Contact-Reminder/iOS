@@ -122,18 +122,26 @@ public struct TermsView: View {
         }
         .background(Color.white)
         .cornerRadius(24)
-        .sheet(item: $selectedAgreement) { agreement in
+        .fullScreenCover(item: $selectedAgreement) { agreement in
             NavigationStack {
                 TermsDetailView(
                     title: agreement.title,
                     urlString: agreement.urlString
                 )
+                .presentationDetents([.large])
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("닫기") {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Text(agreement.title)
+                            .font(Font.Pretendard.b1Medium())
+                            .foregroundStyle(Color.black)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
                             selectedAgreement = nil
+                        } label: {
+                            Image(systemName: "xmark")
+                                .foregroundStyle(.black)
                         }
-                        .foregroundStyle(.black)
                     }
                 }
             }
@@ -210,6 +218,7 @@ public struct AgreementRow: View {
             
             Text(title)
                 .font(isBold ? .Pretendard.b1Bold() : .Pretendard.b1Medium())
+                .foregroundStyle(Color.black)
             
             Spacer()
             
@@ -268,8 +277,6 @@ struct TermsDetailView: View {
                 isLoading = false
             }
         }
-        .navigationTitle(title ?? "")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
