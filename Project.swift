@@ -45,7 +45,11 @@ let project = Project(
                     "CFBundleShortVersionString": "$(MARKETING_VERSION)",
                     "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
                     "NSContactsUsageDescription": "연락처에서 챙길 사람을 가져오려면\n 기기 설정에서 연락처를 허용해주세요.",
-                    "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)"
+                    "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
+                    "DEV_BASE_URL": "$(DEV_BASE_URL)",
+                    "SERVICE_AGREED_TERMS_URL": "$(SERVICE_AGREED_TERMS_URL)",
+                    "PERSONAL_INFO_TERMS_URL": "$(PERSONAL_INFO_TERMS_URL)",
+                    "PRIVACY_POLICY_TERMS_URL": "$(PRIVACY_POLICY_TERMS_URL)"
                 ]
             ),
             sources: [

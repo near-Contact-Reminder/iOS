@@ -22,10 +22,46 @@ struct PresignedURLResponse: Decodable {
     let preSignedUrl: String
 }
 
+struct MemberMeInfoResponse: Decodable {
+    let memberId: String
+    let username: String
+    let nickname: String
+    let imageUrl: String?
+    let averageRate: Int
+    let isActive: Bool
+    let marketingAgreedAt: String?
+    let providerType: String
+}
+
 final class BackEndAuthService {
     static let shared = BackEndAuthService()
 
-    private let baseURL = "https://dev.near.io.kr"
+    private let baseURL: String = {
+        if let host = Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String {
+            return "https://\(host)"
+        } else {
+            return ""
+        }
+    }()
+    
+    /// 백엔드: fetch User Data
+    func fetchMemberInfo(accessToken: String, completion: @escaping (Result<MemberMeInfoResponse, Error>) -> Void) {
+        let url = "\(baseURL)/member/me"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+            
+        AF.request(url, method: .get, headers: headers)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: MemberMeInfoResponse.self) { response in
+                switch response.result {
+                case .success(let data):
+                    completion(.success(data))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+    }
 
     /// 백엔드: 카카오 로그인 처리
     func loginWithKakao(accessToken: String, completion: @escaping (Result<TokenResponse, Error>) -> Void) {
@@ -43,6 +79,7 @@ final class BackEndAuthService {
                     )
                     completion(.success(tokenResponse))
                 case .failure(let error):
+                    print("\(Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String ?? "")")
                     print(
                         "🔴 [BackEndAuthService] 카카오 로그인 실패: \(error.localizedDescription)"
                     )

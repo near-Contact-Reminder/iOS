@@ -22,6 +22,33 @@ final class TermsViewModel: ObservableObject {
         }
     }
     
+    /// 서비스 이용 약관
+    @Published var serviceAgreedTermsURL: String = {
+        if let host = Bundle.main.infoDictionary?["SERVICE_AGREED_TERMS_URL"] as? String {
+            return "https://\(host)"
+        } else {
+            return ""
+        }
+    }()
+    
+    /// 개인 정보 수집 및 이용 약관
+    @Published var personalInfoTermsURL: String = {
+        if let host = Bundle.main.infoDictionary?["PERSONAL_INFO_TERMS_URL"] as? String {
+            return "https://\(host)"
+        } else {
+            return ""
+        }
+    }()
+    
+    /// 개인 정보 처리방침 상세 약관
+    @Published var privacyPolicyTermsURL: String = {
+        if let host = Bundle.main.infoDictionary?["PRIVACY_POLICY_TERMS_URL"] as? String {
+            return "https://\(host)"
+        } else {
+            return ""
+        }
+    }()
+    
     /// 약관 전체 동의 체크 메소드
     func toggleAllAgreed() {
         let shouldAgree = !isAllAgreed

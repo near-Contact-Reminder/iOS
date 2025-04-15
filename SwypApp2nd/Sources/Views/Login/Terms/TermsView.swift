@@ -46,7 +46,7 @@ public struct TermsView: View {
                         title: "[필수] 서비스 이용 약관",
                         isBold: false,
                         showDetail: true,
-                        detailURLString: "https://example.com/") {
+                        detailURLString: viewModel.serviceAgreedTermsURL) {
                             // checkbox closure
                         } onDetailTappedClosure: { title, url in
                             self.selectedAgreement = AgreementDetail(title: title, urlString: url)
@@ -61,7 +61,7 @@ public struct TermsView: View {
                         title: "[필수] 개인정보 수집 및 이용 동의서",
                         isBold: false,
                         showDetail: true,
-                        detailURLString: "https://example.com/") {
+                        detailURLString: viewModel.personalInfoTermsURL) {
                             // checkbox closure
                         } onDetailTappedClosure: { title, url in
                             self.selectedAgreement = AgreementDetail(title: title, urlString: url)
@@ -77,7 +77,7 @@ public struct TermsView: View {
                         title: "[필수] 개인정보 처리방침",
                         isBold: false,
                         showDetail: true,
-                        detailURLString: "https://example.com/") {
+                        detailURLString: viewModel.privacyPolicyTermsURL) {
                             // checkbox closure
                         } onDetailTappedClosure: { title, url in
                             self.selectedAgreement = AgreementDetail(title: title, urlString: url)
