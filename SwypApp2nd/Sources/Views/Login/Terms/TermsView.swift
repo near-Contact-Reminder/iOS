@@ -198,7 +198,12 @@ public struct AgreementRow: View {
                             .cornerRadius(6)
 
                         if isChecked.wrappedValue {
-                            Image("icon_check_blue")
+                            Image("icon_check_white")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24)
+                        } else {
+                            Image("icon_check_gray")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 24, height: 24)
