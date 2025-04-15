@@ -51,8 +51,13 @@ public struct ContentView: View {
             case .setFrequency:
                 ContactFrequencySettingsView(viewModel: contactFrequencyViewModel, back: {
                     userSession.appStep = .registerFriends
-                }, complete: {
-                    userSession.appStep = .home
+                }, complete: { updatedPeoples in
+                    DispatchQueue.main.async {
+                        print("🟢 [ContactFrequencySettingsView] 전달받은 people: \(updatedPeoples.map { $0.name })")
+                        homeViewModel.peoples = updatedPeoples
+                        UserSession.shared.user?.friends = updatedPeoples
+                        userSession.appStep = .home
+                    }
                 })
                 
             case .home:
