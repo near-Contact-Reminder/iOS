@@ -105,14 +105,14 @@ struct NotificationSettingsView: View {
                         }
                     }
                 } else {
-                    NotificationManager.shared.disableNotifications()
+//                    NotificationManager.shared.disableNotifications()
                 }
             }
             .onAppear {
-                NotificationManager.shared.fetchNotificationStatus { enabled in
-                    isNotificationOn = enabled
-                    didLoadStatus = true
-                }
+//                NotificationManager.shared.fetchNotificationStatus { enabled in
+//                    isNotificationOn = enabled
+//                    didLoadStatus = true
+//                }
             }
             .alert("휴대폰 알림이 꺼져 있어요.", isPresented: $showSettingsAlert) {
                 

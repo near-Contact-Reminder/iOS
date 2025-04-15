@@ -108,7 +108,7 @@ struct ProfileEditView: View {
 
             Button(action: {
                 let person = profileEditViewModel.addNewPerson(name: name, relationship: relationship, birthday: birthday, anniversary: anniversaries.first?.date, reminderInterval: contactFrequency, memo: memo) // TODO 이거 context save로 바꿀 수 있다고?
-                notificationViewModel.scheduleAllReminders(for: person)
+//                notificationViewModel.scheduleAllReminders(for: person)
                 presentationMode.wrappedValue.dismiss()
             }) {
                 Text("완료")

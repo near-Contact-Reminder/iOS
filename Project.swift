@@ -41,6 +41,9 @@ let project = Project(
                         "Pretendard-Thin.otf",
                     ],
                     "CFBundleIconName": "AppIcon",
+                    "UIUserInterfaceStyle": "Light",
+                    "CFBundleShortVersionString": "$(MARKETING_VERSION)",
+                    "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
                     "NSContactsUsageDescription": "연락처에서 챙길 사람을 가져오려면\n 기기 설정에서 연락처를 허용해주세요.",
                     "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)"
                 ]
@@ -57,8 +60,8 @@ let project = Project(
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
-                "MARKETING_VERSION": "0.1.1",
-                "CURRENT_PROJECT_VERSION": "2"
+                "MARKETING_VERSION": "0.1.2",
+                "CURRENT_PROJECT_VERSION": "3"
             ])
         ),
         .target(
