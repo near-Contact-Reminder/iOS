@@ -25,7 +25,13 @@ struct PresignedURLResponse: Decodable {
 final class BackEndAuthService {
     static let shared = BackEndAuthService()
 
-    private let baseURL = "https://dev.near.io.kr"
+    private let baseURL: String = {
+        if let host = Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String {
+            return "https://\(host)"
+        } else {
+            return ""
+        }
+    }()
 
     /// 백엔드: 카카오 로그인 처리
     func loginWithKakao(accessToken: String, completion: @escaping (Result<TokenResponse, Error>) -> Void) {
@@ -43,6 +49,7 @@ final class BackEndAuthService {
                     )
                     completion(.success(tokenResponse))
                 case .failure(let error):
+                    print("\(Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String ?? "")")
                     print(
                         "🔴 [BackEndAuthService] 카카오 로그인 실패: \(error.localizedDescription)"
                     )
