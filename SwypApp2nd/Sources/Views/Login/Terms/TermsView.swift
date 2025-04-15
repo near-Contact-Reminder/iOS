@@ -198,20 +198,17 @@ public struct AgreementRow: View {
                             .cornerRadius(6)
 
                         if isChecked.wrappedValue {
-                            Image(systemName: "checkmark")
-                                .font(Font.Pretendard.b1Bold())
-                                .foregroundColor(.white)
+                            Image("icon_check_blue")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24)
                         }
                     }
                 } else {
                     // 하단 3개의 약관 체크 아이콘
-                    Image(systemName: "checkmark")
+                    Image(isChecked.wrappedValue ? "icon_check_blue" : "icon_check_gray")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 16, height: 16)
-                        .foregroundColor(
-                            isChecked.wrappedValue ? Color.blue01 : Color.gray02
-                        )
                         .frame(width: 24, height: 24)
                 }
             }
