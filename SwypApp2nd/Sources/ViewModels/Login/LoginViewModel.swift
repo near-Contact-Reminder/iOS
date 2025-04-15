@@ -37,6 +37,14 @@ class LoginViewModel: ObservableObject {
                     self.isLoading = false
                     switch result {
                     case .success(let tokenResponse):
+                        var user = User(
+                            id: "",
+                            name: "",
+                            friends: [], loginType: .kakao,
+                            serverAccessToken: tokenResponse.accessToken,
+                            serverRefreshToken: tokenResponse.refreshTokenInfo.token
+                        )
+                        
                         // 서버 토큰 저장
                         TokenManager.shared
                             .save(token: tokenResponse.accessToken, for: .server)
@@ -46,15 +54,19 @@ class LoginViewModel: ObservableObject {
                                 for: .server,
                                 isRefresh: true
                             )
-                        // TODO: - id, name 서버에서 받을건지 요청
-                        let user = User(
-                            id: UUID().uuidString,
-                            name: "",
-                            friends: [], loginType: .kakao,
-                            serverAccessToken: tokenResponse.accessToken,
-                            serverRefreshToken: tokenResponse.refreshTokenInfo.token
-                        )
-                        self.updateUserSession(with: user)
+                        
+                        BackEndAuthService.shared
+                            .fetchMemberInfo(accessToken: tokenResponse.accessToken) { result in
+                                switch result {
+                                case .success(let userInfo):
+                                    print("🟢 자동 로그인 성공: \(userInfo.nickname)")
+                                    user.name = userInfo.nickname
+                                    user.id = userInfo.memberId
+                                    self.updateUserSession(with: user)
+                                case .failure(let error):
+                                    print("🔴 자동 로그인 실패: \(error)")
+                                }
+                            }
                     case .failure(let error):
                         self.errorMessage = "서버 로그인 실패: \(error.localizedDescription)"
                     }
@@ -89,6 +101,15 @@ class LoginViewModel: ObservableObject {
                         self.isLoading = false
                         switch result {
                         case .success(let tokenResponse):
+                            
+                            var user = User(
+                                id: "",
+                                name: "",
+                                friends: [], loginType: .apple,
+                                serverAccessToken: tokenResponse.accessToken,
+                                serverRefreshToken: tokenResponse.refreshTokenInfo.token
+                            )
+                            
                             TokenManager.shared
                                 .save(
                                     token: tokenResponse.accessToken,
@@ -100,15 +121,19 @@ class LoginViewModel: ObservableObject {
                                     for: .server,
                                     isRefresh: true
                                 )
-                            // TODO: - id, name 서버에서 받을건지 요청
-                            let user = User(
-                                id: "",
-                                name: "",
-                                friends: [], loginType: .apple,
-                                serverAccessToken: tokenResponse.accessToken,
-                                serverRefreshToken: tokenResponse.refreshTokenInfo.token
-                            )
-                            self.updateUserSession(with: user)
+                            
+                            BackEndAuthService.shared
+                                .fetchMemberInfo(accessToken: tokenResponse.accessToken) { result in
+                                    switch result {
+                                    case .success(let userInfo):
+                                        print("🟢 자동 로그인 성공: \(userInfo.nickname)")
+                                        user.name = userInfo.nickname
+                                        user.id = userInfo.memberId
+                                        self.updateUserSession(with: user)
+                                    case .failure(let error):
+                                        print("🔴 자동 로그인 실패: \(error)")
+                                    }
+                                }
                         case .failure(let error):
                             self.errorMessage = "서버 로그인 실패: \(error.localizedDescription)"
                         }
