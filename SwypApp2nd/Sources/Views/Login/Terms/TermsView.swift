@@ -188,26 +188,21 @@ public struct AgreementRow: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: 6)
                             .stroke(
-                                isChecked.wrappedValue ? Color.blue01 : Color.gray02,
+                                isChecked.wrappedValue ? Color.blue01 : Color.gray03,
                                 lineWidth: 2
                             )
                             .frame(width: 24, height: 24)
                             .background(
-                                isChecked.wrappedValue ? Color.blue01 : Color.white
+                                isChecked.wrappedValue ? Color.blue01 : Color.gray03
                             )
                             .cornerRadius(6)
 
-                        if isChecked.wrappedValue {
-                            Image("icon_check_white")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24)
-                        } else {
-                            Image("icon_check_gray")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24)
-                        }
+                        
+                        Image("icon_check_white")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                        
                     }
                 } else {
                     // 하단 3개의 약관 체크 아이콘
