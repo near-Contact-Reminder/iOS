@@ -126,6 +126,7 @@ class RegisterFriendsViewModel: ObservableObject {
             orientation: .auto, // 피커 화면 방향
             enableSearch: true, // 검색 기능 사용 여부
             enableIndex: true, // 인덱스뷰 사용 여부
+            showMyProfile: false, // 내 프로필 표시
             showFavorite: true, // 즐겨찾기 친구 표시 여부
             showPickedFriend: true, // 선택한 친구 표시 여부, 멀티 피커에만 사용 가능
             maxPickableCount: 5, // 선택 가능한 최대 대상 수
