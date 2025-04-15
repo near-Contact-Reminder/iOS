@@ -42,6 +42,8 @@ let project = Project(
                     ],
                     "CFBundleIconName": "AppIcon",
                     "UIUserInterfaceStyle": "Light",
+                    "CFBundleShortVersionString": "$(MARKETING_VERSION)",
+                    "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
                     "NSContactsUsageDescription": "연락처에서 챙길 사람을 가져오려면\n 기기 설정에서 연락처를 허용해주세요.",
                     "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)"
                 ]
