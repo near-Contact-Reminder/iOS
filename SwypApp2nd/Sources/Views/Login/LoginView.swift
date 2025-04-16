@@ -17,7 +17,7 @@ public struct LoginView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 160, height: 160)
                 
-                Text("Near")
+                Text("near")
                     .font(Font.Pretendard.h1Bold(size: 48))
                     .foregroundStyle(Color.blue02)
 
@@ -61,19 +61,6 @@ public struct LoginView: View {
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
-        }
-        .sheet(isPresented: Binding<Bool>(
-            get: { userSession.shouldShowTerms },
-            set: { newValue in userSession.shouldShowTerms = newValue }
-        )) {
-            TermsView(viewModel: termsViewModel) {
-                DispatchQueue.main.async {
-                    userSession.shouldShowTerms = false
-                    userSession.isLoggedIn = true
-                }
-            }
-            .presentationDetents([.medium])
-            .presentationDragIndicator(.visible)
         }
     }
 }

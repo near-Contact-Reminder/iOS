@@ -19,6 +19,7 @@ struct Friend: Identifiable, Equatable, Hashable, Codable {
     var checkRate: Int? // 챙김률
     var position: Int? // 내사람들 리스트 순서
 //    var entity: PersonEntity
+
     
     enum CodingKeys: String, CodingKey {
         case id, name, imageURL, source, frequency, remindCategory,

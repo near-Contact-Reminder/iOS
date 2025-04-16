@@ -3,6 +3,7 @@ import SwiftUI
 struct ContactFrequencySettingsView: View {
     @ObservedObject var viewModel: ContactFrequencySettingsViewModel
     @ObservedObject var notificationViewModel: NotificationViewModel
+
     @State private var selectedPerson: Friend?
     @State private var showFrequencyPicker: Bool = false
     

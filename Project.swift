@@ -28,10 +28,7 @@ let project = Project(
             deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(
                 with: [
-                    "UILaunchScreen": [
-                        "UIColorName": "",
-                        "UIImageName": "",
-                    ],
+                    "UILaunchStoryboardName": "LaunchScreen",
                     "UIAppFonts": [
                         "Pretendard-Black.otf",
                         "Pretendard-Bold.otf",
@@ -44,7 +41,15 @@ let project = Project(
                         "Pretendard-Thin.otf",
                     ],
                     "CFBundleIconName": "AppIcon",
-                    "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)"
+                    "UIUserInterfaceStyle": "Light",
+                    "CFBundleShortVersionString": "$(MARKETING_VERSION)",
+                    "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
+                    "NSContactsUsageDescription": "연락처에서 챙길 사람을 가져오려면\n 기기 설정에서 연락처를 허용해주세요.",
+                    "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
+                    "DEV_BASE_URL": "$(DEV_BASE_URL)",
+                    "SERVICE_AGREED_TERMS_URL": "$(SERVICE_AGREED_TERMS_URL)",
+                    "PERSONAL_INFO_TERMS_URL": "$(PERSONAL_INFO_TERMS_URL)",
+                    "PRIVACY_POLICY_TERMS_URL": "$(PRIVACY_POLICY_TERMS_URL)"
                 ]
             ),
             sources: [
@@ -59,8 +64,8 @@ let project = Project(
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
-                "MARKETING_VERSION": "0.1.0",
-                "CURRENT_PROJECT_VERSION": "1"
+                "MARKETING_VERSION": "0.1.2",
+                "CURRENT_PROJECT_VERSION": "3"
             ])
         ),
         .target(
