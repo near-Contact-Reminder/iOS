@@ -60,4 +60,16 @@ extension Date {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: self)
     }
+    
+    func formattedYYYYMMDDWithDot() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy.MM.dd"
+        return formatter.string(from: self)
+    }
+    
+    func formattedYYYYMMDDMoreCloser() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M월 dd일 더 가까워졌어요"
+        return formatter.string(from: self)
+    }
 }
