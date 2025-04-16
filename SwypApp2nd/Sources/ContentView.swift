@@ -49,7 +49,7 @@ public struct ContentView: View {
                 })
                 
             case .setFrequency:
-                ContactFrequencySettingsView(viewModel: contactFrequencyViewModel, back: {
+                ContactFrequencySettingsView(viewModel: contactFrequencyViewModel, notificationViewModel: notificationViewModel, back: {
                     userSession.appStep = .registerFriends
                 }, complete: { updatedPeoples in
                     DispatchQueue.main.async {

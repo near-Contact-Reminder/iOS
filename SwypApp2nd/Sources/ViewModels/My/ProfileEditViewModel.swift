@@ -11,8 +11,8 @@ class ProfileEditViewModel: ObservableObject {
     @Published var reminders: [ReminderEntity] = []
     
     func addNewPerson(name: String, relationship: String, birthday: Date?, anniversary: Date?, reminderInterval: String, memo: String?) {
-        let newPerson = personRepo.addPerson(name: name, relationship: relationship, birthday: birthday, anniversary: anniversary, reminderInterval: reminderInterval, memo:memo)
-        reminderRepo.addReminder(for: newPerson)
+//        let newPerson = personRepo.addPerson(name: name, relationship: relationship, birthday: birthday, anniversary: anniversary, reminderInterval: reminderInterval, memo:memo)
+//        reminderRepo.addReminder(for: newPerson)
     }
     
 }

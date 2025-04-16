@@ -12,25 +12,25 @@ class ReminderRepository {
         newReminder.type = type.rawValue
         
         // MARK: - Person 연결
-        let personID = person.entity.id
+//        let personID = person.entity.id
 
-        let fetchRequest: NSFetchRequest<PersonEntity> = PersonEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", personID as CVarArg)
-
-        let entity: PersonEntity
-        if let existing = try? context.fetch(fetchRequest).first {
-            entity = existing
-        } else {
-            entity = person.toPersonEntity(context: context)
-        }
-        newReminder.person = entity
+//        let fetchRequest: NSFetchRequest<PersonEntity> = PersonEntity.fetchRequest()
+//        fetchRequest.predicate = NSPredicate(format: "id == %@", personID as CVarArg)
+//
+//        let entity: PersonEntity
+//        if let existing = try? context.fetch(fetchRequest).first {
+//            entity = existing
+//        } else {
+//            entity = person.toPersonEntity(context: context)
+//        }
+//        newReminder.person = entity
 
         // 알림 브로드캐스트
         NotificationCenter.default.post(
             name: NSNotification.Name("NewReminderAdded"),
             object: nil,
             userInfo: [
-                "personID": entity.id.uuidString,
+                "personID": "", // entity.id.uuidString,
                 "type": type.rawValue
             ]
         )

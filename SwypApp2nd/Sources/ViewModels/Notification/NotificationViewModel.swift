@@ -85,7 +85,7 @@ class NotificationViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    
+    /*
     // MARK: - 친구 목록을 순회하며 전체 안부 알림 설정
     func scheduleAnbu(people: [Friend]) {
         // 1. 내부 알림 설정 체크
@@ -230,6 +230,7 @@ class NotificationViewModel: ObservableObject {
                 center.add(anniRequest)
             }
         }
+     **/
     }
 
 
