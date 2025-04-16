@@ -69,8 +69,10 @@ public struct ContentView: View {
                             switch route {
                             case .inbox:
                                 NotificationInboxView(path: $path)
-                            case .person(let person):
-                                ProfileDetailView(person: person)
+//                            case .person(let person):
+//                                ProfileDetailView(person: person)
+                            case .person(_):
+                                NotificationInboxView(path: $path)
                             }
                         }
                 }
