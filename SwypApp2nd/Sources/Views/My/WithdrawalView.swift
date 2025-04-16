@@ -62,33 +62,46 @@ struct WithdrawalView: View {
                 }
             }
 
-            // 기타 선택 시 텍스트필드 노출
             if selectedReason == "기타" {
                 VStack(alignment: .leading, spacing: 5) {
-                    TextField("탈퇴 사유를 적어주세요", text: Binding(
-                        get: {
-                            String(customReason.prefix(200)) // 200자 제한
-                        },
-                        set: {
-                            customReason = String($0.prefix(200))
-                        })
-                    )
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
-                    .focused($isCustomReasonFocused)
+                    ZStack(alignment: .topLeading) {
+                        if customReason.isEmpty {
+                            Text("탈퇴 사유를 적어주세요")
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 10)
+                        }
+
+                        TextEditor(text: Binding(
+                            get: {
+                                String(customReason.prefix(200))
+                            },
+                            set: {
+                                customReason = String($0.prefix(200))
+                            })
+                        )
+                        .frame(minHeight: 100)
+                        .padding(6)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                        .focused($isCustomReasonFocused)
+                    }
 
                     // 글자 수 표시
                     HStack {
                         Spacer()
                         Text("\(customReason.count)/200자")
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(customReason.count >= 200 ? .red : .gray)
                     }
 
                     // 벨리데이션 문구
                     if customReason.count < 1 {
                         Text("1글자 이상 입력해주세요.")
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    } else if customReason.count >= 200 {
+                        Text("200자 이상 작성할 수 없어요.")
                             .foregroundColor(.red)
                             .font(.caption)
                     }
