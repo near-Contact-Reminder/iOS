@@ -3,15 +3,10 @@ import CoreData
 class PersonRepository {
     private let context = CoreDataStack.shared.context
 
-    func addPerson(name: String, relationship: String, birthday: Date?, anniversary: Date?, reminderInterval: String, memo: String?) -> PersonEntity {
+    func addPerson(name: String) -> PersonEntity {
         let newPerson = PersonEntity(context: context)
         newPerson.id = UUID()
         newPerson.name = name
-        newPerson.relationship = relationship
-        newPerson.birthday = birthday
-        newPerson.anniversary = anniversary
-        newPerson.reminderInterval = reminderInterval // "매일", "매주", "2주", "매달", "매분기", "6개월", "매년"
-        newPerson.memo = memo ?? ""
 
         saveContext()
         return newPerson

@@ -27,7 +27,7 @@ extension Date {
 
         return formatter.string(from: date)
     }
-    
+
     func nextCheckInDateValue(for frequency: CheckInFrequency) -> Date? {
         let calendar = Calendar.current
         switch frequency {
@@ -45,6 +45,23 @@ extension Date {
             return nil
         }
     }
+    
+    static func nextSpecialDate(from baseDate: Date?) -> Date? {
+        guard let baseDate else { return nil }
+        let calendar = Calendar.current
+        let now = Date()
+        
+        let month = calendar.component(.month, from: baseDate)
+        let day = calendar.component(.day, from: baseDate)
+        let currentYear = calendar.component(.year, from: now)
+
+        if let thisYear = calendar.date(from: DateComponents(year: currentYear, month: month, day: day)),
+           thisYear >= now {
+            return thisYear
+        } else {
+            return calendar.date(from: DateComponents(year: currentYear + 1, month: month, day: day))
+        }
+    }
 
     func weekdayKorean() -> String {
         let formatter = DateFormatter()
@@ -52,7 +69,7 @@ extension Date {
         formatter.dateFormat = "EEEE"
         return formatter.string(from: self)
     }
-    
+
     func formattedYYYYMMDD() -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
@@ -72,4 +89,5 @@ extension Date {
         formatter.dateFormat = "M월 dd일 더 가까워졌어요"
         return formatter.string(from: self)
     }
+
 }

@@ -19,11 +19,6 @@ extension PersonEntity {
     static func mockPerson(context: NSManagedObjectContext) -> PersonEntity {
         let person = PersonEntity(context: context)
         person.name = "강다연"
-        person.relationship = "친구"
-        person.reminderInterval = "2주"
-        person.birthday = Calendar.current.date(from: DateComponents(year: 1996, month: 3, day: 21))
-        person.anniversary = Calendar.current.date(from: DateComponents(year: 2020, month: 6, day: 24))
-        person.memo = "초밥 안 먹는 친구"
         return person
         }
 
@@ -45,6 +40,33 @@ extension PersonEntity {
     @NSManaged public func removeFromReminders(_ values: NSSet)
 
 }
+
+extension PersonEntity {
+    func toFriend() -> Friend {
+        return Friend(
+            id: self.id,
+            name: self.name,
+            image: nil,
+            imageURL: self.imageURL,
+            source: .phone, // or .kakao
+            frequency: CheckInFrequency(rawValue: self.reminderInterval ?? ""),
+            remindCategory: nil,
+            phoneNumber: self.phoneNumber,
+            relationship: self.relationship,
+            birthDay: self.birthDay,
+            anniversary: AnniversaryModel(
+                title: self.anniversaryTitle,
+                Date: self.anniversaryDate
+            ),
+            memo: self.memo,
+            nextContactAt: self.nextContactAt,
+            lastContactAt: self.lastContactAt,
+            checkRate: nil,
+            position: Int(self.position)
+        )
+    }
+}
+
 
 extension PersonEntity : Identifiable {
 

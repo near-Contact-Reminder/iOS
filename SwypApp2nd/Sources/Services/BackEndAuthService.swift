@@ -135,7 +135,6 @@ final class BackEndAuthService {
                 }
             }
     }
-    
     /// 백엔드: PresignedURL 요청
     func requestPresignedURL(
         fileName: String,
@@ -238,5 +237,25 @@ final class BackEndAuthService {
                 completion(.failure(error))
             }
         }
+    }
+
+    // 백엔드: 리마인더 전송
+    func sendReminder(friendId: UUID, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let url = "\(baseURL)/friend/reminder"
+        let headers : HTTPHeaders = ["Authorization":  "Bearer \(accessToken)"]
+        let params: Parameters = [ "friend-id": friendId.uuidString]
+
+        AF.request(url, method: .post, parameters: params, encoding: URLEncoding(destination: .queryString), headers: headers)
+            .validate(statusCode: 200..<300)
+            .response { response in
+                switch response.result {
+                case .success:
+                    print("🟢 [BackEndAuthService] 리마인더 전송 성공")
+                    completion(.success(()))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 리마인더 전송 실패: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
     }
 }

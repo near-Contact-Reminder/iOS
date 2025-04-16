@@ -4,25 +4,43 @@ import UserNotifications
 class ReminderRepository {
     private let context = CoreDataStack.shared.context
 
-    func addReminder(for person: PersonEntity) {
+    func addReminder(for person: Friend, type: NotificationType, scheduledDate: Date) {
         let newReminder = ReminderEntity(context: context)
         newReminder.id = UUID()
-        newReminder.date = Date() // TODO 가장 최신 reminder date을 가져오는 로직
-        newReminder.lastContact = nil
+        newReminder.date = scheduledDate // TODO 가장 최신 reminder date을 가져오는 로직
         newReminder.isRead = false
-        newReminder.person = person
+        newReminder.type = type.rawValue
+        
+        // MARK: - Person 연결
+//        let personID = person.entity.id
 
+//        let fetchRequest: NSFetchRequest<PersonEntity> = PersonEntity.fetchRequest()
+//        fetchRequest.predicate = NSPredicate(format: "id == %@", personID as CVarArg)
+//
+//        let entity: PersonEntity
+//        if let existing = try? context.fetch(fetchRequest).first {
+//            entity = existing
+//        } else {
+//            entity = person.toPersonEntity(context: context)
+//        }
+//        newReminder.person = entity
+
+        // 알림 브로드캐스트
         NotificationCenter.default.post(
             name: NSNotification.Name("NewReminderAdded"),
             object: nil,
-            userInfo: ["personID": person.id.uuidString])
+            userInfo: [
+                "personID": "", // entity.id.uuidString,
+                "type": type.rawValue
+            ]
+        )
         saveContext()
     }
     
     func deleteReminder(_ reminder: ReminderEntity) {
             context.delete(reminder)
             do {
-                try context.save() // ✅ CoreData에서 삭제 반영
+                try context.save() // CoreData에서 삭제 반영
                 print("✅ Reminder 삭제 성공")
             } catch {
                 print("❌ Reminder 삭제 실패: \(error.localizedDescription)")
