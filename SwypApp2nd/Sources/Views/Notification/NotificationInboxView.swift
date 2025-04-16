@@ -1,20 +1,19 @@
 import SwiftUI
 
 struct NotificationInboxView: View {
-    @StateObject var notificationViewModel = NotificationViewModel()
     @Binding var path: [AppRoute]
-    
+    @EnvironmentObject var notificationViewModel: NotificationViewModel
+
     var body: some View {
         VStack {
             headerView
             bodyView
         }
-        .navigationTitle("알림 목록")
+        .navigationTitle("알림")
         .onAppear {
             notificationViewModel.loadAllReminders()
         }
     }
-    
 
     private var headerView: some View {
         HStack {
@@ -30,21 +29,18 @@ struct NotificationInboxView: View {
 
     private var bodyView: some View {
         VStack {
-            if notificationViewModel.reminders.isEmpty {
-                Text("알림을 추가해보세요!")
+            if notificationViewModel.visibleReminders.isEmpty {
+                Text("오늘 예정된 알림이 없어요!")
                     .foregroundColor(.gray)
                     .padding()
             } else {
-                VStack {
+                VStack(spacing: 12) {
                     Button(action: {
                         notificationViewModel.deleteAllReminders()
                     }) {
                         Label("전체 삭제하기", systemImage: "trash")
                     }
-                    ReminderListView(onSelect: { person in
-                        path.append(.person(person))
-                    })
-                    .environmentObject(notificationViewModel)
+                    ReminderListView(path: $path, reminders: notificationViewModel.visibleReminders)
                 }
             }
         }
@@ -53,15 +49,17 @@ struct NotificationInboxView: View {
 
 struct ReminderListView: View {
     @EnvironmentObject var notificationViewModel: NotificationViewModel
-    var onSelect: (PersonEntity) -> Void
+    @Binding var path: [AppRoute]
+    var reminders: [ReminderEntity]
 
     var body: some View {
         List {
-            ForEach(notificationViewModel.reminders, id: \.self) { reminder in
-                ReminderRowView(reminder: reminder, onSelect: onSelect)
-                .environmentObject(notificationViewModel)
-                .listRowBackground(reminder.isRead ? Color.readBlue : Color.white)
-            }.onDelete(perform: notificationViewModel.deleteReminder)
+            ForEach(notificationViewModel.visibleReminders, id: \.self) { reminder in
+                ReminderRowView(reminder: reminder, person: reminder.person, onSelect: { person in
+                    path.append(.person(person))})
+                    .listRowBackground(reminder.isRead ? Color.readBlue : Color.white)
+            }
+            .onDelete(perform: notificationViewModel.deleteReminder)
         }
         .listStyle(.plain)
     }
@@ -70,22 +68,18 @@ struct ReminderListView: View {
 struct ReminderRowView: View {
     @EnvironmentObject var notificationViewModel: NotificationViewModel
     var reminder: ReminderEntity
+    var person: PersonEntity
     var onSelect: (PersonEntity) -> Void
 
     var body: some View {
-        if let person = reminder.person {
-            ReminderContent(person: person, reminder: reminder)
-                .onTapGesture {
-                    notificationViewModel.markAsRead(reminder)
-                    onSelect(person)
-                }
-                .background(NavigationLink(value: person) {
-                    EmptyView()
-                }.hidden())
-        } else {
-            Text("❗️유효하지 않은 알림입니다")
-                .foregroundColor(.red)
-        }
+        ReminderContent(person: person, reminder: reminder)
+            .onTapGesture {
+                notificationViewModel.markAsRead(reminder)
+                onSelect(person)
+            }
+            .background(NavigationLink(value: person) {
+                EmptyView()
+            }.hidden())
     }
 }
 
@@ -96,7 +90,7 @@ private struct ReminderContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top) {
-                Text(reminderMessage(for: person))
+                Text(reminderMessage(for: person, type: NotificationType(rawValue: reminder.type) ?? .regular))
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.black)
                     .fixedSize(horizontal: false, vertical: true)
@@ -116,16 +110,15 @@ private struct ReminderContent: View {
         .contentShape(Rectangle())
     }
 
-    private func reminderMessage(for person: PersonEntity) -> String {
-//        switch reminder.type {
-//            case person.birthday:
-//                return "오늘은 \(person.name)님의 생일이에요.\n 따뜻한 축하를 전해볼까요?"
-//            case person.anniversary:
-//                return "\(person.name)님의 소중한 기념일이에요.\n 짧게라도 마음을 표현해보세요."
-//        default:
-//            return "\(person.name)님께 가볍게 안부를 전해보면 어떨까요?"
-//        }
-        return "\(person.name)님께 가볍게 안부를 전해보면 어떨까요?"
+    private func reminderMessage(for person: PersonEntity, type: NotificationType) -> String {
+        switch type {
+        case .birthday:
+            return "오늘은 \(person.name)님의 생일이에요.\n따뜻한 축하를 전해볼까요?"
+        case .anniversary:
+            return "\(person.name)님의 소중한 기념일이에요.\n짧게라도 마음을 표현해보세요."
+        case .regular, .unknown:
+            return "\(person.name)님께 가볍게 안부를 전해보면 어떨까요?"
+        }
     }
 
     private static var dateFormatter: DateFormatter {
@@ -134,7 +127,6 @@ private struct ReminderContent: View {
         return df
     }
 }
-
 
 struct NotificationInboxView_Previews: PreviewProvider {
     struct PreviewWrapper: View {
