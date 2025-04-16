@@ -95,13 +95,30 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         BackEndAuthService.shared.sendInitialFriends(friends: friends, accessToken: accessToken) { result in
             switch result {
             case .success(let registeredFriends):
+                
+                // 서버에서 받은 id로 업데이트
+                for friendWithURL in registeredFriends {
+                    if let index = self.people.firstIndex(
+                        where: { $0.name == friendWithURL.name
+                        }) {
+                        self.people[index].id = UUID(
+                            uuidString: friendWithURL.friendId
+                        ) ?? self
+                            .people[index].id
+                        print(
+                            "🟢 [ContactFrequencySettingsViewModel] 서버 ID로 업데이트됨: \(self.people[index].name) → \(self.people[index].id)"
+                        )
+                    }
+                }
+                
+                // 이미지 업로드
                 for friendWithURL in registeredFriends {
                     if let url = friendWithURL.preSignedImageUrl,
                        let localFriend = friends.first(where: { $0.name == friendWithURL.name }),
                        let image = localFriend.image?.jpegData(compressionQuality: 0.8) {
                         
                         BackEndAuthService.shared.uploadImageWithPresignedURL(imageData: image, presignedURL: url, contentType: "image/jpeg") { success in
-                            print("▶️ \(friendWithURL.name)의 이미지 업로드: \(success ? "성공" : "실패")")
+                            print("🟢 [ContactFrequencySettingsViewModel] \(friendWithURL.name)의 이미지 업로드: \(success ? "성공" : "실패")")
                         }
                     }
                 }
