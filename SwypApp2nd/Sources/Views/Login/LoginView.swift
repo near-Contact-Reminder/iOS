@@ -17,7 +17,7 @@ public struct LoginView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 160, height: 160)
                 
-                Text("Near")
+                Text("near")
                     .font(Font.Pretendard.h1Bold(size: 48))
                     .foregroundStyle(Color.blue02)
 

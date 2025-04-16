@@ -46,7 +46,7 @@ public struct TermsView: View {
                         title: "[필수] 서비스 이용 약관",
                         isBold: false,
                         showDetail: true,
-                        detailURLString: "https://example.com/") {
+                        detailURLString: viewModel.serviceAgreedTermsURL) {
                             // checkbox closure
                         } onDetailTappedClosure: { title, url in
                             self.selectedAgreement = AgreementDetail(title: title, urlString: url)
@@ -61,7 +61,7 @@ public struct TermsView: View {
                         title: "[필수] 개인정보 수집 및 이용 동의서",
                         isBold: false,
                         showDetail: true,
-                        detailURLString: "https://example.com/") {
+                        detailURLString: viewModel.personalInfoTermsURL) {
                             // checkbox closure
                         } onDetailTappedClosure: { title, url in
                             self.selectedAgreement = AgreementDetail(title: title, urlString: url)
@@ -77,7 +77,7 @@ public struct TermsView: View {
                         title: "[필수] 개인정보 처리방침",
                         isBold: false,
                         showDetail: true,
-                        detailURLString: "https://example.com/") {
+                        detailURLString: viewModel.privacyPolicyTermsURL) {
                             // checkbox closure
                         } onDetailTappedClosure: { title, url in
                             self.selectedAgreement = AgreementDetail(title: title, urlString: url)
@@ -122,18 +122,26 @@ public struct TermsView: View {
         }
         .background(Color.white)
         .cornerRadius(24)
-        .sheet(item: $selectedAgreement) { agreement in
+        .fullScreenCover(item: $selectedAgreement) { agreement in
             NavigationStack {
                 TermsDetailView(
                     title: agreement.title,
                     urlString: agreement.urlString
                 )
+                .presentationDetents([.large])
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("닫기") {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Text(agreement.title)
+                            .font(Font.Pretendard.b1Medium())
+                            .foregroundStyle(Color.black)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
                             selectedAgreement = nil
+                        } label: {
+                            Image(systemName: "xmark")
+                                .foregroundStyle(.black)
                         }
-                        .foregroundStyle(.black)
                     }
                 }
             }
@@ -180,36 +188,34 @@ public struct AgreementRow: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: 6)
                             .stroke(
-                                isChecked.wrappedValue ? Color.blue01 : Color.gray02,
+                                isChecked.wrappedValue ? Color.blue01 : Color.gray03,
                                 lineWidth: 2
                             )
                             .frame(width: 24, height: 24)
                             .background(
-                                isChecked.wrappedValue ? Color.blue01 : Color.white
+                                isChecked.wrappedValue ? Color.blue01 : Color.gray03
                             )
                             .cornerRadius(6)
 
-                        if isChecked.wrappedValue {
-                            Image(systemName: "checkmark")
-                                .font(Font.Pretendard.b1Bold())
-                                .foregroundColor(.white)
-                        }
+                        
+                        Image("icon_check_white")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                        
                     }
                 } else {
                     // 하단 3개의 약관 체크 아이콘
-                    Image(systemName: "checkmark")
+                    Image(isChecked.wrappedValue ? "icon_check_blue" : "icon_check_gray")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 16, height: 16)
-                        .foregroundColor(
-                            isChecked.wrappedValue ? Color.blue01 : Color.gray02
-                        )
                         .frame(width: 24, height: 24)
                 }
             }
             
             Text(title)
                 .font(isBold ? .Pretendard.b1Bold() : .Pretendard.b1Medium())
+                .foregroundStyle(Color.black)
             
             Spacer()
             
@@ -268,8 +274,6 @@ struct TermsDetailView: View {
                 isLoading = false
             }
         }
-        .navigationTitle(title ?? "")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

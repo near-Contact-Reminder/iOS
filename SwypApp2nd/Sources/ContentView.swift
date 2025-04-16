@@ -51,9 +51,13 @@ public struct ContentView: View {
             case .setFrequency:
                 ContactFrequencySettingsView(viewModel: contactFrequencyViewModel, back: {
                     userSession.appStep = .registerFriends
-                }, complete: {
-                    // TODO: - BackEnd 서버에 친구 목록 전달해주는 API 호출 필요
-                    userSession.appStep = .home
+                }, complete: { updatedPeoples in
+                    DispatchQueue.main.async {
+                        print("🟢 [ContactFrequencySettingsView] 전달받은 people: \(updatedPeoples.map { $0.name })")
+                        homeViewModel.peoples = updatedPeoples
+                        UserSession.shared.user?.friends = updatedPeoples
+                        userSession.appStep = .home
+                    }
                 })
                 
             case .home:
@@ -65,8 +69,10 @@ public struct ContentView: View {
                             switch route {
                             case .inbox:
                                 NotificationInboxView(path: $path)
-                            case .person(let person):
-                                ProfileDetailView(person: person)
+//                            case .person(let person):
+//                                ProfileDetailView(person: person)
+                            case .person(_):
+                                NotificationInboxView(path: $path)
                             }
                         }
                 }

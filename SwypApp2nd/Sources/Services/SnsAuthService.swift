@@ -32,7 +32,29 @@ class SnsAuthService {
             }
         }
     }
-
+    
+    /// 카카오 이미지 저장
+    func downloadImageData(from urlString: String, completion: @escaping (Data?) -> Void) {
+        guard let url = URL(string: urlString) else {
+            print("🔴 [SnsAuthService] 잘못된 URL")
+            completion(nil)
+            return
+        }
+        
+        AF.request(url)
+            .validate()
+            .responseData { response in
+                switch response.result {
+                case .success(let data):
+                    print("🟢 [SnsAuthService] 이미지 다운로드 성공, size: \(data.count) bytes")
+                    completion(data)
+                case .failure(let error):
+                    print("🔴 [SnsAuthService] 이미지 다운로드 실패: \(error)")
+                    completion(nil)
+                }
+            }
+    }
+    
     /// 애플 로그인 요청 세팅
     func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         request.requestedScopes = [.fullName, .email]

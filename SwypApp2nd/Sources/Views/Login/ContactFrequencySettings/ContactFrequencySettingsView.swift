@@ -2,11 +2,11 @@ import SwiftUI
 
 struct ContactFrequencySettingsView: View {
     @ObservedObject var viewModel: ContactFrequencySettingsViewModel
-    @State private var selectedPerson: Contact?
+    @State private var selectedPerson: Friend?
     @State private var showFrequencyPicker: Bool = false
     
     let back: () -> Void
-    let complete: () -> Void
+    let complete: ([Friend]) -> Void
 
     var body: some View {
         Spacer()
@@ -118,7 +118,18 @@ struct ContactFrequencySettingsView: View {
                         )
                 }
 
-                Button(action: complete) {
+                Button{
+                    // 카카오는 이미지 저장 후 BackEnd 서버에 전송
+                    viewModel.downloadKakaoImageData { friendsWithImages in
+                        DispatchQueue.main.async {
+                            viewModel.uploadAllFriendsToServer(friendsWithImages)
+//                            viewModel.assignPositionToPeople()
+                            UserSession.shared.user?.friends = viewModel.people
+                            complete(viewModel.people)
+                        }
+                    }
+                }
+                label: {
                     Text("완료")
                         .font(.body.bold())
                         .foregroundColor(.white)
@@ -154,7 +165,7 @@ struct ContactFrequencySettingsView: View {
 
 // MARK: - 사람별 주기설정 셀
 struct FrequencyRow: View {
-    let person: Contact
+    let person: Friend
     let isUnified: Bool
     let onSelect: () -> Void
 
@@ -299,22 +310,22 @@ struct FrequencyPickerView: View {
     }
 }
 
-#Preview {
-    let viewModel: ContactFrequencySettingsViewModel = {
-        let vm = ContactFrequencySettingsViewModel()
-        vm.people = [
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
-            Contact(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none)
-        ]
-        return vm
-    }()
-    ContactFrequencySettingsView(
-        viewModel: viewModel,
-        back: { print("이전") },
-        complete: { print("완료") }
-    )
-}
+//#Preview {
+//    let viewModel: ContactFrequencySettingsViewModel = {
+//        let vm = ContactFrequencySettingsViewModel()
+//        vm.people = [
+//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
+//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
+//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
+//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
+//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
+//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none)
+//        ]
+//        return vm
+//    }()
+//    ContactFrequencySettingsView(
+//        viewModel: viewModel,
+//        back: { print("이전") },
+//        complete: { print("완료") }
+//    )
+//}
