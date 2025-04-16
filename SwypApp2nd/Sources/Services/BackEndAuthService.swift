@@ -27,8 +27,6 @@ struct MemberMeInfoResponse: Decodable {
     let username: String
     let nickname: String
     let imageUrl: String?
-    let averageRate: Int
-    let isActive: Bool
     let marketingAgreedAt: String?
     let providerType: String
 }
