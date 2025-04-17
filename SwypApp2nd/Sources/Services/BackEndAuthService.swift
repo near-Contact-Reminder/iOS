@@ -31,6 +31,15 @@ struct MemberMeInfoResponse: Decodable {
     let providerType: String
 }
 
+struct FriendListResponse: Codable, Identifiable {
+    let friendId: String
+    let position: Int
+    let name: String
+    let imageUrl: String?
+
+    var id: String { friendId }
+}
+
 final class BackEndAuthService {
     static let shared = BackEndAuthService()
 
@@ -200,6 +209,36 @@ final class BackEndAuthService {
         }
     }
     
+    /// 백엔드: Presigned Download URL 발급 받기
+    func fetchPresignedDownloadURL(
+        fileName: String,
+        category: String,
+        accessToken: String,
+        completion: @escaping (URL?) -> Void
+    ) {
+        let url = "\(baseURL)/s3"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let params = [
+            "fileName": fileName,
+            "category": category
+        ]
+
+        AF.request(url, method: .get, parameters: params, headers: headers)
+            .validate()
+            .responseDecodable(of: PresignedURLResponse.self) { response in
+                switch response.result {
+                case .success(let data):
+                    print("🟢 [BackEndAuthService] Presigned 다운로드 URL 생성됨")
+                    completion(URL(string: data.preSignedUrl))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 다운로드 URL 요청 실패: \(error.localizedDescription)")
+                    completion(nil)
+                }
+            }
+    }
+    
     /// 백엔드: 연락처에서 가져온 친구 목록 서버에 전달
     func sendInitialFriends(
         friends: [Friend],
@@ -252,6 +291,27 @@ final class BackEndAuthService {
                     completion(.success(()))
                 case .failure(let error):
                     print("🔴 [BackEndAuthService] 리마인더 전송 실패: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+    }
+    
+    /// 백엔드: 챙길 친구 리스트 조회
+    func fetchFriendList(accessToken: String, completion: @escaping (Result<[FriendListResponse], Error>) -> Void) {
+        let url = "\(baseURL)/friend/list"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+
+        AF.request(url, method: .get, headers: headers)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: [FriendListResponse].self) { response in
+                switch response.result {
+                case .success(let list):
+                    print("🟢 [BackEndAuthService] 친구 리스트 조회 성공 \(list.map { $0.name })")
+                    completion(.success(list))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 친구 리스트 조회 실패: \(error.localizedDescription)")
                     completion(.failure(error))
                 }
             }
