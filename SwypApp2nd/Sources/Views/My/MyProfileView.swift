@@ -77,32 +77,39 @@ struct AccountSettingSectionView: View {
     
     var body: some View {
         VStack(spacing: 1) {
-            Text("일반")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding([.top, .bottom], 16)
-
-            HStack {
-                Text("연결계정")
-                Spacer()
-                let (loginName, imageName): (String, String) = {
-                    switch loginType {
-                    case .kakao: return ("카카오톡", "img_32_kakao")
-                    case .apple: return ("애플", "img_32_apple")
+            VStack(alignment: .leading, spacing: 10) {
+                Text("일반")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.top, 10)
+                    .padding(.horizontal)
+                
+                HStack {
+                    Text("연결계정")
+                        .foregroundColor(.black)
+                    Spacer()
+                    let (loginName, imageName): (String, String) = {
+                        switch loginType {
+                        case .kakao: return ("카카오톡", "img_32_kakao")
+                        case .apple: return ("애플", "img_32_apple")
+                        }
+                    }()
+                    
+                    HStack(spacing: 5) {
+                        Text(loginName)
+                            .foregroundColor(.gray)
+                        
+                        Image(imageName)
+                            .resizable()
+                            .frame(width: 20, height: 20)
                     }
-                }()
-                HStack(spacing: 5) {
-                    Text(loginName)
-                        .foregroundColor(.gray)
-
-                    Image(imageName)
-                        .resizable()
-                        .frame(width: 20, height: 20)
                 }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(8)
+                .padding(.horizontal)
             }
-            .padding()
-            .background(Color(.systemGray6))
+            .background(Color(.systemGroupedBackground))
         }
     }
 }
@@ -133,7 +140,7 @@ struct NotificationSettingsView: View {
         } message: {
             Text("알림 설정을 켜야 \n챙김 알림을 받을 수 있어요.")
         }
-        .padding()
+//        .padding()
         .background(Color(.systemGray6))
         }
     }
@@ -156,7 +163,7 @@ struct SimpleTermsView: View {
             Text("서비스 약관 안내")
                 .font(.title2)
                 .fontWeight(.bold)
-                .padding(.top, 40)
+                .padding(.top, 20)
                 .padding(.horizontal)
 
             ForEach(terms) { term in
@@ -253,7 +260,7 @@ struct WithdrawalButtonView: View {
     }
 }
 
-
+//
 //struct MyProfileView_Previews: PreviewProvider {
 //    static var previews: some View {
 //        MyProfileView()
