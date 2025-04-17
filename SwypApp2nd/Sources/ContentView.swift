@@ -14,6 +14,7 @@ enum AppStep {
 // TODO: - AppRoute
 enum AppRoute: Hashable {
     case inbox
+    case my
     case person(PersonEntity)
 }
 
@@ -25,6 +26,7 @@ public struct ContentView: View {
     @StateObject private var notificationViewModel = NotificationViewModel()
     @StateObject private var registerFriendsViewModel = RegisterFriendsViewModel()
     @StateObject private var contactFrequencyViewModel = ContactFrequencySettingsViewModel()
+    @StateObject private var myViewModel = MyViewModel()
     
     private let skipLoginForTesting: Bool = true
     @State private var path: [AppRoute] = []
@@ -73,6 +75,8 @@ public struct ContentView: View {
 //                                ProfileDetailView(person: person)
                             case .person(_):
                                 NotificationInboxView(path: $path)
+                            case .my:
+                                MyProfileView(path: $path)
                             }
                         }
                 }

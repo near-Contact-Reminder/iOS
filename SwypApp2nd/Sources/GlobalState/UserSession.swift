@@ -13,17 +13,25 @@ class UserSession: ObservableObject {
     
 
     // TODO: - 토큰 삭제, appStep 로그인으로
-    func kakaoLogout() {
-        self.user = nil
-        self.appStep = .login
-        print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
+    func kakaoLogout(completion: @escaping (Bool) -> Void) {
+        UserApi.shared.logout { error in
+            if let error = error {
+                print("❌ 카카오 로그아웃 실패: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+            
+            TokenManager.shared.clear(type: .kakao)
+            self.logout()
+            completion(true)
+        }
     }
     
     // TODO: - 토큰 삭제, appStep 로그인으로
-    func appleLogout() {
-        self.user = nil
-        self.appStep = .login
-        print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
+    func appleLogout(completion: @escaping (Bool) -> Void) {
+        
+        TokenManager.shared.clear(type: .apple)
+        self.logout() // 서버에서도 클리어
     }
     
     /// 로그인 상태 업데이트
