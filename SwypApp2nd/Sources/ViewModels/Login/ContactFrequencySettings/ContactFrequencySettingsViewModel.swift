@@ -115,7 +115,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
                 for friendWithURL in registeredFriends {
                     if let url = friendWithURL.preSignedImageUrl,
                        let localFriend = friends.first(where: { $0.name == friendWithURL.name }),
-                       let image = localFriend.image?.jpegData(compressionQuality: 0.8) {
+                       let image = localFriend.image?.jpegData(compressionQuality: 0.4) {
                         
                         BackEndAuthService.shared.uploadImageWithPresignedURL(imageData: image, presignedURL: url, contentType: "image/jpeg") { success in
                             print("🟢 [ContactFrequencySettingsViewModel] \(friendWithURL.name)의 이미지 업로드: \(success ? "성공" : "실패")")
