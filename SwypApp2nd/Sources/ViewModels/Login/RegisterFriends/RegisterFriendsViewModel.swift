@@ -3,6 +3,7 @@ import UIKit
 import KakaoSDKTalk
 import KakaoSDKFriendCore
 import KakaoSDKFriend
+import KakaoSDKAuth
 import Combine
 import Contacts
 
@@ -124,8 +125,8 @@ class RegisterFriendsViewModel: ObservableObject {
             title: "멀티 피커", // 피커 이름
             viewAppearance: .auto, // 피커 화면 모드
             orientation: .auto, // 피커 화면 방향
-            enableSearch: true, // 검색 기능 사용 여부
-            enableIndex: true, // 인덱스뷰 사용 여부
+            enableSearch: false, // 검색 기능 사용 여부
+            enableIndex: false, // 인덱스뷰 사용 여부
             showMyProfile: false, // 내 프로필 표시
             showFavorite: true, // 즐겨찾기 친구 표시 여부
             showPickedFriend: true, // 선택한 친구 표시 여부, 멀티 피커에만 사용 가능
