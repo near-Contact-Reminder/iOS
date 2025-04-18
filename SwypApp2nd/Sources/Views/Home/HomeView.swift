@@ -45,11 +45,11 @@ public struct HomeView: View {
                             GreetingSection(userName: userSession.user?.name ?? "사용자")
                             
                             // 이번달 챙길 사람
-                            ThisMonthSection(peoples: homeViewModel.peoples)
+                            ThisMonthSection(peoples: homeViewModel.thisMonthFriends)
                         }
                         
                         // 내 사람들
-                        MyPeopleSection(peoples: homeViewModel.peoples)
+                        MyPeopleSection(peoples: $homeViewModel.allFriends)
                             .ignoresSafeArea()
                             .frame(height: geometry.size.height * 0.65)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -61,7 +61,6 @@ public struct HomeView: View {
         }
         .environmentObject(userSession)
         .onAppear {
-//            homeViewModel.loadPeoplesFromUserSession()
             homeViewModel.loadFriendList()
         }
     }
@@ -145,18 +144,19 @@ struct ThisMonthSection: View {
                     .font(Font.Pretendard.b1Bold())
                     .foregroundColor(.white)
                 Spacer()
-                if !peoples.isEmpty {
-                    Button {
-                        
-                    } label: {
-                        HStack {
-                            Text("전체보기")
-                                .font(Font.Pretendard.b2Medium())
-                                .foregroundColor(.gray03)
-                            Image("icon_12_arrow_right")
-                        }
-                    }
-                }
+                // TODO: - 2차때..
+//                if !peoples.isEmpty {
+//                    Button {
+//                        
+//                    } label: {
+//                        HStack {
+//                            Text("전체보기")
+//                                .font(Font.Pretendard.b2Medium())
+//                                .foregroundColor(.gray03)
+//                            Image("icon_12_arrow_right")
+//                        }
+//                    }
+//                }
             }
             .padding(.horizontal, 24)
 
@@ -263,7 +263,7 @@ struct ThisMonthContactCell: View {
 // MARK: - 내 사람들
 struct MyPeopleSection: View {
     @State private var currentPage = 0
-    @State var peoples: [Friend]
+    @Binding var peoples: [Friend]
     @State private var showEllipsisOptions = false
     @EnvironmentObject var userSession: UserSession
     private var pages: [[Friend]] {
@@ -330,6 +330,7 @@ struct MyPeopleSection: View {
                                 StarPositionLayout(peoples: $peoples , pageIndex: index) { selected in
                                     // TODO: - 친구 상세 뷰 이동
                                     print("\(selected.name) tapped")
+                                    print("\(selected.id) tapped")
                                 }
                                 .tag(index)
                             }

@@ -76,6 +76,7 @@ class RegisterFriendsViewModel: ObservableObject {
                         position: nil
                     )
         }
+        print("🟢 [RegisterFriendsViewModel]\(converted.first?.name)의 id: \(converted.first?.id)")
         DispatchQueue.main.async {
             let existingNonPhone = self.selectedContacts.filter { $0.source != .phone }
             let merged = existingNonPhone + converted
@@ -143,12 +144,14 @@ class RegisterFriendsViewModel: ObservableObject {
                 
                 // TODO: - 썸네일 이미지 URL → Signed URL 적용
                 let kakaoContacts: [Friend] = selectedUsers.compactMap {
-                    Friend(
-                        id: UUID(),
+                    let id = UUID()
+                    return Friend(
+                        id: id,
                         name: $0.profileNickname ?? "이름 없음",
                         imageURL: $0.profileThumbnailImage?.absoluteString,
                         source: .kakao,
-                        frequency: CheckInFrequency.none
+                        frequency: CheckInFrequency.none,
+                        fileName: "\(id.uuidString).jpg"
                     )
                 }
                 DispatchQueue.main.async {

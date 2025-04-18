@@ -36,6 +36,7 @@ struct FriendListResponse: Codable, Identifiable {
     let position: Int
     let name: String
     let imageUrl: String?
+    let fileName: String?
 
     var id: String { friendId }
 }
@@ -253,6 +254,17 @@ final class BackEndAuthService {
         let payload = FriendInitRequestDTO(
             friendList: friends.compactMap { $0.toInitRequestDTO()
             })
+        
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            let jsonData = try encoder.encode(payload)
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("🟡 [sendInitialFriends] 서버에 보낸 요청 JSON:\n\(jsonString)")
+            }
+        } catch {
+            print("🔴 [sendInitialFriends] 요청 JSON 인코딩 실패: \(error)")
+        }
             
         let url = "\(baseURL)/friend/init"
             
@@ -267,10 +279,25 @@ final class BackEndAuthService {
         .responseDecodable(of: FriendInitResponseDTO.self) { response in
             switch response.result {
             case .success(let result):
-                print("🟢 [BackEndAuthService] 친구 등록 성공! \(result.friendList.count)명")
+                print("🟢 [sendInitialFriends] 친구 등록 성공! \(result.friendList.count)명")
+                
+                do {
+                    let encoder = JSONEncoder()
+                    encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                    let jsonData = try encoder.encode(result.friendList)
+                    if let jsonString = String(
+                        data: jsonData,
+                        encoding: .utf8
+                    ) {
+                        print("🟡 [sendInitialFriends] 서버 응답 JSON:\n\(jsonString)")
+                    }
+                } catch {
+                    print("🔴 [sendInitialFriends] JSON 인코딩 실패: \(error)")
+                }
+                
                 completion(.success(result.friendList))
             case .failure(let error):
-                print("🔴 [BackEndAuthService] 친구 등록 실패: \(error)")
+                print("🔴 [sendInitialFriends] 친구 등록 실패: \(error)")
                 completion(.failure(error))
             }
         }

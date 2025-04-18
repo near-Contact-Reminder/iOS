@@ -18,6 +18,7 @@ struct Friend: Identifiable, Equatable, Hashable, Codable {
     var lastContactAt: Date? // 마지막 연락 일
     var checkRate: Int? // 챙김률
     var position: Int? // 내사람들 리스트 순서
+    var fileName: String? // 서버에서 받은 (friend.id).jpg
 //    var entity: PersonEntity
 
     
@@ -62,11 +63,15 @@ extension Friend {
         // 이미지 업로드 정보가 필요한 경우에만 포함
         let imageUploadRequest: ImageUploadRequestDTO? = {
             guard let image = image,
-                  let imageData = image.jpegData(compressionQuality: 0.8)
+                  let imageData = image.jpegData(compressionQuality: 0.4)
             else { return nil }
-
+            
+            let fileNameToUse = fileName ?? "\(id.uuidString).jpg"
+            
+            print("🟢 업로드된 이미지 파일 이름: \(fileNameToUse)")
+            
             return ImageUploadRequestDTO(
-                fileName: "\(id).jpg",
+                fileName: fileNameToUse,
                 contentType: "image/jpeg",
                 fileSize: imageData.count,
                 category: "Friends/profile"
@@ -193,4 +198,5 @@ struct FriendWithUploadURL: Codable {
     let nextContactAt: String?
     let preSignedImageUrl: String?
     let anniversary: AnniversaryDTO?
+    let fileName: String?
 }

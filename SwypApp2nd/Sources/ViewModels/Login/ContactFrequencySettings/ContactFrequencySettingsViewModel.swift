@@ -57,9 +57,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
     
     // RegisterViewModel에서 선택한 연락처 받아오는 메소드
     func setPeople(from contacts: [Friend]) {
-        self.people = contacts.map {
-            Friend(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: $0.frequency)
-        }
+        self.people = contacts.map { $0 }
     }
     
     /// 카카오 이미지 다운로드
@@ -69,15 +67,18 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         
         for (index, friend) in people
             .enumerated() where friend.source == .kakao {
-            guard let urlString = friend.imageURL else { continue }
+            guard let urlString = friend.imageURL else {
+                print("🔴 [downloadKakaoImageData] \(friend.name) imageURL nil")
+                continue
+            }
             group.enter()
             
             SnsAuthService.shared.downloadImageData(from: urlString) { data in
                 if let data = data, let image = UIImage(data: data) {
                     updatedPeople[index].image = image
-                    print("🟢 [ContactFrequencySettingsViewModel] \(friend.name) 이미지 다운로드 성공")
+                    print("🟢 [ContactFrequencySettingsViewModel] \(friend.name) 카카오 이미지 다운로드 성공")
                 } else {
-                    print("🔴 [ContactFrequencySettingsViewModel] \(friend.name) 이미지 다운로드 실패")
+                    print("🔴 [ContactFrequencySettingsViewModel] \(friend.name) 카카오 이미지 다운로드 실패")
                 }
                 group.leave()
             }
@@ -105,9 +106,10 @@ class ContactFrequencySettingsViewModel: ObservableObject {
                             uuidString: friendWithURL.friendId
                         ) ?? self
                             .people[index].id
-                        print(
-                            "🟢 [ContactFrequencySettingsViewModel] 서버 ID로 업데이트됨: \(self.people[index].name) → \(self.people[index].id)"
-                        )
+                        self.people[index].fileName = friendWithURL.fileName
+                        
+                        print( "🟢 [ContactFrequencySettingsViewModel] 서버 ID로 업데이트됨: \(self.people[index].name) → \(self.people[index].id)")
+                        print( "🟢 [ContactFrequencySettingsViewModel] 서버 ID로 fileName 업데이트됨: \(self.people[index].name)의 fileName \(String(describing: self.people[index].fileName))")
                     }
                 }
                 
@@ -117,8 +119,28 @@ class ContactFrequencySettingsViewModel: ObservableObject {
                        let localFriend = friends.first(where: { $0.name == friendWithURL.name }),
                        let image = localFriend.image?.jpegData(compressionQuality: 0.4) {
                         
+                        print("🟡 [ContactFrequencySettingsViewModel] 업로드 시도 → 이름: \(localFriend.name)")
+                        print("🟡 [ContactFrequencySettingsViewModel] 업로드 파일 이름 예상: \(localFriend.fileName ?? "nil")")
+                        print("🟡 [ContactFrequencySettingsViewModel] 업로드 대상 URL: \(url)")
+                        
                         BackEndAuthService.shared.uploadImageWithPresignedURL(imageData: image, presignedURL: url, contentType: "image/jpeg") { success in
-                            print("🟢 [ContactFrequencySettingsViewModel] \(friendWithURL.name)의 이미지 업로드: \(success ? "성공" : "실패")")
+                            if success {
+                                print("🟢 [ContactFrequencySettingsViewModel] \(friendWithURL.name)의 이미지 업로드: 성공")
+                            } else {
+                                print("🔴 [ContactFrequencySettingsViewModel] \(friendWithURL.name)의 이미지 업로드: 실패")
+                            }
+                        }
+                    } else {
+                        print("🔴 이미지 업로드 조건 실패 - 이름: \(friendWithURL.name)")
+                        if friendWithURL.preSignedImageUrl == nil {
+                            print("🔴 preSignedImageUrl 없음")
+                        }
+                        if friends
+                            .first(where: { $0.name == friendWithURL.name }) == nil {
+                            print("🔴 localFriend 매칭 실패")
+                        }
+                        if let localFriend = friends.first(where: { $0.name == friendWithURL.name }), localFriend.image == nil {
+                            print("🔴 localFriend.image == nil")
                         }
                     }
                 }
