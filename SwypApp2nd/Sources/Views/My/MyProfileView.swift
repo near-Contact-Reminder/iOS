@@ -1,5 +1,7 @@
 import SwiftUI
+import Kingfisher
 import Combine
+import WebKit
 
 struct ServiceDetail: Identifiable, Equatable {
     let id = UUID()
@@ -8,20 +10,27 @@ struct ServiceDetail: Identifiable, Equatable {
 }
 
 struct MyProfileView: View {
+    @Binding var path: [AppRoute]
     @State private var showWithdrawalSheet = false
-
+    
+    @StateObject var myViewModel =  MyViewModel()
+    @StateObject var termsViewModel = TermsViewModel()
+    var user = UserSession.shared.user!
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                UserProfileSectionView()
-
-                AccountSettingSectionView()
-
-                ServiceInfoSectionView()
-                
-                WithdrawalButtonView {
-                    showWithdrawalSheet = true
-                }
+                UserProfileSectionView(name: user.name, profilePic: user.profileImageURL)
+                AccountSettingSectionView(loginType: user.loginType)
+                NotificationSettingsView(viewModel: myViewModel)
+                SimpleTermsView(termsViewModel: termsViewModel)
+                WithdrawalButtonView (
+                    loginType: user.loginType,
+                    onWithdrawTap: {
+                        showWithdrawalSheet = true
+                    },
+                    path: $path
+                )
             }
             .fullScreenCover(isPresented: $showWithdrawalSheet) {
                 WithdrawalView()
@@ -32,15 +41,30 @@ struct MyProfileView: View {
     }
 }
 
-
 struct UserProfileSectionView: View {
+    var name: String
+    var profilePic: String?
+    
     var body: some View {
         VStack(spacing: 10) {
-            Circle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 100, height: 100)
-
-            Text(UserSession.shared.user?.name ?? "김민지")
+            if let urlString = profilePic, let url = URL(string: urlString) {
+                KFImage(url)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 100, height: 100)
+                    .clipShape(Circle())
+            } else {
+                ZStack {
+                    Circle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 100, height: 100)
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 40))
+                        .foregroundColor(.white)
+                }
+            }
+            
+            Text(name)
                 .font(.title3)
                 .fontWeight(.semibold)
         }
@@ -49,47 +73,50 @@ struct UserProfileSectionView: View {
 }
 
 struct AccountSettingSectionView: View {
+    var loginType: LoginType
+    
     var body: some View {
         VStack(spacing: 1) {
-            Text("일반")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding([.top, .bottom], 16)
-
-            HStack {
-                Text("연결계정")
-                Spacer()
+            VStack(alignment: .leading, spacing: 10) {
+                Text("일반")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.top, 10)
+                    .padding(.horizontal)
                 
-                if let loginType = UserSession.shared.user?.loginType {
+                HStack {
+                    Text("연결계정")
+                        .foregroundColor(.black)
+                    Spacer()
                     let (loginName, imageName): (String, String) = {
                         switch loginType {
-                        case .kakao: return ("카카오톡", "image_32_kakao")
-                        case .apple: return ("애플", "image_32_apple")
+                        case .kakao: return ("카카오톡", "img_32_kakao")
+                        case .apple: return ("애플", "img_32_apple")
                         }
                     }()
-
+                    
                     HStack(spacing: 5) {
                         Text(loginName)
                             .foregroundColor(.gray)
-
+                        
                         Image(imageName)
                             .resizable()
                             .frame(width: 20, height: 20)
                     }
                 }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(8)
+                .padding(.horizontal)
             }
-            .padding()
-            .background(Color(.systemGray6))
-
-            NotificationSettingsView()
+            .background(Color(.systemGroupedBackground))
         }
     }
 }
 
 struct NotificationSettingsView: View {
-    @StateObject private var viewModel = MyViewModel()
-    @Environment(\.scenePhase) private var scenePhase
+    @ObservedObject var viewModel: MyViewModel
+    @Environment(\.scenePhase) var scenePhase
 
     var body: some View {
         Toggle("알림설정", isOn: $viewModel.isNotificationOn)
@@ -113,101 +140,103 @@ struct NotificationSettingsView: View {
         } message: {
             Text("알림 설정을 켜야 \n챙김 알림을 받을 수 있어요.")
         }
-        .padding()
+//        .padding()
         .background(Color(.systemGray6))
         }
     }
 
-public struct ServiceInfoRowView: View {
-    var title: String
-    var isBold: Bool = false
-    var showDetail: Bool = false
-    var detailURLString: String? = nil
-    var onDetailTappedClosure: ((String, String) -> Void)?
+struct SimpleTermsView: View {
+    @ObservedObject var termsViewModel: TermsViewModel
+    @State private var selectedAgreement: AgreementDetail?
+
+    var terms: [AgreementDetail] {
+        [
+            AgreementDetail(title: "서비스 이용 약관", urlString: termsViewModel.serviceAgreedTermsURL),
+            AgreementDetail(title: "개인정보 수집 및 이용 동의서", urlString: termsViewModel.personalInfoTermsURL),
+            AgreementDetail(title: "개인정보 처리방침", urlString: termsViewModel.privacyPolicyTermsURL)
+        ]
+    }
+
     
-    public init(
-            title: String,
-            isBold: Bool = false,
-            showDetail: Bool = false,
-            detailURLString: String? = nil,
-            onDetailTappedClosure: ((String, String) -> Void)? = nil
-        ) {
-            self.title = title
-            self.showDetail = showDetail
-            self.detailURLString = detailURLString
-            self.onDetailTappedClosure = onDetailTappedClosure
-        }
-    
-    public var body: some View {
-        HStack {
-            Text(title)
-                .font(isBold ? .Pretendard.b1Bold() : .Pretendard.b1Medium())
-            
-            Spacer()
-            
-            if showDetail, let detailURLString = detailURLString {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("서비스 약관 안내")
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.top, 20)
+                .padding(.horizontal)
+
+            ForEach(terms) { term in
                 Button {
-                    onDetailTappedClosure?(title, detailURLString)
+                    selectedAgreement = term
                 } label: {
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.gray)
+                    HStack {
+                        Text(term.title)
+                            .font(.body)
+                            .foregroundColor(.black)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                    }
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(8)
+                }
+                .padding(.horizontal)
+            }
+
+            Spacer()
+        }
+        .background(Color(.systemGroupedBackground))
+        .fullScreenCover(item: $selectedAgreement) { agreement in
+            NavigationStack {
+                TermsDetailView(
+                    title: agreement.title,
+                    urlString: agreement.urlString
+                )
+                .presentationDetents([.large])
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Text(agreement.title)
+                            .font(.headline)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            selectedAgreement = nil
+                        } label: {
+                            Image(systemName: "xmark")
+                                .foregroundColor(.black)
+                        }
+                    }
                 }
             }
         }
-                .padding()
-                .background(Color.white)
-                .cornerRadius(8)
-            
-        }
-    }
-
-public struct ServiceInfoSectionView : View {
-    
-    @State private var selectedAgreement: ServiceDetail?
-    
-    public var body: some View {
-        // TODO 터치시 안감?
-        ServiceInfoRowView(
-            title: "서비스 이용 약관",
-            isBold: false,
-            showDetail: true,
-            detailURLString: "https://example.com/",
-            onDetailTappedClosure: { title, url in
-                self.selectedAgreement = ServiceDetail(title: title, urlString: url)
-            })
-        Divider()
-            .background(Color.gray02)
-            .padding(.horizontal, 24)
-        ServiceInfoRowView(
-            title: "개인정보 수집 및 이용 동의서",
-            isBold: false,
-            showDetail: true,
-            detailURLString: "https://example.com/",
-            onDetailTappedClosure: { title, url in
-                self.selectedAgreement = ServiceDetail(title: title, urlString: url)
-            })
-        Divider()
-            .background(Color.gray02)
-            .padding(.horizontal, 24)
-        ServiceInfoRowView(
-            title: "개인정보 처리방침",
-            isBold: false,
-            showDetail: true,
-            detailURLString: "https://example.com/",
-            onDetailTappedClosure: { title, url in
-                self.selectedAgreement = ServiceDetail(title: title, urlString: url)
-            })
     }
 }
 
 
 struct WithdrawalButtonView: View {
+    var loginType: LoginType
     var onWithdrawTap: () -> Void
-
+    @Binding var path: [AppRoute]
+    
     var body: some View {
         VStack(spacing: 10) {
             Button(action: {
-                // 로그아웃 처리
+                if loginType == .kakao {
+                    UserSession.shared.kakaoLogout{ success in
+                        if success {
+                            path.removeLast()
+                            }
+                    }
+                }
+                 else {
+                     UserSession.shared.appleLogout{ success in
+                         if success {
+                             path.removeLast()
+                             }
+                     }
+                }
             }) {
                 Text("로그아웃")
                     .frame(maxWidth: .infinity)
@@ -231,10 +260,9 @@ struct WithdrawalButtonView: View {
     }
 }
 
-
-
-struct MyProfileView_Previews: PreviewProvider {
-    static var previews: some View {
-        MyProfileView()
-    }
-}
+//
+//struct MyProfileView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        MyProfileView()
+//    }
+//}

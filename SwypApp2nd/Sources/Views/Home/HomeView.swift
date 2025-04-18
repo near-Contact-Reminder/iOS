@@ -37,7 +37,8 @@ public struct HomeView: View {
                         VStack(spacing: 24) {
                             // 네비게이션 바
                             CustomNavigationBar(badgeCount: notificationViewModel.badgeCount,
-                                                onTapMy: { },
+                                                onTapMy: {DispatchQueue.main.async {
+                                path.append(.my)} },
                                                 onTapBell: { DispatchQueue.main.async { path.append(.inbox) }
                             })
                             
