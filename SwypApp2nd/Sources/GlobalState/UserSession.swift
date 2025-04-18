@@ -12,7 +12,7 @@ class UserSession: ObservableObject {
     @Published var appStep: AppStep = .login
     
 
-    // TODO: - 토큰 삭제, appStep 로그인으로
+    /// 카카오 로그아웃
     func kakaoLogout(completion: @escaping (Bool) -> Void) {
         UserApi.shared.logout { error in
             if let error = error {
@@ -22,12 +22,12 @@ class UserSession: ObservableObject {
             }
             
             TokenManager.shared.clear(type: .kakao)
-            self.logout()
+            self.logout() // 서버에서도 클리어
             completion(true)
         }
     }
     
-    // TODO: - 토큰 삭제, appStep 로그인으로
+    // 애플 로그아웃
     func appleLogout(completion: @escaping (Bool) -> Void) {
         
         TokenManager.shared.clear(type: .apple)
@@ -64,11 +64,12 @@ class UserSession: ObservableObject {
 
     /// 로그아웃 처리
     func logout() {
-        // TODO: - SNS 로그아웃 추가하기.
-        TokenManager.shared.clear(type: .server)  // 토큰 삭제
-        self.user = nil
-        self.appStep = .login
-        print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
+        DispatchQueue.main.async {
+            TokenManager.shared.clear(type: .server)  // 토큰 삭제
+            self.user = nil
+            self.appStep = .login
+            print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
+        }
     }
     
     /// 자동 로그인
@@ -259,4 +260,53 @@ class UserSession: ObservableObject {
             }
         }
     }
+    
+    func withdraw(loginType: LoginType, selectedReason: String, customReason: String, completion: @escaping (Bool) -> Void) {
+        guard let accessToken = TokenManager.shared.get(for: .server) else {
+            print("🔴 [UserSession] accessToken 없음")
+            completion(false)
+            return
+        }
+
+        BackEndAuthService.shared.withdraw(
+            accessToken: accessToken,
+            selectedReason: selectedReason,
+            customReason: customReason
+        ) { result in
+            switch result {
+            case .success:
+                // 1. 토큰 삭제
+                if loginType == .kakao {
+                    UserApi.shared.unlink {(error) in
+                        if let error = error {
+                            print(error)
+                        }
+                        else {
+                            print("unlink() success.")
+                        }
+                    }
+                    TokenManager.shared.clear(type: .kakao)
+                    
+                } else if loginType == .apple {
+                    TokenManager.shared.clear(type: .apple)
+                }
+                
+
+                // 2. 약관 동의 기록 삭제
+                UserDefaults.standard.removeObject(forKey: "didAgreeToKakaoTerms")
+                UserDefaults.standard.removeObject(forKey: "didAgreeToAppleTerms")
+
+                // 3. 유저 세션 초기화
+                self.logout()
+                print("🟢 [UserSession] 탈퇴 성공")
+                completion(true)
+
+            case .failure(let error):
+                print("🔴 [UserSession] 탈퇴 실패: \(error.localizedDescription)")
+                completion(false)
+            }
+        }
+    }
+
+
 }
