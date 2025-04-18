@@ -46,11 +46,11 @@ public struct HomeView: View {
                             GreetingSection(userName: userSession.user?.name ?? "사용자")
                             
                             // 이번달 챙길 사람
-                            ThisMonthSection(peoples: homeViewModel.peoples)
+                            ThisMonthSection(peoples: homeViewModel.thisMonthFriends)
                         }
                         
                         // 내 사람들
-                        MyPeopleSection(peoples: homeViewModel.peoples)
+                        MyPeopleSection(peoples: $homeViewModel.allFriends)
                             .ignoresSafeArea()
                             .frame(height: geometry.size.height * 0.65)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -60,8 +60,9 @@ public struct HomeView: View {
                 .frame(maxHeight: .infinity)
             }
         }
+        .environmentObject(userSession)
         .onAppear {
-            homeViewModel.loadPeoplesFromUserSession()
+            homeViewModel.loadFriendList()
         }
     }
 }
@@ -144,18 +145,19 @@ struct ThisMonthSection: View {
                     .font(Font.Pretendard.b1Bold())
                     .foregroundColor(.white)
                 Spacer()
-                if !peoples.isEmpty {
-                    Button {
-                        
-                    } label: {
-                        HStack {
-                            Text("전체보기")
-                                .font(Font.Pretendard.b2Medium())
-                                .foregroundColor(.gray03)
-                            Image("icon_12_arrow_right")
-                        }
-                    }
-                }
+                // TODO: - 2차때..
+//                if !peoples.isEmpty {
+//                    Button {
+//                        
+//                    } label: {
+//                        HStack {
+//                            Text("전체보기")
+//                                .font(Font.Pretendard.b2Medium())
+//                                .foregroundColor(.gray03)
+//                            Image("icon_12_arrow_right")
+//                        }
+//                    }
+//                }
             }
             .padding(.horizontal, 24)
 
@@ -262,8 +264,9 @@ struct ThisMonthContactCell: View {
 // MARK: - 내 사람들
 struct MyPeopleSection: View {
     @State private var currentPage = 0
-    @State var peoples: [Friend]
+    @Binding var peoples: [Friend]
     @State private var showEllipsisOptions = false
+    @EnvironmentObject var userSession: UserSession
     private var pages: [[Friend]] {
         stride(from: 0, to: peoples.count, by: 5).map {
             Array(peoples[$0..<min($0 + 5, peoples.count)])
@@ -287,7 +290,7 @@ struct MyPeopleSection: View {
                 }
                 .confirmationDialog("옵션 선택", isPresented: $showEllipsisOptions, titleVisibility: .visible) {
                     Button("사람 추가") {
-                        UserSession.shared.appStep = .registerFriends
+                        userSession.appStep = .registerFriends
                     }
                     // TODO: - 순서 편집으로 내 사람들 순서 변경 로직 추가하기.
 //                    Button("순서 편집") {
@@ -328,6 +331,7 @@ struct MyPeopleSection: View {
                                 StarPositionLayout(peoples: $peoples , pageIndex: index) { selected in
                                     // TODO: - 친구 상세 뷰 이동
                                     print("\(selected.name) tapped")
+                                    print("\(selected.id) tapped")
                                 }
                                 .tag(index)
                             }
@@ -360,6 +364,7 @@ struct StarPositionLayout: View {
         
     @State private var dragOffset: CGSize = .zero
     @State private var draggingIndex: Int? = nil
+    @EnvironmentObject var userSession: UserSession
 
     let positions: [CGPoint] = [
         CGPoint(x: 0, y: -120),
@@ -448,7 +453,7 @@ struct StarPositionLayout: View {
             if pagePeople.count < 5 {
                 let addIndex = pagePeople.count
                 Button {
-                    UserSession.shared.appStep = .registerFriends
+                    userSession.appStep = .registerFriends
                 } label: {
                     VStack {
                         Image(systemName: "plus")
@@ -529,137 +534,137 @@ struct PersonCircleView: View {
     }
 }
 
-struct HomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            previewForDevice("iPhone 13 mini")
-            previewForDevice("iPhone 16")
-            previewForDevice("iPhone 16 Pro")
-            previewForDevice("iPhone 16 Pro Max")
-        }
-    }
-    
-    static func previewForDevice(_ deviceName: String) -> some View {
-        let fakeFriends = [
-            Friend(
-                id: UUID(),
-                name: "정종원1",
-                image: nil,
-                imageURL: nil,
-                source: .kakao,
-                frequency: CheckInFrequency.none,
-                remindCategory: .message,
-                nextContactAt: Calendar.current
-                    .date(byAdding: .day, value: 0, to: Date()), // 오늘
-                lastContactAt: Calendar.current
-                    .date(byAdding: .day, value: -1, to: Date()),
-                checkRate: 20,
-                position: 0
-            ),
-            Friend(
-                id: UUID(),
-                name: "정종원2",
-                image: nil,
-                imageURL: nil,
-                source: .phone,
-                frequency: CheckInFrequency.none,
-                remindCategory: .anniversary,
-                nextContactAt: Calendar.current
-                    .date(byAdding: .day, value: 2, to: Date()), // D-2
-                lastContactAt: Calendar.current
-                    .date(byAdding: .day, value: -3, to: Date()),
-                checkRate: 45,
-                position: 1
-            ),
-            Friend(
-                id: UUID(),
-                name: "정종원3",
-                image: nil,
-                imageURL: nil,
-                source: .kakao,
-                frequency: CheckInFrequency.none,
-                remindCategory: .message,
-                nextContactAt: Calendar.current
-                    .date(byAdding: .day, value: -1, to: Date()), // D+1
-                lastContactAt: Calendar.current
-                    .date(byAdding: .day, value: -7, to: Date()),
-                checkRate: 65,
-                position: 2
-            ),
-            Friend(
-                id: UUID(),
-                name: "정종원4",
-                image: nil,
-                imageURL: nil,
-                source: .phone,
-                frequency: CheckInFrequency.none,
-                remindCategory: .message,
-                nextContactAt: Calendar.current
-                    .date(byAdding: .day, value: 7, to: Date()), // D-7
-                lastContactAt: Calendar.current
-                    .date(byAdding: .day, value: -10, to: Date()),
-                checkRate: 85,
-                position: 3
-            ),
-            Friend(
-                id: UUID(),
-                name: "정종원5",
-                image: nil,
-                imageURL: nil,
-                source: .phone,
-                frequency: CheckInFrequency.none,
-                remindCategory: .birth,
-                nextContactAt: Calendar.current
-                    .date(byAdding: .day, value: 15, to: Date()), // D-15
-                lastContactAt: Calendar.current
-                    .date(byAdding: .day, value: -14, to: Date()),
-                checkRate: 30,
-                position: 4
-            ),
-            Friend(
-                id: UUID(),
-                name: "정종원6",
-                image: nil,
-                imageURL: nil,
-                source: .phone,
-                frequency: CheckInFrequency.none,
-                remindCategory: .message,
-                nextContactAt: Calendar.current
-                    .date(byAdding: .day, value: 7, to: Date()), // D-7
-                lastContactAt: Calendar.current
-                    .date(byAdding: .day, value: -10, to: Date()),
-                checkRate: 85,
-                position: 3
-            ),
-            Friend(
-                id: UUID(),
-                name: "정종원7",
-                image: nil,
-                imageURL: nil,
-                source: .phone,
-                frequency: CheckInFrequency.none,
-                remindCategory: .birth,
-                nextContactAt: Calendar.current
-                    .date(byAdding: .day, value: 15, to: Date()), // D-15
-                lastContactAt: Calendar.current
-                    .date(byAdding: .day, value: -14, to: Date()),
-                checkRate: 30,
-                position: 4
-            )
-        ]
-        
-        UserSession.shared.user = User(id: "", name: "프리뷰", friends: fakeFriends, loginType: .kakao, serverAccessToken: "", serverRefreshToken: "")
-        
-        let viewModel = HomeViewModel()
-        viewModel.loadPeoplesFromUserSession()
-        
-        return HomeView(
-            homeViewModel: viewModel,
-            notificationViewModel: NotificationViewModel(),
-            path: .constant([])
-        )
-        .environmentObject(UserSession.shared)
-        .previewDevice(PreviewDevice(rawValue: deviceName))
-        .previewDisplayName(deviceName)
-    }
-}
+//struct HomeView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        Group {
+//            previewForDevice("iPhone 13 mini")
+//            previewForDevice("iPhone 16")
+//            previewForDevice("iPhone 16 Pro")
+//            previewForDevice("iPhone 16 Pro Max")
+//        }
+//    }
+//    
+//    static func previewForDevice(_ deviceName: String) -> some View {
+//        let fakeFriends = [
+//            Friend(
+//                id: UUID(),
+//                name: "정종원1",
+//                image: nil,
+//                imageURL: nil,
+//                source: .kakao,
+//                frequency: CheckInFrequency.none,
+//                remindCategory: .message,
+//                nextContactAt: Calendar.current
+//                    .date(byAdding: .day, value: 0, to: Date()), // 오늘
+//                lastContactAt: Calendar.current
+//                    .date(byAdding: .day, value: -1, to: Date()),
+//                checkRate: 20,
+//                position: 0
+//            ),
+//            Friend(
+//                id: UUID(),
+//                name: "정종원2",
+//                image: nil,
+//                imageURL: nil,
+//                source: .phone,
+//                frequency: CheckInFrequency.none,
+//                remindCategory: .anniversary,
+//                nextContactAt: Calendar.current
+//                    .date(byAdding: .day, value: 2, to: Date()), // D-2
+//                lastContactAt: Calendar.current
+//                    .date(byAdding: .day, value: -3, to: Date()),
+//                checkRate: 45,
+//                position: 1
+//            ),
+//            Friend(
+//                id: UUID(),
+//                name: "정종원3",
+//                image: nil,
+//                imageURL: nil,
+//                source: .kakao,
+//                frequency: CheckInFrequency.none,
+//                remindCategory: .message,
+//                nextContactAt: Calendar.current
+//                    .date(byAdding: .day, value: -1, to: Date()), // D+1
+//                lastContactAt: Calendar.current
+//                    .date(byAdding: .day, value: -7, to: Date()),
+//                checkRate: 65,
+//                position: 2
+//            ),
+//            Friend(
+//                id: UUID(),
+//                name: "정종원4",
+//                image: nil,
+//                imageURL: nil,
+//                source: .phone,
+//                frequency: CheckInFrequency.none,
+//                remindCategory: .message,
+//                nextContactAt: Calendar.current
+//                    .date(byAdding: .day, value: 7, to: Date()), // D-7
+//                lastContactAt: Calendar.current
+//                    .date(byAdding: .day, value: -10, to: Date()),
+//                checkRate: 85,
+//                position: 3
+//            ),
+//            Friend(
+//                id: UUID(),
+//                name: "정종원5",
+//                image: nil,
+//                imageURL: nil,
+//                source: .phone,
+//                frequency: CheckInFrequency.none,
+//                remindCategory: .birth,
+//                nextContactAt: Calendar.current
+//                    .date(byAdding: .day, value: 15, to: Date()), // D-15
+//                lastContactAt: Calendar.current
+//                    .date(byAdding: .day, value: -14, to: Date()),
+//                checkRate: 30,
+//                position: 4
+//            ),
+//            Friend(
+//                id: UUID(),
+//                name: "정종원6",
+//                image: nil,
+//                imageURL: nil,
+//                source: .phone,
+//                frequency: CheckInFrequency.none,
+//                remindCategory: .message,
+//                nextContactAt: Calendar.current
+//                    .date(byAdding: .day, value: 7, to: Date()), // D-7
+//                lastContactAt: Calendar.current
+//                    .date(byAdding: .day, value: -10, to: Date()),
+//                checkRate: 85,
+//                position: 3
+//            ),
+//            Friend(
+//                id: UUID(),
+//                name: "정종원7",
+//                image: nil,
+//                imageURL: nil,
+//                source: .phone,
+//                frequency: CheckInFrequency.none,
+//                remindCategory: .birth,
+//                nextContactAt: Calendar.current
+//                    .date(byAdding: .day, value: 15, to: Date()), // D-15
+//                lastContactAt: Calendar.current
+//                    .date(byAdding: .day, value: -14, to: Date()),
+//                checkRate: 30,
+//                position: 4
+//            )
+//        ]
+//        
+//        UserSession.shared.user = User(id: "", name: "프리뷰", friends: fakeFriends, loginType: .kakao, serverAccessToken: "", serverRefreshToken: "")
+//        
+//        let viewModel = HomeViewModel()
+//        viewModel.loadPeoplesFromUserSession()
+//        
+//        return HomeView(
+//            homeViewModel: viewModel,
+//            notificationViewModel: NotificationViewModel(),
+//            path: .constant([])
+//        )
+//        .environmentObject(UserSession.shared)
+//        .previewDevice(PreviewDevice(rawValue: deviceName))
+//        .previewDisplayName(deviceName)
+//    }
+//}

@@ -6,10 +6,12 @@
       "scale" : "1x"
     },
     {
+      "filename" : "_icon_24_arrow_chat_gray.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "_icon_24_arrow_chat_gray 1.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

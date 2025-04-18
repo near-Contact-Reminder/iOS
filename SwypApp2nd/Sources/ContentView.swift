@@ -45,6 +45,7 @@ public struct ContentView: View {
             case .registerFriends:
                 RegisterFriendView(viewModel: registerFriendsViewModel, proceed: {
                     contactFrequencyViewModel.setPeople(from: registerFriendsViewModel.selectedContacts) // 선택된 연락처 전달
+                    print("🟢 [RegisterFriendsViewModel] \(registerFriendsViewModel.selectedContacts) 전달됨")
                     userSession.appStep = .setFrequency
                 }, skip: {
                     userSession.appStep = .home
@@ -56,7 +57,7 @@ public struct ContentView: View {
                 }, complete: { updatedPeoples in
                     DispatchQueue.main.async {
                         print("🟢 [ContactFrequencySettingsView] 전달받은 people: \(updatedPeoples.map { $0.name })")
-                        homeViewModel.peoples = updatedPeoples
+//                        homeViewModel.peoples = updatedPeoples
                         UserSession.shared.user?.friends = updatedPeoples
                         userSession.appStep = .home
                     }
