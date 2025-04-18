@@ -47,7 +47,7 @@ struct WithdrawalView: View {
                 onCancel: { presentationMode.wrappedValue.dismiss() }
             )
         }
-        .padding()
+        .padding(.horizontal, 24)
 }
 
 struct WithdrawalHeaderView: View {
@@ -191,12 +191,12 @@ struct WithdrawalActionButtonsView: View {
                             .stroke(isValid ? Color.black : Color.gray, lineWidth: 1)
                     )
                     .cornerRadius(10)
-            }
+                }
             .disabled(!isValid)
+            }
         }
     }
 }
-
 
 struct WithdrawalView_Previews: PreviewProvider {
     static var previews: some View {
@@ -241,5 +241,4 @@ struct WithdrawalView_Previews: PreviewProvider {
         }
         
     }
-}
-}
+    }
