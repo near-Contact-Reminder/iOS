@@ -119,7 +119,7 @@ final class BackEndAuthService {
                         "🟢 [BackEndAuthService] 애플 로그인 성공 - accessToken: \(tokenResponse.accessToken.prefix(10))..., refreshToken: \(tokenResponse.refreshTokenInfo.token.prefix(10))..."
                     )
                     completion(.success(tokenResponse))
-                case .failure(let  error):
+                case .failure(let error):
                     print(
                         // TODO: - AppleLogin은 실패중...
                         "🔴 [BackEndAuthService] 애플 로그인 실패: \(error.localizedDescription)"
