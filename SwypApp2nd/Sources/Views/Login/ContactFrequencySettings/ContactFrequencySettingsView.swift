@@ -129,6 +129,8 @@ struct ContactFrequencySettingsView: View {
                         DispatchQueue.main.async {
                             viewModel.uploadAllFriendsToServer(viewModel.people)
                             UserSession.shared.user?.friends = viewModel.people
+                            viewModel.people = []
+                            // TODO: - Complete로 people 안넘기는 Test 필요
                             complete(viewModel.people)
                         }
                     }
@@ -188,7 +190,8 @@ struct FrequencyRow: View {
             Text(person.name)
                 .font(.Pretendard.b2Medium())
             Spacer()
-            Button(action: onSelect) {
+            Button(action: { if !isUnified { onSelect() } }
+            ) {
                 Text(person.frequency?.rawValue ?? "주기 선택")
                     .font(.Pretendard.b2Medium())
                 Image(systemName: "chevron.down")

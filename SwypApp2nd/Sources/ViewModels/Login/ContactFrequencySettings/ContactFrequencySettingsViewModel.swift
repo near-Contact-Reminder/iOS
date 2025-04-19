@@ -39,6 +39,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
     }
     
     func updateFrequency(for person: Friend, to frequency: CheckInFrequency) {
+        guard !isUnified else { return } // 한 번에 설정 중이면 무시..?
         guard let index = people.firstIndex(of: person) else { return }
         let nextDate = calculateNextContactDate(for: frequency)
         people[index].frequency = frequency
@@ -55,9 +56,20 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         }
     }
     
-    // RegisterViewModel에서 선택한 연락처 받아오는 메소드
+    // RegisterViewModel에서 선택한 연락처 받아오는 메소드, 기존 친구(friends)에 이미 있는 친구는 제외하고, 새 친구만 저장
     func setPeople(from contacts: [Friend]) {
         self.people = contacts.map { $0 }
+        let existing = UserSession.shared.user?.friends ?? []
+        let existingIds = Set(existing.map { $0.id })
+
+        let newFriends = contacts.filter { !existingIds.contains($0.id) }
+        let allowedCount = max(0, 10 - existing.count)
+
+        self.people = Array(newFriends.prefix(allowedCount))
+            
+        if newFriends.count > allowedCount {
+            print("⚠️ 최대 10명까지만 등록할 수 있어요.")
+        }
     }
     
     /// 카카오 이미지 다운로드
