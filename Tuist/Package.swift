@@ -8,7 +8,14 @@ import PackageDescription
         // Customize the product types for specific package product
         // Default is .staticFramework
         // productTypes: ["Alamofire": .framework,]
-        productTypes: ["Alamofire": .framework, "Kingfisher": .framework]
+        productTypes: ["Alamofire": .framework,
+                       "Kingfisher": .framework,
+                       "KakaoSDKCommon": .framework,
+                       "KakaoSDKAuth": .framework,
+                       "KakaoSDKUser": .framework,
+                       "KakaoSDKFriend": .framework,
+                       "KakaoSDKTalk": .framework,
+                      ]
     )
 #endif
 

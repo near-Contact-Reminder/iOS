@@ -1,4 +1,7 @@
 import SwiftUI
+import KakaoSDKTalk
+import KakaoSDKFriend
+import KakaoSDKAuth
 
 struct RegisterFriendView: View {
     @ObservedObject var viewModel: RegisterFriendsViewModel
@@ -50,7 +53,7 @@ struct RegisterFriendView: View {
                 Image("img_100_character_default")
                     .frame(height: 80)
 
-                Text("가까워지고 싶은 사람을\n선택해주세요")
+                Text("가까워지고 싶은 사람\n 10명까지 선택해주세요")
                     .font(.Pretendard.h1Bold())
 
                 Text("먼저, 더 가까워지고 싶은\n소중한 사람만 선택해주세요.")
@@ -66,7 +69,8 @@ struct RegisterFriendView: View {
                     VStack(spacing: 12) {
                         CardButton(
                             icon: Image("img_32_contact_square"),
-                            title: "연락처에서 불러오기",
+                            title: "연락처에서 불러오기 (최대 5명)",
+                            hasContacts: !viewModel.phoneContacts.isEmpty,
                             action: {
                                 showContactPicker = true
                             }
@@ -91,7 +95,8 @@ struct RegisterFriendView: View {
                     VStack(spacing: 12) {
                         CardButton(
                             icon: Image("img_32_kakao_square"),
-                            title: "카카오톡에서 불러오기",
+                            title: "카카오톡에서 불러오기 (최대 5명)",
+                            hasContacts: !viewModel.kakaoContacts.isEmpty,
                             action: {
                                 viewModel.fetchContactsFromKakao()
                             }
@@ -140,6 +145,13 @@ struct RegisterFriendView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 20)
         }
+        .alert(item: $viewModel.alertItem) { item in
+            Alert(
+                title: Text("⚠️ 제한 안내"),
+                message: Text(item.message),
+                dismissButton: .default(Text("확인"))
+            )
+        }
     }
 }
 
@@ -147,6 +159,7 @@ struct RegisterFriendView: View {
 struct CardButton: View {
     let icon: Image
     let title: String
+    let hasContacts: Bool
     let action: () -> Void
 
     var body: some View {
@@ -164,8 +177,14 @@ struct CardButton: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.gray02)
+                if hasContacts {
+                    Text("다시 선택")
+                        .font(.Pretendard.b2Medium())
+                        .foregroundColor(.blue01)
+                } else {
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.gray02)
+                }
             }
             .padding()
             .background(Color.white)

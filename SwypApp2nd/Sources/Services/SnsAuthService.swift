@@ -27,7 +27,39 @@ class SnsAuthService {
                     print("카카오 계정 로그인 실패:", error)
                     completion(nil)
                 } else {
+                    guard let oauthToken = oauthToken else { return }
+                    self.requestAdditionalKakaoScopesIfNeeded(oauthToken)
                     completion(oauthToken)
+                }
+            }
+        }
+    }
+    
+    /// 카카오 동의 요청
+    func requestAdditionalKakaoScopesIfNeeded(
+        _ token: OAuthToken
+    ) {
+        UserApi.shared.me { user, error in
+            guard let kakaoAccount = user?.kakaoAccount else {
+                print("사용자 정보 조회 실패 또는 누락")
+                return
+            }
+
+            var scopes: [String] = []
+
+            if kakaoAccount.profileNeedsAgreement == true { scopes.append("profile") }
+            if kakaoAccount.nameNeedsAgreement == true { scopes.append("name") }
+            if kakaoAccount.profileImageNeedsAgreement == true { scopes.append("profile_image") }
+
+            if scopes.isEmpty {
+                print("🟢 [SnsAuthService] 추가 동의 필요 없음")
+            } else {
+                print("🟡 [SnsAuthService] 추가 동의 필요: \(scopes)")
+                UserApi.shared.loginWithKakaoAccount(scopes: scopes) { newToken, error in
+                    if let error = error {
+                        print("🔴 [SnsAuthService] 추가 동의 실패: \(error)")
+                    } else {
+                    }
                 }
             }
         }
