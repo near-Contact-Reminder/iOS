@@ -40,6 +40,9 @@ let project = Project(
                         "Pretendard-SemiBold.otf",
                         "Pretendard-Thin.otf",
                     ],
+//                    "LSApplicationQueriesSchemes": [
+//                        "kakaokompassauth" // 앱으로 로그인
+//                    ],
                     "CFBundleIconName": "AppIcon",
                     "UIUserInterfaceStyle": "Light",
                     "CFBundleShortVersionString": "$(MARKETING_VERSION)",
@@ -55,12 +58,18 @@ let project = Project(
             sources: [
                 "SwypApp2nd/Sources/**"
             ],
-            resources: ["SwypApp2nd/Resources/**"],
+            resources: ["SwypApp2nd/Resources/**",
+                       "SwypApp2nd/Resources/External/KakaoSDKFriendResources.bundle"
+                       ],
             entitlements: "Tuist/SignInWithApple.entitlements",
             dependencies: [
                 .external(name: "Alamofire"),
                 .external(name: "Kingfisher"),
-                .external(name: "KakaoSDK"),
+                .external(name: "KakaoSDKCommon"),
+                .external(name: "KakaoSDKAuth"),
+                .external(name: "KakaoSDKUser"),
+                .external(name: "KakaoSDKFriend"),
+                .external(name: "KakaoSDKTalk")
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
