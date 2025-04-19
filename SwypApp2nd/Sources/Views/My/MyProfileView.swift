@@ -45,7 +45,7 @@ struct UserProfileSectionView: View {
     var profilePic: String?
     
     var body: some View {
-        VStack(spacing: 15) {
+        VStack(spacing: 16) {
             if let urlString = profilePic, let url = URL(string: urlString) {
                 KFImage(url)
                     .resizable()
