@@ -1,14 +1,21 @@
 import Foundation
 import UIKit
 import KakaoSDKTalk
-import KakaoSDKFriendCore
 import KakaoSDKFriend
+import KakaoSDKUser
+import KakaoSDKCommon
 import KakaoSDKAuth
 import Combine
 import Contacts
 
+struct AlertItem: Identifiable {
+    let id = UUID()
+    let message: String
+}
+
 class RegisterFriendsViewModel: ObservableObject {
     @Published var selectedContacts: [Friend] = []
+    @Published var alertItem: AlertItem? = nil // 10명 넘을시 alert
     
     private let contactStore = CNContactStore()
     
@@ -76,13 +83,31 @@ class RegisterFriendsViewModel: ObservableObject {
                         position: nil
                     )
         }
-        print("🟢 [RegisterFriendsViewModel]\(converted.first?.name)의 id: \(converted.first?.id)")
-        DispatchQueue.main.async {
-            let existingNonPhone = self.selectedContacts.filter { $0.source != .phone }
-            let merged = existingNonPhone + converted
-            let deduped = Array(Set(merged)).prefix(5)
+        print("🟢 [RegisterFriendsViewModel]\(String(describing: converted.first?.name))의 id: \(String(describing: converted.first?.id))")
         
-            self.selectedContacts = Array(deduped)
+        DispatchQueue.main.async {
+            let existingFriends = UserSession.shared.user?.friends ?? []
+            let existingIds = Set(existingFriends.map { $0.id })
+            
+            let totalCount = self.selectedContacts.count + existingFriends.count
+            if totalCount >= 10 {
+                self.alertItem = AlertItem(message: "최대 10명까지만 등록할 수 있어요.")
+                return
+            }
+
+            let newContacts = converted.filter { !existingIds.contains($0.id) }
+            let remainingPhone = max(0, 5 - self.phoneContacts.count)
+            let limited = Array(newContacts.prefix(remainingPhone))
+            
+            if newContacts.count > remainingPhone {
+                self.alertItem = AlertItem(message: "연락처는 최대 5명까지만 선택할 수 있어요.")
+                return
+            }
+            
+            let existingKakao = self.selectedContacts.filter { $0.source == .kakao }
+            self.selectedContacts = Array(Set(existingKakao + limited))
+
+            print("🟢 등록된 연락처 수: \(self.phoneContacts.count) / 5")
         }
         print("🟢 [RegisterFriendsViewModel] 연락처 가져옴: \(self.selectedContacts)")
     }
@@ -96,7 +121,13 @@ class RegisterFriendsViewModel: ObservableObject {
         // 2. 토큰 관리..? -> 애플로그인이 진행됐으니 토큰은 필요없나,, 카카오 서버 토큰은 필요할듯
         // 3. 카카오 친구목록 호출
         print("🟡 [RegisterFriendsViewModel] fetchContactsFromKakao 호출됨")
-
+        
+        if let path = Bundle.main.path(forResource: "KakaoSDKFriendResources", ofType: "bundle") {
+            print("KakaoSDKFriendResources.bundle 포함됨: \(path)")
+        } else {
+            print("KakaoSDKFriendResources.bundle 미포함")
+        }
+        
         if TokenManager.shared.get(for: .kakao) != nil {
             print("🟢 [RegisterFriendsViewModel] 기존 Kakao 토큰 있음 → 친구목록 요청")
             self.requestKakaoFriends()
@@ -134,36 +165,77 @@ class RegisterFriendsViewModel: ObservableObject {
             maxPickableCount: 5, // 선택 가능한 최대 대상 수
             minPickableCount: 1 // 선택 가능한 최소 대상 수
         )
-        PickerApi.shared.selectFriendsPopup(params: openPickerFriendRequestParams) { selectedUsers, error in
+        PickerApi.shared.selectFriendsPopup(params: openPickerFriendRequestParams) {
+ selectedUsers,
+ error in
+            
+            // TODO: - 탈퇴후 테스트 필요
+            if let error = error as? SdkError,
+               case .ApiFailed(_, _) = error,
+               error.localizedDescription.contains("scope") {
+                print("🔴 친구목록 권한 미동의 → scope 재요청")
+
+                UserApi.shared
+                    .loginWithKakaoAccount(scopes: ["friends"]) { _, error in
+                        if let error = error {
+                            print("🔴 friends scope 동의 실패: \(error)")
+                        } else {
+                            print("🟢 friends scope 동의 성공 → 친구목록 재요청")
+                            self.requestKakaoFriends()
+                        }
+                    }
+                return
+            }
+
             if let error = error {
-                print(error)
-            } else if let selectedUsers = selectedUsers?.users {
-                print(
-                    "✅ 친구 선택 성공: \(selectedUsers)"
-                )
+                print("🔴 친구 피커 오류: \(error)")
+                return
+            }
+
+            guard let selectedUsers = selectedUsers?.users else {
+                print("🟡 선택된 친구 없음")
+                return
+            }
+
+            print("✅ 친구 선택 성공: \(selectedUsers)")
                 
-                // TODO: - 썸네일 이미지 URL → Signed URL 적용
-                let kakaoContacts: [Friend] = selectedUsers.compactMap {
-                    let id = UUID()
-                    return Friend(
-                        id: id,
-                        name: $0.profileNickname ?? "이름 없음",
-                        imageURL: $0.profileThumbnailImage?.absoluteString,
-                        source: .kakao,
-                        frequency: CheckInFrequency.none,
-                        fileName: "\(id.uuidString).jpg"
-                    )
+            // TODO: - 썸네일 이미지 URL → Signed URL 적용
+            let kakaoContacts: [Friend] = selectedUsers.compactMap {
+                let id = UUID()
+                return Friend(
+                    id: id,
+                    name: $0.profileNickname ?? "이름 없음",
+                    imageURL: $0.profileThumbnailImage?.absoluteString,
+                    source: .kakao,
+                    frequency: CheckInFrequency.none,
+                    fileName: "\(id.uuidString).jpg"
+                )
+            }
+            DispatchQueue.main.async {
+                let existingFriends = UserSession.shared.user?.friends ?? []
+                let existingIds = Set(existingFriends.map { $0.id })
+
+                let totalCount = self.selectedContacts.count + existingFriends.count
+                if totalCount >= 10 {
+                    self.alertItem = AlertItem(message: "최대 10명까지만 등록할 수 있어요.")
+                    return
                 }
-                DispatchQueue.main.async {
+                
+                let newKakaoContacts = kakaoContacts.filter {
+                    !existingIds.contains($0.id)
+                }
+
+                let remainingKakao = max(0, 5 - self.kakaoContacts.count)
+                let limited = Array(newKakaoContacts.prefix(remainingKakao))
+
                 let existingPhone = self.selectedContacts.filter {
                     $0.source == .phone
                 }
-                let merged = existingPhone + kakaoContacts
-                let deduped = Array(Set(merged)).prefix(10)
-               
-                    self.selectedContacts = Array(deduped)
-                }
+                self.selectedContacts = Array(Set(existingPhone + limited))
+
+                print("🟢 등록된 카카오 친구 수: \(self.kakaoContacts.count) / 5")
             }
+            
         }
     }
 }
