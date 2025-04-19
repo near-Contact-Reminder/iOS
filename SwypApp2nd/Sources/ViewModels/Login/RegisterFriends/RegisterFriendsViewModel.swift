@@ -90,7 +90,7 @@ class RegisterFriendsViewModel: ObservableObject {
             let existingIds = Set(existingFriends.map { $0.id })
             
             let totalCount = self.selectedContacts.count + existingFriends.count
-            if totalCount >= 10 {
+            if totalCount > 10 {
                 self.alertItem = AlertItem(message: "최대 10명까지만 등록할 수 있어요.")
                 return
             }
@@ -216,7 +216,7 @@ class RegisterFriendsViewModel: ObservableObject {
                 let existingIds = Set(existingFriends.map { $0.id })
 
                 let totalCount = self.selectedContacts.count + existingFriends.count
-                if totalCount >= 10 {
+                if totalCount > 10 {
                     self.alertItem = AlertItem(message: "최대 10명까지만 등록할 수 있어요.")
                     return
                 }
