@@ -37,8 +37,13 @@ struct FriendListResponse: Codable, Identifiable {
     let name: String
     let imageUrl: String?
     let fileName: String?
-
+    
     var id: String { friendId }
+}
+
+struct WithdrawRequest: Encodable {
+    let reasonType: String
+    let customReason: String
 }
 
 final class BackEndAuthService {
@@ -318,6 +323,34 @@ final class BackEndAuthService {
                     completion(.success(()))
                 case .failure(let error):
                     print("🔴 [BackEndAuthService] 리마인더 전송 실패: \(error.localizedDescription)")
+                    completion(.failure(error))
+            }
+        }
+    }
+    
+    func withdraw(accessToken: String, selectedReason: String, customReason:String, completion: @escaping (Result<Void, Error>) -> Void) {
+        
+        let url = "\(baseURL)/member/withdraw"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let body = WithdrawRequest(reasonType: selectedReason, customReason: customReason)
+       
+        AF.request(
+            url,
+            method: .delete,
+            parameters: body,
+            encoder: JSONParameterEncoder.default,
+            headers: headers
+        )
+            .validate()
+            .response { response in
+                switch response.result {
+                case .success:
+                    print("🟢 [BackEndAuthService] 탈퇴 전송 성공")
+                    completion(.success(()))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 탈퇴 전송 실패: \(error.localizedDescription)")
                     completion(.failure(error))
                 }
             }

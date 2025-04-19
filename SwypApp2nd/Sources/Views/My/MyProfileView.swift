@@ -33,11 +33,10 @@ struct MyProfileView: View {
                 )
             }
             .fullScreenCover(isPresented: $showWithdrawalSheet) {
-                WithdrawalView()
+                WithdrawalView(path: $path)
             }
-            .padding(.horizontal)
-            .navigationBarTitle("MY", displayMode: .inline)
         }
+        .padding(.horizontal, 12)
     }
 }
 
@@ -46,29 +45,21 @@ struct UserProfileSectionView: View {
     var profilePic: String?
     
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 16) {
             if let urlString = profilePic, let url = URL(string: urlString) {
                 KFImage(url)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 100, height: 100)
+                    .frame(width: 80, height: 80)
                     .clipShape(Circle())
             } else {
-                ZStack {
-                    Circle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 100, height: 100)
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(.white)
-                }
+                Image("_img_80_user1")
+                    .frame(width: 80, height: 80)
             }
-            
             Text(name)
-                .font(.title3)
-                .fontWeight(.semibold)
+                .font(Font.Pretendard.b1Bold())
         }
-        .padding(.top, 40)
+        .padding(.top,20)
     }
 }
 
@@ -77,15 +68,16 @@ struct AccountSettingSectionView: View {
     
     var body: some View {
         VStack(spacing: 1) {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 24) {
                 Text("일반")
-                    .font(.title2)
+                    .font(Font.Pretendard.b1Bold())
                     .fontWeight(.bold)
-                    .padding(.top, 10)
+                    .padding(.top, 42)
                     .padding(.horizontal)
                 
                 HStack {
                     Text("연결계정")
+                        .font(Font.Pretendard.b1Medium())
                         .foregroundColor(.black)
                     Spacer()
                     let (loginName, imageName): (String, String) = {
@@ -98,18 +90,11 @@ struct AccountSettingSectionView: View {
                     HStack(spacing: 5) {
                         Text(loginName)
                             .foregroundColor(.gray)
-                        
                         Image(imageName)
-                            .resizable()
-                            .frame(width: 20, height: 20)
                     }
                 }
-                .padding()
-                .background(Color.white)
-                .cornerRadius(8)
                 .padding(.horizontal)
             }
-            .background(Color(.systemGroupedBackground))
         }
     }
 }
@@ -120,8 +105,9 @@ struct NotificationSettingsView: View {
 
     var body: some View {
         Toggle("알림설정", isOn: $viewModel.isNotificationOn)
-            .padding()
-            .background(Color(.systemGray6))
+            .padding(.horizontal)
+            .font(Font.Pretendard.b1Medium())
+            .tint(Color.blue02)
             .onAppear {
                 viewModel.loadInitialState()
             }
@@ -139,9 +125,7 @@ struct NotificationSettingsView: View {
             Button("취소", role: .cancel) { viewModel.showSettingsAlert = false }
         } message: {
             Text("알림 설정을 켜야 \n챙김 알림을 받을 수 있어요.")
-        }
-//        .padding()
-        .background(Color(.systemGray6))
+            }
         }
     }
 
@@ -159,14 +143,15 @@ struct SimpleTermsView: View {
 
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("서비스 약관 안내")
-                .font(.title2)
+        VStack(alignment: .leading, spacing: 14) {
+            Text("서비스 정보")
+                .font(Font.Pretendard.b1Bold())
                 .fontWeight(.bold)
-                .padding(.top, 20)
+                .padding(.top, 42)
+                .padding(.bottom, 14)
                 .padding(.horizontal)
 
-            ForEach(terms) { term in
+        ForEach(Array(terms.enumerated()), id: \.1.id) { index, term in
                 Button {
                     selectedAgreement = term
                 } label: {
@@ -177,17 +162,17 @@ struct SimpleTermsView: View {
                         Spacer()
                         Image(systemName: "chevron.right")
                             .foregroundColor(.gray)
+                            .frame(width: 24, height: 24)
                     }
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(8)
                 }
-                .padding(.horizontal)
+                if index < terms.count - 1 {
+                    Divider()
+                        .background(Color.gray02)
+                }
             }
-
-            Spacer()
+            .padding(.horizontal)
         }
-        .background(Color(.systemGroupedBackground))
+        
         .fullScreenCover(item: $selectedAgreement) { agreement in
             NavigationStack {
                 TermsDetailView(
@@ -227,42 +212,89 @@ struct WithdrawalButtonView: View {
                     UserSession.shared.kakaoLogout{ success in
                         if success {
                             path.removeLast()
-                            }
+                        }
                     }
                 }
-                 else {
-                     UserSession.shared.appleLogout{ success in
-                         if success {
-                             path.removeLast()
-                             }
-                     }
+                else {
+                    UserSession.shared.appleLogout{ success in
+                        if success {
+                            path.removeLast()
+                        }
+                    }
                 }
             }) {
                 Text("로그아웃")
+                    .font(Font.Pretendard.b1Bold())
+                    .foregroundStyle(Color.black)
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.black, lineWidth: 1)
+                            .stroke(Color.gray02, lineWidth: 1)
                     )
             }
             .padding(.horizontal)
-
+            .padding(.top, 42)
+            
             Button(action: {
                 onWithdrawTap()
             }) {
                 Text("탈퇴하기")
-                    .font(.footnote)
-                    .foregroundColor(.gray)
+                    .font(Font.Pretendard.b2Medium())
+                    .underline()
+                    .lineSpacing(4)
+                    .kerning(-0.25) // TODO
+                    .foregroundColor(Color.gray01)
                     .padding(.bottom, 20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
             }
+            .padding(.top, 18)
         }
     }
 }
 
-//
-//struct MyProfileView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        MyProfileView()
-//    }
-//}
+struct MyProfileView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            previewForDevice("iPhone 13 mini")
+            previewForDevice("iPhone 16")
+            previewForDevice("iPhone 16 Pro")
+            previewForDevice("iPhone 16 Pro Max")
+        }
+    }
+
+    static func previewForDevice(_ deviceName: String) -> some View {
+
+        let fakeFriends = [
+            Friend(
+                id: UUID(), name: "정종원1", image: nil, imageURL: nil,
+                source: .kakao, frequency: CheckInFrequency.none, remindCategory: .message,
+                nextContactAt: Date(), lastContactAt: Date().addingTimeInterval(-86400),
+                checkRate: 20, position: 0
+            )
+        ]
+
+        UserSession.shared.user = User(
+            id: "preview", name: "프리뷰",
+            friends: fakeFriends,
+            loginType: .kakao,
+            serverAccessToken: "token",
+            serverRefreshToken: "refresh"
+        )
+
+        return MyProfileWrapper()
+            .previewDevice(PreviewDevice(rawValue: deviceName))
+            .previewDisplayName(deviceName)
+    }
+
+
+    struct MyProfileWrapper: View {
+        @State var path: [AppRoute] = [.my]
+
+        var body: some View {
+            MyProfileView(path: $path)
+        }
+    
+    }
+}
