@@ -3,38 +3,22 @@ import SwiftUI
 struct WithdrawalView: View {
     @Binding var path: [AppRoute]
     @Environment(\.presentationMode) var presentationMode
-    @State private var selectedReason: String = ""
-    @State private var customReason: String = ""
-    @State private var showConfirmAlert = false
     @FocusState private var isCustomReasonFocused: Bool
+    @StateObject var viewModel = MyViewModel()
     var user = UserSession.shared.user!
-    
-    var isValidCustomReason: Bool {
-        selectedReason != "기타" || (customReason.count >= 1 && customReason.count <= 200)
-    }
         
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            WithdrawalHeaderView()
-                
-            Text("\(user.name)님, \n떠나는 이유를 알려주시면 \n큰 도움이 될 거예요.")
-                .font(Font.Pretendard.h1Medium(size: 24))
-                .lineSpacing(8)
-                .padding(.top, 42)
-            
-            Text("소중한 의견을 받아 \n더 나은 서비스를 만들어갈게요.")
-                .font(Font.Pretendard.b1Medium())
-                .foregroundColor(.gray)
-                .padding(.bottom, 42)
+            WithdrawalHeaderView(name: user.name)
             
             WithdrawalReasonListView(
-                selectedReason: $selectedReason,
+                selectedReason: $viewModel.selectedReason,
                 isCustomReasonFocused: _isCustomReasonFocused
             )
             
-            if selectedReason == "기타" {
+            if viewModel.selectedReason == "기타" {
                 CustomReasonInputView(
-                    customReason: $customReason,
+                    customReason: $viewModel.customReason,
                     isCustomReasonFocused: _isCustomReasonFocused
                 )
             }
@@ -42,15 +26,22 @@ struct WithdrawalView: View {
             Spacer()
             
             WithdrawalActionButtonsView(
-                isValid: isValidCustomReason,
-                onWithdraw: { showConfirmAlert = true },
-                onCancel: { presentationMode.wrappedValue.dismiss() }
+                isValid: viewModel.isValidCustomReason,
+                onWithdraw: { viewModel.submitWithdrawal(loginType: user.loginType, completion: { success in
+                    if success {
+                        presentationMode.wrappedValue.dismiss()
+                        path.removeAll()
+                    }
+                })
+            },
+            onCancel: { presentationMode.wrappedValue.dismiss() }
             )
         }
         .padding(.horizontal, 24)
 }
 
 struct WithdrawalHeaderView: View {
+    var name: String
     @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
@@ -66,6 +57,16 @@ struct WithdrawalHeaderView: View {
                     .foregroundColor(Color.black)
             }
         }
+        
+        Text("\(name)님, \n떠나는 이유를 알려주시면 \n큰 도움이 될 거예요.")
+            .font(Font.Pretendard.h1Medium(size: 24))
+            .lineSpacing(8)
+            .padding(.top, 42)
+        
+        Text("소중한 의견을 받아 \n더 나은 서비스를 만들어갈게요.")
+            .font(Font.Pretendard.b1Medium())
+            .foregroundColor(.gray)
+            .padding(.bottom, 42)
     }
 }
 
@@ -110,7 +111,7 @@ struct CustomReasonInputView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 12)
                     .stroke(
                         customReason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                         ? Color.gray03 : Color.blue01,
@@ -122,7 +123,7 @@ struct CustomReasonInputView: View {
                     Text("편하게 의견을 남겨주세요.")
                         .font(Font.Pretendard.b1Medium())
                         .foregroundColor(Color.gray02)
-                        .padding(.leading, 14)
+                        .padding(.leading, 16)
                         .padding(.top, 16)
                         .zIndex(1)
                 }
@@ -162,11 +163,12 @@ struct CustomReasonInputView: View {
 }
 
 struct WithdrawalActionButtonsView: View {
+    
     var isValid: Bool
     var onWithdraw: () -> Void
     var onCancel: () -> Void
+    @State private var showConfirmAlert = false
 
-    
     var body: some View {
         HStack {
             Button(action: onCancel) {
@@ -176,10 +178,10 @@ struct WithdrawalActionButtonsView: View {
                     .font(Font.Pretendard.b1Bold())
                     .foregroundColor(.white)
                     .background(Color.blue01)
-                    .cornerRadius(10)
+                    .cornerRadius(12)
             }
 
-            Button(action: onWithdraw) {
+            Button(action: {showConfirmAlert = true}) {
                 Text("탈퇴하기")
                     .font(Font.Pretendard.b1Bold())
                     .frame(maxWidth: .infinity)
@@ -187,12 +189,20 @@ struct WithdrawalActionButtonsView: View {
                     .background(Color.clear)
                     .foregroundColor(isValid ? Color.black : Color.gray)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 12)
                             .stroke(isValid ? Color.black : Color.gray, lineWidth: 1)
                     )
-                    .cornerRadius(10)
+                    .cornerRadius(12)
                 }
             .disabled(!isValid)
+            .alert("정말 탈퇴하시겠어요?", isPresented: $showConfirmAlert) {
+                    Button("탈퇴하기", role: .destructive) {
+                        onWithdraw()
+                    }
+                    Button("취소", role: .cancel) { }
+                } message: {
+                    Text("탈퇴 후에는 기록과 정보가 모두 사라져요.")
+                }
             }
         }
     }
@@ -241,4 +251,4 @@ struct WithdrawalView_Previews: PreviewProvider {
         }
         
     }
-    }
+}

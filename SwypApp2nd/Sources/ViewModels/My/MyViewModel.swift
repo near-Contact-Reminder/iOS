@@ -2,8 +2,15 @@ import SwiftUI
 import Combine
 
 class MyViewModel: ObservableObject {
+    
     @Published var isNotificationOn: Bool = UserDefaults.standard.bool(forKey: "isNotificationOn")
     @Published var showSettingsAlert: Bool = false
+    @Published var selectedReason: String = ""
+    @Published var customReason: String = ""
+    @Published var showConfirmAlert: Bool = false
+    var isValidCustomReason: Bool {
+            selectedReason != "기타" || (customReason.count >= 1 && customReason.count <= 200)
+        }
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -50,5 +57,14 @@ class MyViewModel: ObservableObject {
                     break
                 }
             }
+    }
+    
+    func submitWithdrawal(loginType: LoginType, completion: @escaping (Bool) -> Void) {
+        
+        UserSession.shared.withdraw(loginType: loginType, selectedReason: selectedReason, customReason: customReason) { success in
+            DispatchQueue.main.async {
+                completion(success)
+            }
+        }
     }
 }
