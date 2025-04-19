@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ProfileDetailView: View {
     @ObservedObject var viewModel: ProfileDetailViewModel
-    
+    @Binding var path: [AppRoute]
     @State private var selectedTab: Tab = .profile
 
     enum Tab {
@@ -306,33 +306,33 @@ private struct ConfirmButton: View {
 }
 
 
-struct ProfileDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            previewForDevice("iPhone 13 mini")
-            previewForDevice("iPhone 16")
-            previewForDevice("iPhone 16 Pro")
-            previewForDevice("iPhone 16 Pro Max")
-        }
-    }
-    
-    static func previewForDevice(_ deviceName: String) -> some View {
-        ProfileDetailView(
-            viewModel: ProfileDetailViewModel(
-                people: Friend(
-                    id: UUID(),
-                    name: "Test1",
-                    source: ContactSource.kakao,
-                    frequency: CheckInFrequency.monthly,
-                    phoneNumber: "",
-                    birthDay: Date(),
-                    anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
-                    //                memo:"Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam urna tempo",
-                    lastContactAt: Date()
-                )
-            )
-        )
-    }
-}
+//struct ProfileDetailView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        Group {
+//            previewForDevice("iPhone 13 mini")
+//            previewForDevice("iPhone 16")
+//            previewForDevice("iPhone 16 Pro")
+//            previewForDevice("iPhone 16 Pro Max")
+//        }
+//    }
+//    
+//    static func previewForDevice(_ deviceName: String) -> some View {
+//        ProfileDetailView(
+//            viewModel: ProfileDetailViewModel(
+//                people: Friend(
+//                    id: UUID(),
+//                    name: "Test1",
+//                    source: ContactSource.kakao,
+//                    frequency: CheckInFrequency.monthly,
+//                    phoneNumber: "",
+//                    birthDay: Date(),
+//                    anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
+//                    //                memo:"Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam urna tempo",
+//                    lastContactAt: Date()
+//                )
+//            )
+//        )
+//    }
+//}
 
 

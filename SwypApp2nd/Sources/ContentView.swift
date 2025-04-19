@@ -16,6 +16,7 @@ enum AppRoute: Hashable {
     case inbox
     case my
     case person(PersonEntity)
+    case personDetail(Friend)
 }
 
 public struct ContentView: View {
@@ -78,6 +79,10 @@ public struct ContentView: View {
                                 NotificationInboxView(path: $path)
                             case .my:
                                 MyProfileView(path: $path)
+                            case .personDetail(let friend):
+                                let proFileDetailViewModel = ProfileDetailViewModel(people: friend)
+                                ProfileDetailView(viewModel: proFileDetailViewModel, path: $path)
+                                
                             }
                         }
                 }

@@ -50,7 +50,7 @@ public struct HomeView: View {
                         }
                         
                         // 내 사람들
-                        MyPeopleSection(peoples: $homeViewModel.allFriends)
+                        MyPeopleSection(peoples: $homeViewModel.allFriends, path: $path)
                             .ignoresSafeArea()
                             .frame(height: geometry.size.height * 0.65)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -265,6 +265,7 @@ struct ThisMonthContactCell: View {
 struct MyPeopleSection: View {
     @State private var currentPage = 0
     @Binding var peoples: [Friend]
+    @Binding var path: [AppRoute]
     @State private var showEllipsisOptions = false
     @EnvironmentObject var userSession: UserSession
     private var pages: [[Friend]] {
@@ -330,6 +331,7 @@ struct MyPeopleSection: View {
                             ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
                                 StarPositionLayout(peoples: $peoples , pageIndex: index) { selected in
                                     // TODO: - 친구 상세 뷰 이동
+                                    path.append(.personDetail(selected))
                                     print("\(selected.name) tapped")
                                     print("\(selected.id) tapped")
                                 }
