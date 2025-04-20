@@ -73,8 +73,8 @@ let project = Project(
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
-                "MARKETING_VERSION": "0.1.2",
-                "CURRENT_PROJECT_VERSION": "3"
+                "MARKETING_VERSION": "0.1.3",
+                "CURRENT_PROJECT_VERSION": "4"
             ])
         ),
         .target(
