@@ -4,26 +4,29 @@ import UserNotifications
 class ReminderRepository {
     private let context = CoreDataStack.shared.context
 
-    func addReminder(for person: Friend, type: NotificationType, scheduledDate: Date) {
+    func addReminder(person: Friend, type: NotificationType, scheduledDate: Date) {
         let newReminder = ReminderEntity(context: context)
         newReminder.id = UUID()
-        newReminder.date = scheduledDate // TODO 가장 최신 reminder date을 가져오는 로직
+        newReminder.date = scheduledDate
         newReminder.isRead = false
         newReminder.type = type.rawValue
         
         // MARK: - Person 연결
-//        let personID = person.entity.id
+        guard let personID = person.entity?.id.uuidString else {
+            print("❌ 친구에 연결된 PersonEntity 없음")
+            return
+        }
 
-//        let fetchRequest: NSFetchRequest<PersonEntity> = PersonEntity.fetchRequest()
-//        fetchRequest.predicate = NSPredicate(format: "id == %@", personID as CVarArg)
-//
-//        let entity: PersonEntity
-//        if let existing = try? context.fetch(fetchRequest).first {
-//            entity = existing
-//        } else {
-//            entity = person.toPersonEntity(context: context)
-//        }
-//        newReminder.person = entity
+        let fetchRequest: NSFetchRequest<PersonEntity> = PersonEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", personID as CVarArg)
+
+        let entity: PersonEntity
+        if let existing = try? context.fetch(fetchRequest).first {
+            entity = existing
+        } else {
+            entity = person.toPersonEntity(context: context)
+        }
+        newReminder.person = entity
 
         // 알림 브로드캐스트
         NotificationCenter.default.post(
