@@ -39,13 +39,6 @@ extension Color {
 
     // Dimmed
     static let dimmed60 = Color("Dimmed_60")
-    
-    // 카카오톡 버튼
-    static let kakaoBackgroundColor = Color(hex: "#FAE64D")
-
-    // Inbox 읽음 백그라운드 
-    static let readBlue = Color(hex: "#F4F9FD")
-
 }
 
 // MARK: - Example
