@@ -46,7 +46,7 @@ public struct LoginView: View {
                     }
                     .frame(height: 44)
                     .frame(maxWidth: .infinity)
-                    .background(Color.bg02)
+                    .background(Color.kakaoBackgroundColor)
                     .cornerRadius(8)
                 }
 
