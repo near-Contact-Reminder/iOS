@@ -72,7 +72,6 @@ class RegisterFriendsViewModel: ObservableObject {
                         frequency: CheckInFrequency.none,
                         remindCategory: nil,
                         phoneNumber: phoneNumber,
-                        relationship: relationship?.name,
                         birthDay: birthDay,
                         anniversary: AnniversaryModel(
                             title: anniversaryDayTitle ?? nil,
@@ -208,6 +207,7 @@ class RegisterFriendsViewModel: ObservableObject {
                     imageURL: $0.profileThumbnailImage?.absoluteString,
                     source: .kakao,
                     frequency: CheckInFrequency.none,
+                    relationship: "",  //TODO : 이렇게가 맞나
                     fileName: "\(id.uuidString).jpg"
                 )
             }
