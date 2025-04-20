@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import CoreData
 
 struct Friend: Identifiable, Equatable, Hashable, Codable {
     var id: UUID
@@ -10,7 +11,7 @@ struct Friend: Identifiable, Equatable, Hashable, Codable {
     var frequency: CheckInFrequency?
     var remindCategory: RemindCategory?
     var phoneNumber: String?
-    var relationship: String? // 관계
+    var relationship: String?// 관계
     var birthDay: Date? // 생일
     var anniversary: AnniversaryModel? // 기념일
     var memo: String? // 메모
@@ -19,8 +20,7 @@ struct Friend: Identifiable, Equatable, Hashable, Codable {
     var checkRate: Int? // 챙김률
     var position: Int? // 내사람들 리스트 순서
     var fileName: String? // 서버에서 받은 (friend.id).jpg
-//    var entity: PersonEntity
-
+    var entity: PersonEntity?
     
     enum CodingKeys: String, CodingKey {
         case id, name, imageURL, source, frequency, remindCategory,
@@ -89,6 +89,7 @@ extension Friend {
         }()
         
 //        let birthDayString = birthDay?.formattedYYYYMMDD()
+        let relationship = relationship ?? "ACQUAINTANCE" // TODO FORCED
 
         return FriendInitDTO(
             name: name,
@@ -98,7 +99,7 @@ extension Friend {
                 dayOfWeek: dayOfWeek
             ),
             imageUploadRequest: imageUploadRequest,
-            anniversary: anniversaryDTO,
+            anniversary: anniversaryDTO, relation: relationship,
 //            birthDay: birthDayString,
             phone: phoneNumber
         )
@@ -165,6 +166,7 @@ struct FriendInitDTO: Codable {
     let anniversary: AnniversaryDTO?
 //    let birthDay: String?
     // TODO: - relationship 포함되어야함
+    let relation: String?
     let phone: String?
 }
 
@@ -199,4 +201,24 @@ struct FriendWithUploadURL: Codable {
     let preSignedImageUrl: String?
     let anniversary: AnniversaryDTO?
     let fileName: String?
+}
+
+extension Friend {
+    func toPersonEntity(context: NSManagedObjectContext) -> PersonEntity {
+        let entity = PersonEntity(context: context)
+        entity.id = self.id
+        entity.name = self.name
+//        entity.imageURL = self.imageURL
+//        entity.phoneNumber = self.phoneNumber
+//        entity.relationship = self.relationship
+//        entity.birthDay = self.birthDay
+//        entity.anniversaryTitle = self.anniversary?.title
+//        entity.anniversaryDate = self.anniversary?.Date
+//        entity.memo = self.memo
+//        entity.nextContactAt = self.nextContactAt
+//        entity.lastContactAt = self.lastContactAt
+        entity.reminderInterval = self.frequency?.rawValue
+//        entity.position = Int64(self.position ?? 0)
+        return entity
+    }
 }
