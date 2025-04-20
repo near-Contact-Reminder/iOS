@@ -121,9 +121,9 @@ struct ContactFrequencySettingsView: View {
                 }
 
                 Button{
-//                    DispatchQueue.global().async {
-//                    notificationViewModel.scheduleAnbu(people: UserSession.shared.user?.friends ?? [])
-//                }
+                    DispatchQueue.global().async {
+                    notificationViewModel.scheduleAnbu(people: UserSession.shared.user?.friends ?? [])
+                }
                     // 카카오는 이미지 저장 후 BackEnd 서버에 전송
                     viewModel.downloadKakaoImageData { friendsWithImages in
                         DispatchQueue.main.async {

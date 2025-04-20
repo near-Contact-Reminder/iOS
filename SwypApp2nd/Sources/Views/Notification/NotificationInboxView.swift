@@ -6,7 +6,7 @@ struct NotificationInboxView: View {
 
     var body: some View {
         VStack {
-            headerView
+//            headerView
             bodyView
         }
         .navigationTitle("알림")
@@ -15,17 +15,17 @@ struct NotificationInboxView: View {
         }
     }
 
-    private var headerView: some View {
-        HStack {
-            Spacer()
-            NavigationLink(destination: ProfileEditView()) {
-                Image(systemName: "gear")
-                    .resizable()
-                    .frame(width: 20, height: 20)
-                    .padding()
-            }
-        }
-    }
+//    private var headerView: some View {
+//        HStack {
+//            Spacer()
+//            NavigationLink(destination: ProfileEditView(profileEditViewModel: <#ProfileEditViewModel#>)) {
+//                Image(systemName: "gear")
+//                    .resizable()
+//                    .frame(width: 20, height: 20)
+//                    .padding()
+//            }
+//        }
+//    }
 
     private var bodyView: some View {
         VStack {
@@ -57,7 +57,7 @@ struct ReminderListView: View {
             ForEach(notificationViewModel.visibleReminders, id: \.self) { reminder in
                 ReminderRowView(reminder: reminder, person: reminder.person, onSelect: { person in
                     path.append(.person(person))})
-                    .listRowBackground(reminder.isRead ? Color.readBlue : Color.white)
+                    .listRowBackground(reminder.isRead ? Color.bg02 : Color.white)
             }
             .onDelete(perform: notificationViewModel.deleteReminder)
         }

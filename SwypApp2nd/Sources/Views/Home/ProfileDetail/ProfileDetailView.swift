@@ -14,9 +14,7 @@ struct ProfileDetailView: View {
         VStack(alignment: .leading, spacing: 32) {
             
             ProfileHeader(people: viewModel.people)
-            
             ActionButtonRow(people: viewModel.people)
-            
             ZStack {
                 ProfileTabBar(selected: $selectedTab)
                 Rectangle()
@@ -38,6 +36,12 @@ struct ProfileDetailView: View {
             }
         }
         .padding(.horizontal, 24)
+        .navigationDestination(for: ProfileDetailRoute.self) { route in
+            switch route {
+            case .edit:
+                ProfileEditView(profileEditViewModel: ProfileEditViewModel(person: viewModel.people))
+            }
+        }
     }
 }
 
@@ -96,6 +100,8 @@ struct HistorySection: View {
 
 private struct ProfileHeader: View {
     let people: Friend
+    @State private var showActionSheet = false
+    @State private var isEditing = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -123,9 +129,49 @@ private struct ProfileHeader: View {
                     .font(Font.Pretendard.b1Medium())
                     .foregroundColor(Color.blue01)
             }
+            Spacer()
+            Button(action: {
+                showActionSheet = true
+            }) {
+                Image(systemName: "ellipsis")
+                    .rotationEffect(.degrees(90))
+                    .font(.system(size: 20))
+                    .foregroundColor(.primary)
+            }
         }
-        
+        .confirmationDialog("옵션", isPresented: $showActionSheet, titleVisibility: .visible) {
+                    Button("수정", role: .none) {
+                        isEditing = true
+                    }
+                    Button("삭제", role: .destructive) {
+                        // TODO: 삭제 기능 구현
+                    }
+                    Button("취소", role: .cancel) {}
+                }
+                .fullScreenCover(isPresented: $isEditing) {
+            NavigationStack {
+                ProfileEditView(profileEditViewModel: ProfileEditViewModel(person: people))
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button(action: {
+                                isEditing = false // 뒤로 가기 역할
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.black)
+                            }
+                        }
 
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("완료") {
+                                isEditing = false // 저장 후 닫기
+                            }
+                            .foregroundColor(.black)
+                            .font(Font.Pretendard.b1Bold())
+                        }
+                }
+            }
+        }
     }
 }
 
@@ -306,33 +352,39 @@ private struct ConfirmButton: View {
 }
 
 
-//struct ProfileDetailView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        Group {
-//            previewForDevice("iPhone 13 mini")
-//            previewForDevice("iPhone 16")
-//            previewForDevice("iPhone 16 Pro")
-//            previewForDevice("iPhone 16 Pro Max")
-//        }
-//    }
-//    
-//    static func previewForDevice(_ deviceName: String) -> some View {
-//        ProfileDetailView(
-//            viewModel: ProfileDetailViewModel(
-//                people: Friend(
-//                    id: UUID(),
-//                    name: "Test1",
-//                    source: ContactSource.kakao,
-//                    frequency: CheckInFrequency.monthly,
-//                    phoneNumber: "",
-//                    birthDay: Date(),
-//                    anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
-//                    //                memo:"Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam urna tempo",
-//                    lastContactAt: Date()
-//                )
-//            )
-//        )
-//    }
-//}
+struct ProfileDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            previewForDevice("iPhone 13 mini")
+            previewForDevice("iPhone 16")
+            previewForDevice("iPhone 16 Pro")
+            previewForDevice("iPhone 16 Pro Max")
+        }
+    }
+    
+    static func previewForDevice(_ deviceName: String) -> some View {
+        ProfileDetailView(
+            viewModel: ProfileDetailViewModel(
+                people: Friend(
+                    id: UUID(),
+                    name: "임시 친구",
+                    image: nil,
+                    imageURL: nil,
+                    source: .kakao,
+                    frequency: .monthly,
+                    phoneNumber: "010-1234-5678",
+                    relationship: "동료",
+                    birthDay: Date(),
+                    anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
+                    memo: "테스트 메모",
+                    nextContactAt: Date().addingTimeInterval(86400 * 30),
+                    lastContactAt: Date().addingTimeInterval(-86400 * 10),
+                    checkRate: 75,
+                    position: 0,
+                    fileName: ".jpg")
+            ), path: .constant([])
+        )
+    }
+}
 
 
