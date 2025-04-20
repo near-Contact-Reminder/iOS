@@ -19,6 +19,10 @@ enum AppRoute: Hashable {
     case personDetail(Friend)
 }
 
+enum ProfileDetailRoute {
+    case edit
+}
+
 public struct ContentView: View {
     @StateObject private var userSession = UserSession.shared
     @StateObject private var loginViewModel = LoginViewModel()
@@ -80,9 +84,8 @@ public struct ContentView: View {
                             case .my:
                                 MyProfileView(path: $path)
                             case .personDetail(let friend):
-                                let proFileDetailViewModel = ProfileDetailViewModel(people: friend)
-                                ProfileDetailView(viewModel: proFileDetailViewModel, path: $path)
-                                
+                                let profileDetailViewModel = ProfileDetailViewModel(people: friend)
+                                ProfileDetailView(viewModel: profileDetailViewModel, path: $path)
                             }
                         }
                 }

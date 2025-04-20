@@ -3,10 +3,11 @@ import CoreData
 class PersonRepository {
     private let context = CoreDataStack.shared.context
 
-    func addPerson(name: String) -> PersonEntity {
+    func addPerson(name: String, reminderInterval: String) -> PersonEntity {
         let newPerson = PersonEntity(context: context)
         newPerson.id = UUID()
         newPerson.name = name
+        newPerson.reminderInterval = reminderInterval
 
         saveContext()
         return newPerson
@@ -26,8 +27,6 @@ class PersonRepository {
             context.delete(person)
             saveContext()
         }
-
-    
 
     private func saveContext() {
         CoreDataStack.shared.saveContext()

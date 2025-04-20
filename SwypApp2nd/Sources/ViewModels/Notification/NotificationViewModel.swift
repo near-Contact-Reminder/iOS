@@ -85,34 +85,39 @@ class NotificationViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    /*
-    // MARK: - 친구 목록을 순회하며 전체 안부 알림 설정
+     // MARK: - 친구 목록을 순회하며 전체 안부 알림 설정
     func scheduleAnbu(people: [Friend]) {
-        // 1. 내부 알림 설정 체크
+         // 1. 내부 알림 설정 체크
         guard UserDefaults.standard.bool(forKey: "isNotificationOn") else {
             print("🛑 알림 꺼져 있어서 일반 알림 예약 안 함")
             return
         }
         
-        // 2. initial permission 체크
+         // 2. initial permission 체크
         NotificationManager.shared.requestPermissionIfNeeded()
         
-        // 3. friend 별로 안부 주기 설정
+         // 3. friend 별로 안부 주기 설정
         for friend in people {
-            guard let (content, trigger, scheduledDate) = setAnbu(person: friend) else {
+            
+            guard let personId = friend.entity?.id.uuidString else {
+                print("❌ 친구에 연결된 PersonEntity 없음")
+                return
+            }
+
+            guard let (content, trigger, scheduledDate) = setAnbu(person: friend, id: personId) else {
                 print("❌ 알림 생성 실패")
                 return
             }
             
-            let genRequest = UNNotificationRequest(identifier: friend.entity.id.uuidString, content: content, trigger: trigger)
+            let genRequest = UNNotificationRequest(identifier: personId, content: content, trigger: trigger)
             
             let center = UNUserNotificationCenter.current()
             center.add(genRequest)
             
-            // person entity 찾기
-            reminderRepo.addReminder(for: friend, type: .regular, scheduledDate: scheduledDate)
+             // person entity 찾기
+//            reminderRepo.addReminder(for: friend, type: .regular, scheduledDate: scheduledDate)
             try? context.save()
-            // 2. 백엔드에 전송
+             // 2. 백엔드에 전송
             guard let token = TokenManager.shared.get(for: .server) else {
                 print("⚠️ 서버 accessToken 없음 - 백엔드 요청 생략")
                 return
@@ -131,8 +136,8 @@ class NotificationViewModel: ObservableObject {
         loadAllReminders()
     }
     
-    // MARK: - 친구 개개인당 안부 알림 설정
-    func setAnbu(person: Friend) -> (content: UNMutableNotificationContent, trigger: UNNotificationTrigger, scheduledDate: Date)? {
+     // MARK: - 친구 개개인당 안부 알림 설정
+    func setAnbu(person: Friend, id: String) -> (content: UNMutableNotificationContent, trigger: UNNotificationTrigger, scheduledDate: Date)? {
         let calendar = Calendar.current
         let now = Date()
         
@@ -151,7 +156,7 @@ class NotificationViewModel: ObservableObject {
         content.body = "\(person.name)님에게 연락해보세요!"
         content.sound = .default
         content.badge = 1
-        content.userInfo = ["personID": person.id, "type": "regular"]
+        content.userInfo = ["personID": id, "type": "regular"]
         
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
         
@@ -159,8 +164,8 @@ class NotificationViewModel: ObservableObject {
     }
     
     
-    // MARK: - 프로필 상세 수정뷰에서 친구 별 생일 혹은 기념일 설정
-    func setSpecialReminder(for person: Friend) {
+     // MARK: - 프로필 상세 수정뷰에서 친구 별 생일 혹은 기념일 설정
+    func setSpecialReminder(person: Friend, id: String) {
         
         guard UserDefaults.standard.bool(forKey: "isNotificationOn") else {
             print("🛑 알림 꺼져 있어서 일반 알림 예약 안 함")
@@ -168,7 +173,6 @@ class NotificationViewModel: ObservableObject {
         }
         
         NotificationManager.shared.requestPermissionIfNeeded()
-        
         
         let center = UNUserNotificationCenter.current()
         let calendar = Calendar.current
@@ -192,15 +196,15 @@ class NotificationViewModel: ObservableObject {
                 return
             }
 
-            reminderRepo.addReminder(for: person, type: NotificationType.birthday, scheduledDate: scheduledDate)
+//            reminderRepo.addReminder(for: person, type: NotificationType.birthday, scheduledDate: scheduledDate)
             
-            content.userInfo = ["personID": "\(person.entity.id.uuidString)", "type": "birthday"]
+            content.userInfo = ["personID": "\(id)", "type": "birthday"]
             
             try? context.save()
             
             let trigger = UNCalendarNotificationTrigger(dateMatching: birthdayComponents, repeats: true)
             
-            let bdayRequest = UNNotificationRequest(identifier: person.entity.id.uuidString, content: content, trigger: trigger)
+            let bdayRequest = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
             center.add(bdayRequest)
         }
             
@@ -218,19 +222,18 @@ class NotificationViewModel: ObservableObject {
                 
                 guard let scheduledDate = calendar.date(from: anniversaryComponents) else { return }
                 
-                reminderRepo.addReminder(for:person, type: NotificationType.anniversary
-                                         , scheduledDate: scheduledDate)
+//                reminderRepo.addReminder(for:person, type: NotificationType.anniversary
+//                                         , scheduledDate: scheduledDate)
                 
-                content.userInfo = ["personID": "\(person.entity.id.uuidString)", "type": "anniversary"]
+                content.userInfo = ["personID": "\(id)", "type": "anniversary"]
                 
                 try? context.save()
                 
                 let trigger = UNCalendarNotificationTrigger(dateMatching: anniversaryComponents, repeats: true)
-                let anniRequest = UNNotificationRequest(identifier: person.entity.id.uuidString, content: content, trigger: trigger)
+                let anniRequest = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
                 center.add(anniRequest)
             }
         }
-     **/
     }
 
 
