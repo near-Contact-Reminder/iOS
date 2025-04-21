@@ -7,16 +7,17 @@ class HomeViewModel: ObservableObject {
     @Published var allFriends: [Friend] = []
     /// 이번달 챙길 사람
     @Published var thisMonthFriends: [Friend] = []
+    private var cancellables = Set<AnyCancellable>()
+
     
-//    init() {
-//        loadPeoplesFromUserSession()
-//    }
-//
-//    func loadPeoplesFromUserSession() {
-//        DispatchQueue.main.async {
-//            self.peoples = UserSession.shared.user?.friends ?? []
-//        }
-//    }
+    init() {
+        UserSession.shared.$user
+            .compactMap { $0?.friends }
+            .sink { [weak self] friends in
+                self?.allFriends = friends
+            }
+            .store(in: &cancellables)
+    }
     
     func fetchAndSetImage(for friend: Friend, accessToken: String, completion: @escaping (UIImage?) -> Void) {
         guard let fileName = friend.fileName else {
