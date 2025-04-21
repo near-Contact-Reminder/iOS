@@ -2,17 +2,6 @@ import Foundation
 import Combine
 import UIKit
 
-enum CheckInFrequency: String, CaseIterable, Identifiable, Codable {
-    case none = "주기 선택"
-    case daily = "매일"
-    case weekly = "매주"
-    case biweekly = "2주"
-    case monthly = "매달"
-    case semiAnnually = "6개월"
-    
-    var id: String { rawValue }
-}
-
 class ContactFrequencySettingsViewModel: ObservableObject {
     @Published var people: [Friend] = []
     @Published var isUnified: Bool = false
