@@ -225,16 +225,15 @@ struct FrequencyPickerView: View {
             
             if let selected = tempSelected {
                 let today = Date()
-                let weekday = today.weekdayKorean()
                 let nextDate = today.nextCheckInDate(for: selected)
-                
+                let nextDateDayOfTheWeek = today.nextCheckInDateDayOfTheWeek(for: selected)
                 
                 HStack {
-                    Text("매주 ")
+                    Text("\(selected.rawValue) ")
                         .font(.body)
                         .foregroundColor(.gray02)
 
-                    Text(weekday)
+                    Text(nextDateDayOfTheWeek)
                         .font(.body)
                         .foregroundColor(.blue01)
 

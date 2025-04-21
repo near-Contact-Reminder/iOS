@@ -61,8 +61,10 @@ class RegisterFriendsViewModel: ObservableObject {
             let birthDay = $0.birthday?.date
             let anniversaryDay = $0.dates.first?.value as? Date
             let anniversaryDayTitle = $0.dates.first?.label
-            let relationship = $0.contactRelations.first?.value
+            let relationship = $0.contactRelations.first?.label
+            
             let phoneNumber =  $0.phoneNumbers.first?.value.stringValue
+//            let memo = $0.note
             return Friend(
                         id: UUID(),
                         name: name,
@@ -72,10 +74,12 @@ class RegisterFriendsViewModel: ObservableObject {
                         frequency: CheckInFrequency.none,
                         remindCategory: nil,
                         phoneNumber: phoneNumber,
+                        relationship: relationship,
                         birthDay: birthDay,
                         anniversary: AnniversaryModel(
                             title: anniversaryDayTitle ?? nil,
                             Date: anniversaryDay ?? nil),
+//                        memo: memo,
                         nextContactAt: nil,
                         lastContactAt: nil,
                         checkRate: nil,

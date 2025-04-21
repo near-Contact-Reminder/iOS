@@ -1,6 +1,7 @@
 import Alamofire
 import Foundation
 
+// MARK: - 서버 토큰 관리
 struct TokenResponse: Decodable {
     let accessToken: String
     let refreshTokenInfo: RefreshTokenInfo
@@ -11,6 +12,7 @@ struct RefreshTokenInfo: Decodable {
     let expiresAt: String
 }
 
+// MARK: - PreSignedURL
 struct PresignedURLRequest: Encodable {
     let fileName: String
     let contentType: String
@@ -22,6 +24,7 @@ struct PresignedURLResponse: Decodable {
     let preSignedUrl: String
 }
 
+// MARK: - 엑세스 토큰으로 회원 정보 조회
 struct MemberMeInfoResponse: Decodable {
     let memberId: String
     let username: String
@@ -31,6 +34,7 @@ struct MemberMeInfoResponse: Decodable {
     let providerType: String
 }
 
+// MARK: - 친구 리스트 조회
 struct FriendListResponse: Codable, Identifiable {
     let friendId: String
     let position: Int
@@ -41,31 +45,59 @@ struct FriendListResponse: Codable, Identifiable {
     var id: String { friendId }
 }
 
-struct FriendDetailResponse: Codable {
-    // TODO: - 받을 데이터 정의
-    let friendId: String
-    let name: String
-    let imageUrl: String?
-    let source: String
-    let frequency: String?
-    let phoneNumber: String?
-    let relationship: String?
-    let birthDay: String?
-    let anniversaryTitle: String?
-    let anniversaryDate: String?
-    let memo: String?
-    let nextContactAt: String?
-    let lastContactAt: String?
-    let checkRate: Int?
-    let position: Int?
-    let fileName: String?
-}
-
+// MARK: - 회원 탈퇴
 struct WithdrawRequest: Encodable {
     let reasonType: String
     let customReason: String
 }
 
+// MARK: - 친구 상세 정보 조회
+struct FriendDetail {
+    let friendId: String
+    let imageUrl: String?
+    let relation: String?
+    let contactFrequency: CheckInFrequency?
+    let birthDay: String?
+    let anniversaryList: [AnniversaryModel]?
+    let memo: String?
+    let phone: String?
+    
+    struct AnniversaryList {
+        let id : String
+        let title: String
+        let date: String
+    }
+    
+    struct ContactFrequency {
+        let contactWeek : String
+        let dayOfWeek : String
+    }
+}
+
+struct FriendDetailResponse: Codable {
+    let friendId: String
+    let imageUrl: String?
+    let relation: String?
+    let name: String
+    let contactFrequency: FriendDetailResponse.ContactFrequency?
+    let birthday: String?
+    let anniversaryList: [FriendDetailResponse.AnniversaryResponse]?
+    let memo: String?
+    let phone: String?
+    
+    struct ContactFrequency: Codable {
+        let contactWeek: String
+        let dayOfWeek: String
+    }
+
+    struct AnniversaryResponse: Codable {
+        let id: Int
+        let title: String
+        let date: String
+    }
+}
+
+// MARK: - 서버 통신 로직
 final class BackEndAuthService {
     static let shared = BackEndAuthService()
 
@@ -398,74 +430,60 @@ final class BackEndAuthService {
     }
     
     /// 백엔드: 친구별 상세정보 조회
-    func getFriendDetail(friendId: UUID, accessToken: String, completion: @escaping (Result<Friend, Error>) -> Void) {
+    func getFriendDetail(friendId: UUID, accessToken: String, completion: @escaping (Result<FriendDetail, Error>) -> Void) {
         // TODO: 서버 API 명세 나오면 실제 요청 구현
         
         print("🟡 [BackEndAuthService] 친구 상세정보 조회 요청됨 - friendId: \(friendId)")
         
-        let url = "\(baseURL)/friend/detail"
-        let params: Parameters = [ "friend-id": friendId.uuidString]
+        let url = "\(baseURL)/friend/\(friendId.uuidString)"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
         
-//        AF.request(url, method: .get, parameters: params, headers: headers)
-//            .validate(statusCode: 200..<300)
-//            .responseDecodable(of: [FriendListResponse].self) { response in
-//                switch response.result {
-//                case .success(let friend):
-//                    print("🟢 [BackEndAuthService] 친구별 상세정보 조회 성공 ")
-//                    Friend(
-//                        id: friend.id
-//                        name: friend.name,
-//                        image: nil,
-//                        imageURL: friend.imageUrl,
-//                        source: ContactSource(rawValue: friend.source) ?? .kakao,
-//                        frequency: CheckInFrequency(
-//                            rawValue: frequency ?? ""
-//                        ) ?? .none,
-//                        phoneNumber: friend.phoneNumber,
-//                        relationship: friend.relationship,
-//                        birthDay: friend.birthDay?.toDate(),
-//                        anniversary: AnniversaryModel(
-//                            title: anniversaryTitle,
-//                            Date: anniversaryDate?.toDate()
-//                        ),
-//                        memo: friend.memo,
-//                        nextContactAt: nextContactAt?.toDate(),
-//                        lastContactAt: lastContactAt?.toDate(),
-//                        checkRate: checkRate,
-//                        position: position,
-//                        fileName: fileName
-//                    )
-//                    completion(<#Friend#>)
-//                case .failure(let error):
-//                    print("🔴 [BackEndAuthService] 친구별 상세정보 조회 실패: \(error.localizedDescription)")
-//                    completion(.failure(<#any Error#>))
-//                }
-//            }
-        
-        let mockFriend = Friend(
-            id: friendId,
-            name: "임시 친구",
-            image: nil,
-            imageURL: nil,
-            source: .kakao,
-            frequency: .monthly,
-            phoneNumber: "010-1234-5678",
-            relationship: "동료",
-            birthDay: Date(),
-            anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
-            memo: "테스트 메모",
-            nextContactAt: Date().addingTimeInterval(86400 * 30),
-            lastContactAt: Date().addingTimeInterval(-86400 * 10),
-            checkRate: 75,
-            position: 0,
-            fileName: "\(friendId).jpg"
-        )
-            
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            completion(.success(mockFriend))
-        }
+        AF.request(url, method: .get, headers: headers)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: FriendDetailResponse.self) { response in
+                switch response.result {
+                case .success(let detail):
+                    print(
+                        "🟢 [BackEndAuthService] 친구별 상세정보 조회 성공 - \(detail.name)"
+                    )
+                    
+                    do {
+                        let encoder = JSONEncoder()
+                        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                        let jsonData = try encoder.encode(detail)
+                        if let jsonString = String(
+                            data: jsonData,
+                            encoding: .utf8
+                        ) {
+                            print("🟡 [getFriendDetail] 서버 응답 JSON:\n\(jsonString)")
+                        }
+                    } catch {
+                        print("🔴 [getFriendDetail] JSON 인코딩 실패: \(error)")
+                    }
+                        
+                    let friendDetail = FriendDetail(
+                        friendId: detail.friendId,
+                        imageUrl: detail.imageUrl,
+                        relation: detail.relation,
+                        contactFrequency: CheckInFrequency(from: detail.contactFrequency),
+                        birthDay: detail.birthday,
+                        anniversaryList: detail.anniversaryList?.compactMap { $0 }.map {
+                            AnniversaryModel(title: $0.title, Date: $0.date.toDate())
+                        },
+                        memo: detail.memo,
+                        phone: detail.phone
+                    )
+                    completion(.success(friendDetail))
+                case .failure(let error):
+                    print(
+                        "🔴 [BackEndAuthService] 친구별 상세정보 조회 실패: \(error.localizedDescription)"
+                    )
+                    completion(.failure(error))
+                }
+            }
     }
 }
+
+

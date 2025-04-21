@@ -1,6 +1,7 @@
 import Foundation
 
 extension Date {
+    /// 주기 설정의 다음주기 M/d EEE
     func nextCheckInDate(for frequency: CheckInFrequency) -> String {
         let calendar = Calendar.current
         var nextDate: Date?
@@ -24,6 +25,34 @@ extension Date {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "M/d EEE"
+
+        return formatter.string(from: date)
+    }
+    
+    /// 주기 설정의 다음주기의 요일 반환 EEEE
+    func nextCheckInDateDayOfTheWeek(for frequency: CheckInFrequency) -> String {
+        let calendar = Calendar.current
+        var nextDate: Date?
+
+        switch frequency {
+        case .daily:
+            nextDate = calendar.date(byAdding: .day, value: 1, to: self)
+        case .weekly:
+            nextDate = calendar.date(byAdding: .weekOfYear, value: 1, to: self)
+        case .biweekly:
+            nextDate = calendar.date(byAdding: .weekOfYear, value: 2, to: self)
+        case .monthly:
+            nextDate = calendar.date(byAdding: .month, value: 1, to: self)
+        case .semiAnnually:
+            nextDate = calendar.date(byAdding: .month, value: 6, to: self)
+        default:
+            return "-"
+        }
+
+        guard let date = nextDate else { return "-" }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "EEEE"
 
         return formatter.string(from: date)
     }

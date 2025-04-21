@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 import CoreData
+import Contacts
 
 struct Friend: Identifiable, Equatable, Hashable, Codable {
     var id: UUID
@@ -32,6 +33,33 @@ struct Friend: Identifiable, Equatable, Hashable, Codable {
 struct AnniversaryModel: Codable, Equatable, Hashable {
     var title: String?
     var Date: Date?
+}
+
+enum CheckInFrequency: String, CaseIterable, Identifiable, Codable {
+    case none = "주기 선택"
+    case daily = "매일"
+    case weekly = "매주"
+    case biweekly = "2주"
+    case monthly = "매달"
+    case semiAnnually = "6개월"
+    
+    var id: String { rawValue }
+    
+    init?(from dto: FriendDetailResponse.ContactFrequency?) {
+        guard let dto = dto else {
+            self = .none
+            return
+        }
+        
+        switch dto.contactWeek {
+        case "EVERY_DAY": self = .daily
+        case "EVERY_WEEK": self = .weekly
+        case "EVERY_TWO_WEEK": self = .biweekly
+        case "EVERY_MONTH": self = .monthly
+        case "EVERY_SIX_MONTH": self = .semiAnnually
+        default: self = .none
+        }
+    }
 }
 
 enum RemindCategory: Codable {
@@ -88,7 +116,7 @@ extension Friend {
             return AnniversaryDTO(title: title, date: formatted)
         }()
         
-//        let birthDayString = birthDay?.formattedYYYYMMDD()
+        let birthDayString = birthDay?.formattedYYYYMMDD()
         let relationship = relationship ?? "ACQUAINTANCE" // TODO FORCED
 
         return FriendInitDTO(
@@ -99,10 +127,35 @@ extension Friend {
                 dayOfWeek: dayOfWeek
             ),
             imageUploadRequest: imageUploadRequest,
-            anniversary: anniversaryDTO, relation: relationship,
-//            birthDay: birthDayString,
+            anniversary: anniversaryDTO,
+            birthDay: birthDayString,
+            relation: mappedRelation(from: relationship),
+//            memo: memo,
             phone: phoneNumber
         )
+    }
+    
+    func mappedRelation(from label: String?) -> String {
+        guard let label = label else { return "ACQUAINTANCE" }
+        
+        switch label {
+        case CNLabelContactRelationFriend:
+            return "FRIEND"
+        case CNLabelContactRelationFather,
+             CNLabelContactRelationMother,
+             CNLabelContactRelationParent,
+             CNLabelContactRelationSibling,
+             CNLabelContactRelationChild:
+            return "FAMILY"
+        case CNLabelContactRelationPartner,
+             CNLabelContactRelationSpouse:
+            return "LOVER"
+        case CNLabelContactRelationManager,
+             CNLabelContactRelationAssistant:
+            return "COLLEAGUE"
+        default:
+            return "ACQUAINTANCE"
+        }
     }
 }
 
@@ -164,9 +217,9 @@ struct FriendInitDTO: Codable {
     let contactFrequency: ContactFrequencyDTO
     let imageUploadRequest: ImageUploadRequestDTO?
     let anniversary: AnniversaryDTO?
-//    let birthDay: String?
-    // TODO: - relationship 포함되어야함
+    let birthDay: String?
     let relation: String?
+//    let memo: String?
     let phone: String?
 }
 

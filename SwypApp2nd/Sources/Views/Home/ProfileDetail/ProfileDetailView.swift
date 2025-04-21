@@ -102,18 +102,34 @@ private struct ProfileHeader: View {
     let people: Friend
     @State private var showActionSheet = false
     @State private var isEditing = false
+    
+    var emojiImageName: String {
+        guard let rate = people.checkRate else {
+            return "icon_visual_24_emoji_0"
+        }
+        switch rate {
+        case 0...30: return "icon_visual_24_emoji_0"
+        case 31...60: return "icon_visual_24_emoji_50"
+        default: return "icon_visual_24_emoji_100"
+        }
+    }
 
     var body: some View {
         HStack(spacing: 16) {
             ZStack(alignment: .topTrailing) {
-                // TODO: - Friend의 PresignedURL 사용 Get
-                Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .frame(width: 80, height: 80)
-                    .foregroundColor(.gray.opacity(0.3))
+                if let image = people.image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .clipShape(Circle())
+                        .frame(width: 80, height: 80)
+                } else {
+                    Image(systemName: "person.crop.circle.fill")
+                        .resizable()
+                        .frame(width: 80, height: 80)
+                        .foregroundColor(.gray.opacity(0.3))
+                }
                 
-                // TODO: - Friend의 checkRate
-                Image("icon_visual_24_emoji_100")
+                Image(emojiImageName)
                     .frame(width: 24, height: 24)
                     .offset(x: 0, y: -5)
             }
