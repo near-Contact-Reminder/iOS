@@ -178,14 +178,40 @@ private struct ProfileHeader: View {
 private struct ActionButtonRow: View {
     
     var people: Friend
+    // TODO: - showMessageAlert, selectedPhone, selectedMessage, selectedMessageComment 추후 삭제
+    @State private var showMessageAlert = false
+    @State private var showCallAlert = false
+    @State private var selectedPhone: String?
+    @State private var selectedMessage: String?
+    @State private var selectedMessageComment: String?
+    
+    let messagePairs: [(message: String, comment: String)] = [
+        (
+            "💌  요즘 날씨가 왔다 갔다 하는데 감기 안 걸렸지?",
+            "💡 Tip : 날씨를 핑계로 건강을 묻는 건 부담 없는 방식이에요. 자연스럽고 챙기는 느낌이 살아 있어요."
+        ),
+        (
+            "💌  지나가다가 김치찌개 냄새 맡았는데 갑자기 어릴 때 생각나더라.",
+            "💡 Tip : 후각과 음식은 가족과의 추억을 가장 선명하게 꺼내는 감각이에요."
+        ),
+        (
+            "💌  이번 주에 너가 추천해줬던 영화 봤어! 너무 좋더라",
+            "💡 Tip : 상대의 취향을 기억해주는 메시지는 특별한 애정을 전달하는 효과가 있어요."
+        )
+    ]
     
     var body: some View {
         HStack(spacing: 16) {
             if let phone = people.phoneNumber {
                 Button {
-                    if let url = URL(string: "tel://\(phone)"), UIApplication.shared.canOpenURL(url) {
-                        UIApplication.shared.open(url)
-                    }
+//                    if let url = URL(string: "tel://\(phone)"), UIApplication.shared.canOpenURL(url) {
+//                        UIApplication.shared.open(url)
+//                    }
+                    let selected = messagePairs.randomElement()!
+                    selectedPhone = phone
+                    selectedMessage = selected.message
+                    selectedMessageComment = selected.comment
+                    showCallAlert = true
                 } label: {
                     ActionButton(title: "전화걸기", systemImage: "phone.fill", enabled: true)
                 }
@@ -195,15 +221,50 @@ private struct ActionButtonRow: View {
 
             if let phone = people.phoneNumber {
                 Button {
-                    if let url = URL(string: "sms:\(phone)"), UIApplication.shared.canOpenURL(url) {
-                        UIApplication.shared.open(url)
-                    }
+//                    if let url = URL(string: "sms:\(phone)"), UIApplication.shared.canOpenURL(url) {
+//                        UIApplication.shared.open(url)
+//                    }
+                    
+                    let selected = messagePairs.randomElement()!
+                    selectedPhone = phone
+                    selectedMessage = selected.message
+                    selectedMessageComment = selected.comment
+                    showMessageAlert = true
                 } label: {
                     ActionButton(title: "문자하기", systemImage: "ellipsis.message.fill", enabled: true)
                 }
             } else {
                 ActionButton(title: "문자하기", systemImage: "ellipsis.message.fill", enabled: false)
             }
+        }
+        .alert("추천 메시지로 연락해보세요.", isPresented: $showMessageAlert) {
+            
+            Button("문자하기", role: .none) {
+                if let phone = selectedPhone, let message = selectedMessage {
+                    if let url = URL(
+                        string: "sms:\(phone)&body=\(message.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+                    ),
+                       UIApplication.shared.canOpenURL(url) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            }
+            Button("취소", role: .cancel) {}
+        } message: {
+            Text("\(selectedMessage ?? "")\n\n\(selectedMessageComment ?? "")")
+        }
+        .alert("추천 메시지로 연락해보세요.", isPresented: $showCallAlert) {
+            Button("전화걸기", role: .none) {
+                if let phone = selectedPhone {
+                    if let url = URL(string: "tel://\(phone)"),
+                       UIApplication.shared.canOpenURL(url) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            }
+            Button("취소", role: .cancel) {}
+        } message: {
+            Text("\(selectedMessage ?? "")\n\n\(selectedMessageComment ?? "")")
         }
     }
 }
