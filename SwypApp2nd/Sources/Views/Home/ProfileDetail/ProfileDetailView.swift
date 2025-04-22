@@ -13,7 +13,7 @@ struct ProfileDetailView: View {
         
         VStack(alignment: .leading, spacing: 32) {
             
-            ProfileHeader(people: viewModel.people)
+            ProfileHeader(viewModel: ProfileEditViewModel(person: viewModel.people), path: $path)
             ActionButtonRow(people: viewModel.people)
             ZStack {
                 ProfileTabBar(selected: $selectedTab)
@@ -99,12 +99,13 @@ struct HistorySection: View {
 }
 
 private struct ProfileHeader: View {
-    let people: Friend
+    @ObservedObject var viewModel: ProfileEditViewModel
+    @Binding var path: [AppRoute]
     @State private var showActionSheet = false
     @State private var isEditing = false
     
     var emojiImageName: String {
-        guard let rate = people.checkRate else {
+        guard let rate = viewModel.person.checkRate else {
             return "icon_visual_24_emoji_0"
         }
         switch rate {
@@ -117,7 +118,7 @@ private struct ProfileHeader: View {
     var body: some View {
         HStack(spacing: 16) {
             ZStack(alignment: .topTrailing) {
-                if let image = people.image {
+                if let image = viewModel.person.image {
                     Image(uiImage: image)
                         .resizable()
                         .clipShape(Circle())
@@ -136,12 +137,12 @@ private struct ProfileHeader: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 
-                Text(people.name)
+                Text(viewModel.person.name)
                     .frame(height: 22)
                     .font(Font.Pretendard.h2Bold())
                     .multilineTextAlignment(.center)
                 
-                Text("\(people.lastContactAt?.formattedYYYYMMDDMoreCloser() ?? "-")") //MM월dd일 더 가까워졌어요
+                Text("\(viewModel.person.lastContactAt?.formattedYYYYMMDDMoreCloser() ?? "-")") //MM월dd일 더 가까워졌어요
                     .font(Font.Pretendard.b1Medium())
                     .foregroundColor(Color.blue01)
             }
@@ -160,13 +161,14 @@ private struct ProfileHeader: View {
                         isEditing = true
                     }
                     Button("삭제", role: .destructive) {
-                        // TODO: 삭제 기능 구현
+                        viewModel.deleteFriend(friendId: viewModel.person.id)
+                        path.removeAll()
                     }
                     Button("취소", role: .cancel) {}
                 }
                 .fullScreenCover(isPresented: $isEditing) {
             NavigationStack {
-                ProfileEditView(profileEditViewModel: ProfileEditViewModel(person: people))
+                ProfileEditView(profileEditViewModel: viewModel)
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .navigationBarLeading) {
@@ -190,7 +192,6 @@ private struct ProfileHeader: View {
         }
     }
 }
-
 private struct ActionButtonRow: View {
     
     var people: Friend

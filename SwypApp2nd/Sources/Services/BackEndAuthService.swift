@@ -484,6 +484,29 @@ final class BackEndAuthService {
                 }
             }
     }
+    
+    /// 백엔드:친구 삭제
+    func deletFriend(friendId: UUID, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        print("🟡 [BackEndAuthService] 친구 삭제 요청됨 - friendId: \(friendId)")
+        
+        let url = "\(baseURL)/friend/\(friendId.uuidString)"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        AF.request(url, method: .delete, headers: headers)
+            .validate(statusCode: 200..<300)
+            .response{ response in
+                switch response.result {
+                case .success:
+                    print("🟢 [BackEndAuthService] 친구 삭제 전송 성공")
+                    completion(.success(()))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 친구 삭제 전송 실패: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+    }
 }
 
 
