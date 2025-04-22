@@ -58,18 +58,19 @@ let project = Project(
             sources: [
                 "SwypApp2nd/Sources/**"
             ],
-            resources: ["SwypApp2nd/Resources/**",
-                       "SwypApp2nd/Resources/External/KakaoSDKFriendResources.bundle"
+            resources: ["SwypApp2nd/Resources/**"
+//                       "SwypApp2nd/Resources/External/KakaoSDKFriendResources.bundle"
                        ],
             entitlements: "Tuist/SignInWithApple.entitlements",
             dependencies: [
                 .external(name: "Alamofire"),
                 .external(name: "Kingfisher"),
                 .external(name: "KakaoSDKCommon"),
+                .external(name: "KakaoSDKTemplate"),
                 .external(name: "KakaoSDKAuth"),
                 .external(name: "KakaoSDKUser"),
-                .external(name: "KakaoSDKFriend"),
-                .external(name: "KakaoSDKTalk")
+                .external(name: "KakaoSDKTalk"),
+                .external(name: "KakaoSDKFriend")
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
