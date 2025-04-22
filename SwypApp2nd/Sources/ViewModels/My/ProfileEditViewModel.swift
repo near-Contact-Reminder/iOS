@@ -21,19 +21,4 @@ class ProfileEditViewModel: ObservableObject {
         //entity id -> friend.id -> friend.type return
 //        reminderRepo.addReminder(person: newPerson, type: friend.type ., )
     }
-    
-    
-    // 친구 삭제 API 사용 메소드
-    func deleteFriend(friendId: UUID) {
-        guard let token = UserSession.shared.user?.serverAccessToken else { return }
-        
-        BackEndAuthService.shared.deletFriend(friendId: friendId, accessToken: token) { result in
-            switch result {
-            case .success:
-                print("🟢 [ProfileDetailViewModel] 친구 삭제 성공")
-            case .failure(let error):
-                print("🔴 [ProfileDetailViewModel] 친구 삭제 실패: \(error)")
-            }
-        }
-    }
 }
