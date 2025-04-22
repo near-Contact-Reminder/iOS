@@ -42,4 +42,19 @@ class ProfileDetailViewModel: ObservableObject {
             }
         }
     }
+    
+    // 친구 삭제 API 사용 메소드
+    func deleteFriend(friendId: UUID, completion: @escaping () -> Void) {
+        guard let token = UserSession.shared.user?.serverAccessToken else { return }
+        
+        BackEndAuthService.shared.deletFriend(friendId: friendId, accessToken: token) { result in
+            switch result {
+            case .success:
+                print("🟢 [ProfileDetailViewModel] 친구 삭제 성공")
+                completion()
+            case .failure(let error):
+                print("🔴 [ProfileDetailViewModel] 친구 삭제 실패: \(error)")
+            }
+        }
+    }
 }

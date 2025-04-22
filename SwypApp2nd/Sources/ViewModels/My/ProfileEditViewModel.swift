@@ -21,5 +21,4 @@ class ProfileEditViewModel: ObservableObject {
         //entity id -> friend.id -> friend.type return
 //        reminderRepo.addReminder(person: newPerson, type: friend.type ., )
     }
-    
 }

@@ -4,6 +4,8 @@ struct ProfileDetailView: View {
     @ObservedObject var viewModel: ProfileDetailViewModel
     @Binding var path: [AppRoute]
     @State private var selectedTab: Tab = .profile
+    @State private var showActionSheet = false
+    @State private var isEditing = false
 
     enum Tab {
         case profile, records
@@ -13,7 +15,13 @@ struct ProfileDetailView: View {
         
         VStack(alignment: .leading, spacing: 32) {
             
-            ProfileHeader(people: viewModel.people)
+            ProfileHeader(people: viewModel.people, onDelete: {
+                viewModel.deleteFriend(friendId: viewModel.people.id) {
+                    DispatchQueue.main.async {
+                        path.removeAll()
+                    }
+                }
+            })
             ActionButtonRow(people: viewModel.people)
             ZStack {
                 ProfileTabBar(selected: $selectedTab)
@@ -36,6 +44,70 @@ struct ProfileDetailView: View {
             }
         }
         .padding(.horizontal, 24)
+        .navigationBarBackButtonHidden()
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading)  {
+                Button(action: {
+                    path.removeLast()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(.black)
+                }
+                .padding(.leading, 12)
+            }
+            
+            
+            ToolbarItem(placement: .topBarTrailing)  {
+                Button(action: {
+                    showActionSheet = true
+                }) {
+                    Image(systemName: "ellipsis")
+                        .resizable()
+                        .font(Font.Pretendard.b1Medium())
+                        .rotationEffect(.degrees(90))
+                        .foregroundColor(.black)
+                }
+                .padding(.trailing, 12)
+            }
+            
+        }
+        .confirmationDialog("옵션", isPresented: $showActionSheet, titleVisibility: .visible) {
+                    Button("수정", role: .none) {
+                        isEditing = true
+                    }
+                    Button("삭제", role: .destructive) {
+                        viewModel.deleteFriend(friendId: viewModel.people.id) {
+                            DispatchQueue.main.async {
+                                path.removeAll()
+                            }
+                        }
+                    }
+                    Button("취소", role: .cancel) {}
+                }
+                .fullScreenCover(isPresented: $isEditing) {
+            NavigationStack {
+                ProfileEditView(profileEditViewModel: ProfileEditViewModel(person: viewModel.people))
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button(action: {
+                                isEditing = false // 뒤로 가기 역할
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.black)
+                            }
+                        }
+
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("완료") {
+                                isEditing = false // 저장 후 닫기
+                            }
+                            .foregroundColor(.black)
+                            .font(Font.Pretendard.b1Bold())
+                        }
+                }
+            }
+        }
         .navigationDestination(for: ProfileDetailRoute.self) { route in
             switch route {
             case .edit:
@@ -100,8 +172,7 @@ struct HistorySection: View {
 
 private struct ProfileHeader: View {
     let people: Friend
-    @State private var showActionSheet = false
-    @State private var isEditing = false
+    let onDelete: () -> Void
     
     var emojiImageName: String {
         guard let rate = people.checkRate else {
@@ -145,52 +216,10 @@ private struct ProfileHeader: View {
                     .font(Font.Pretendard.b1Medium())
                     .foregroundColor(Color.blue01)
             }
-            Spacer()
-            Button(action: {
-                showActionSheet = true
-            }) {
-                Image(systemName: "ellipsis")
-                    .rotationEffect(.degrees(90))
-                    .font(.system(size: 20))
-                    .foregroundColor(.primary)
-            }
         }
-        .confirmationDialog("옵션", isPresented: $showActionSheet, titleVisibility: .visible) {
-                    Button("수정", role: .none) {
-                        isEditing = true
-                    }
-                    Button("삭제", role: .destructive) {
-                        // TODO: 삭제 기능 구현
-                    }
-                    Button("취소", role: .cancel) {}
-                }
-                .fullScreenCover(isPresented: $isEditing) {
-            NavigationStack {
-                ProfileEditView(profileEditViewModel: ProfileEditViewModel(person: people))
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: {
-                                isEditing = false // 뒤로 가기 역할
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .foregroundColor(.black)
-                            }
-                        }
-
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("완료") {
-                                isEditing = false // 저장 후 닫기
-                            }
-                            .foregroundColor(.black)
-                            .font(Font.Pretendard.b1Bold())
-                        }
-                }
-            }
-        }
+        
     }
 }
-
 private struct ActionButtonRow: View {
     
     var people: Friend
