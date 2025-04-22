@@ -4,6 +4,8 @@ struct ProfileDetailView: View {
     @ObservedObject var viewModel: ProfileDetailViewModel
     @Binding var path: [AppRoute]
     @State private var selectedTab: Tab = .profile
+    @State private var showActionSheet = false
+    @State private var isEditing = false
 
     enum Tab {
         case profile, records
@@ -13,7 +15,13 @@ struct ProfileDetailView: View {
         
         VStack(alignment: .leading, spacing: 32) {
             
-            ProfileHeader(viewModel: ProfileEditViewModel(person: viewModel.people), path: $path)
+            ProfileHeader(people: viewModel.people, onDelete: {
+                viewModel.deleteFriend(friendId: viewModel.people.id) {
+                    DispatchQueue.main.async {
+                        path.removeAll()
+                    }
+                }
+            })
             ActionButtonRow(people: viewModel.people)
             ZStack {
                 ProfileTabBar(selected: $selectedTab)
@@ -36,6 +44,70 @@ struct ProfileDetailView: View {
             }
         }
         .padding(.horizontal, 24)
+        .navigationBarBackButtonHidden()
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading)  {
+                Button(action: {
+                    path.removeLast()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(.black)
+                }
+                .padding(.leading, 12)
+            }
+            
+            
+            ToolbarItem(placement: .topBarTrailing)  {
+                Button(action: {
+                    showActionSheet = true
+                }) {
+                    Image(systemName: "ellipsis")
+                        .resizable()
+                        .font(Font.Pretendard.b1Medium())
+                        .rotationEffect(.degrees(90))
+                        .foregroundColor(.black)
+                }
+                .padding(.trailing, 12)
+            }
+            
+        }
+        .confirmationDialog("옵션", isPresented: $showActionSheet, titleVisibility: .visible) {
+                    Button("수정", role: .none) {
+                        isEditing = true
+                    }
+                    Button("삭제", role: .destructive) {
+                        viewModel.deleteFriend(friendId: viewModel.people.id) {
+                            DispatchQueue.main.async {
+                                path.removeAll()
+                            }
+                        }
+                    }
+                    Button("취소", role: .cancel) {}
+                }
+                .fullScreenCover(isPresented: $isEditing) {
+            NavigationStack {
+                ProfileEditView(profileEditViewModel: ProfileEditViewModel(person: viewModel.people))
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button(action: {
+                                isEditing = false // 뒤로 가기 역할
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.black)
+                            }
+                        }
+
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("완료") {
+                                isEditing = false // 저장 후 닫기
+                            }
+                            .foregroundColor(.black)
+                            .font(Font.Pretendard.b1Bold())
+                        }
+                }
+            }
+        }
         .navigationDestination(for: ProfileDetailRoute.self) { route in
             switch route {
             case .edit:
@@ -99,13 +171,11 @@ struct HistorySection: View {
 }
 
 private struct ProfileHeader: View {
-    @ObservedObject var viewModel: ProfileEditViewModel
-    @Binding var path: [AppRoute]
-    @State private var showActionSheet = false
-    @State private var isEditing = false
+    let people: Friend
+    let onDelete: () -> Void
     
     var emojiImageName: String {
-        guard let rate = viewModel.person.checkRate else {
+        guard let rate = people.checkRate else {
             return "icon_visual_24_emoji_0"
         }
         switch rate {
@@ -118,7 +188,7 @@ private struct ProfileHeader: View {
     var body: some View {
         HStack(spacing: 16) {
             ZStack(alignment: .topTrailing) {
-                if let image = viewModel.person.image {
+                if let image = people.image {
                     Image(uiImage: image)
                         .resizable()
                         .clipShape(Circle())
@@ -137,59 +207,17 @@ private struct ProfileHeader: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 
-                Text(viewModel.person.name)
+                Text(people.name)
                     .frame(height: 22)
                     .font(Font.Pretendard.h2Bold())
                     .multilineTextAlignment(.center)
                 
-                Text("\(viewModel.person.lastContactAt?.formattedYYYYMMDDMoreCloser() ?? "-")") //MM월dd일 더 가까워졌어요
+                Text("\(people.lastContactAt?.formattedYYYYMMDDMoreCloser() ?? "-")") //MM월dd일 더 가까워졌어요
                     .font(Font.Pretendard.b1Medium())
                     .foregroundColor(Color.blue01)
             }
-            Spacer()
-            Button(action: {
-                showActionSheet = true
-            }) {
-                Image(systemName: "ellipsis")
-                    .rotationEffect(.degrees(90))
-                    .font(.system(size: 20))
-                    .foregroundColor(.primary)
-            }
         }
-        .confirmationDialog("옵션", isPresented: $showActionSheet, titleVisibility: .visible) {
-                    Button("수정", role: .none) {
-                        isEditing = true
-                    }
-                    Button("삭제", role: .destructive) {
-                        viewModel.deleteFriend(friendId: viewModel.person.id)
-                        path.removeAll()
-                    }
-                    Button("취소", role: .cancel) {}
-                }
-                .fullScreenCover(isPresented: $isEditing) {
-            NavigationStack {
-                ProfileEditView(profileEditViewModel: viewModel)
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: {
-                                isEditing = false // 뒤로 가기 역할
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .foregroundColor(.black)
-                            }
-                        }
-
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("완료") {
-                                isEditing = false // 저장 후 닫기
-                            }
-                            .foregroundColor(.black)
-                            .font(Font.Pretendard.b1Bold())
-                        }
-                }
-            }
-        }
+        
     }
 }
 private struct ActionButtonRow: View {
