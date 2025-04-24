@@ -86,32 +86,11 @@ struct ProfileDetailView: View {
                 }
                 .fullScreenCover(isPresented: $isEditing) {
             NavigationStack {
-                ProfileEditView(profileEditViewModel: ProfileEditViewModel(person: viewModel.people))
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: {
-                                isEditing = false // 뒤로 가기 역할
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .foregroundColor(.black)
-                            }
-                        }
-
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("완료") {
-                                isEditing = false // 저장 후 닫기
-                            }
-                            .foregroundColor(.black)
-                            .font(Font.Pretendard.b1Bold())
-                        }
+                ProfileEditView(
+                    profileEditViewModel: ProfileEditViewModel(person: viewModel.people)) {
+                        viewModel.fetchFriendDetail(friendId: viewModel.people.id)
+                        isEditing = false
                 }
-            }
-        }
-        .navigationDestination(for: ProfileDetailRoute.self) { route in
-            switch route {
-            case .edit:
-                ProfileEditView(profileEditViewModel: ProfileEditViewModel(person: viewModel.people))
             }
         }
     }
@@ -373,7 +352,7 @@ private struct ProfileInfoSection: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            InfoRow(label: "관계", value: people.relationship ?? "-")
+            InfoRow(label: "관계", value: displayLabel(for: people.relationship)  ?? "-")
             InfoRow(label: "연락 주기", value: people.frequency?.rawValue ?? "-")
             InfoRow(label: "생일", value: people.birthDay?.formattedYYYYMMDDWithDot() ?? "-")
             InfoRow(label: "기념일", value: "\(people.anniversary?.title ?? "-") (\(people.anniversary?.Date?.formattedYYYYMMDDWithDot() ?? "-"))")
@@ -386,6 +365,15 @@ private struct ProfileInfoSection: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy.MM.dd"
         return formatter.string(from: date)
+    }
+    
+    private func displayLabel(for rawValue: String?) -> String? {
+        switch rawValue {
+        case "FRIEND": return "친구"
+        case "FAMILY": return "가족"
+        case "ACQUAINTANCE": return "지인"
+        default: return nil
+        }
     }
 }
 

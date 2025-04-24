@@ -31,6 +31,7 @@ struct Friend: Identifiable, Equatable, Hashable, Codable {
 }
 
 struct AnniversaryModel: Codable, Equatable, Hashable {
+    var id: Int?
     var title: String?
     var Date: Date?
 }
@@ -183,9 +184,9 @@ extension CheckInFrequency {
         switch self {
         case .daily: return "EVERY_DAY"
         case .weekly: return "EVERY_WEEK"
-        case .biweekly: return "EVERY_2WEEK"
+        case .biweekly: return "EVERY_TWO_WEEK"
         case .monthly: return "EVERY_MONTH"
-        case .semiAnnually: return "EVERY_6MONTH"
+        case .semiAnnually: return "EVERY_SIX_MONTH"
         default: return nil
         }
     }

@@ -108,7 +108,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
                         ) ?? self
                             .people[index].id
                         self.people[index].fileName = friendWithURL.fileName
-                        
+                        self.people[index].anniversary?.id = friendWithURL.anniversary?.id
                         print( "🟢 [ContactFrequencySettingsViewModel] 서버 ID로 업데이트됨: \(self.people[index].name) → \(self.people[index].id)")
                         print( "🟢 [ContactFrequencySettingsViewModel] 서버 ID로 fileName 업데이트됨: \(self.people[index].name)의 fileName \(String(describing: self.people[index].fileName))")
                     }

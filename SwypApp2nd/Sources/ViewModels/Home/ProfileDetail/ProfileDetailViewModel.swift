@@ -27,6 +27,7 @@ class ProfileDetailViewModel: ObservableObject {
                         self.people.anniversary = friendDetail.anniversaryList?.first
                             .flatMap {
                                 AnniversaryModel(
+                                    id: $0.id,
                                     title: $0.title,
                                     Date: $0.Date
                                 )

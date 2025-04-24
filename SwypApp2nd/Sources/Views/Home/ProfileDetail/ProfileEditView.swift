@@ -4,25 +4,56 @@ import CoreData
 struct ProfileEditView: View {
     @ObservedObject var profileEditViewModel: ProfileEditViewModel
     @StateObject var notificationViewModel = NotificationViewModel()
-    @Environment(\.presentationMode) var presentationMode
     
     let contactFrequencies = ["매일", "매주", "2주", "매달", "매분기", "6개월", "매년"]
+    let onComplete: () -> Void
     
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 NameSection(name: $profileEditViewModel.person.name)
-                RelationshipSection(relationship: $profileEditViewModel.person.relationship)
-                FrequencySection(frequency: $profileEditViewModel.person.frequency, options: contactFrequencies)
-                            BirthdaySection(birthday: $profileEditViewModel.person.birthDay)
-                            AnniversarySection(anniversary: $profileEditViewModel.person.anniversary)
-                            MemoSection(memo: $profileEditViewModel.person.memo)
+                RelationshipSection(
+                    relationship: $profileEditViewModel.person.relationship
+                )
+                FrequencySection(
+                    frequency: $profileEditViewModel.person.frequency,
+                    options: contactFrequencies
+                )
+                BirthdaySection(birthday: $profileEditViewModel.person.birthDay)
+                AnniversarySection(
+                    anniversary: $profileEditViewModel.person.anniversary
+                )
+                MemoSection(memo: $profileEditViewModel.person.memo)
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    onComplete() // 뒤로 가기 혹은 닫기
+                }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(.black)
+                }
+            }
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("완료") {
+                    profileEditViewModel
+                        .updateFriendDetail(
+                            friendId: profileEditViewModel.person.id
+                        ) {
+                            onComplete()
+                        }
+                }
+                .foregroundColor(.black)
+                .font(Font.Pretendard.b1Bold())
             }
         }
         .scrollIndicators(.hidden)
         .scrollContentBackground(.hidden)
         .background(Color.white)
         .padding(.horizontal, 24)
+        
         
     }
 }
@@ -73,20 +104,38 @@ struct RelationshipSection: View {
             HStack(spacing: 48) {
                 ForEach(options, id: \.self) { option in
                     HStack(spacing: 21)  {
-                        Image(systemName: relationship == option ? "largecircle.fill.circle" : "circle")
-                            .foregroundColor(relationship == option ? Color.blue01 : Color.gray03)
+                        Image(systemName: displayLabel(for: relationship) == option ? "largecircle.fill.circle" : "circle")
+                            .foregroundColor(displayLabel(for: relationship) == option ? Color.blue01 : Color.gray03)
                         
                         Text(option)
                             .font(.Pretendard.b2Medium())
                             .foregroundColor(.black)
                         }
                         .onTapGesture {
-                            relationship = option
+                            relationship = rawValue(for: option)
                     }.contentShape(Rectangle())
                     }
                 }
             }
             .padding(.vertical,12)
+    }
+    
+    private func displayLabel(for rawValue: String?) -> String? {
+        switch rawValue {
+        case "FRIEND": return "친구"
+        case "FAMILY": return "가족"
+        case "ACQUAINTANCE": return "지인"
+        default: return nil
+        }
+    }
+
+    private func rawValue(for displayLabel: String) -> String {
+        switch displayLabel {
+        case "친구": return "FRIEND"
+        case "가족": return "FAMILY"
+        case "지인": return "ACQUAINTANCE"
+        default: return "ACQUAINTANCE"
+        }
     }
 }
 
@@ -316,83 +365,59 @@ struct MemoSection: View {
     }
 }
 
-    
-    struct WheelDatePicker: View {
-        let title: String
-        let showEmptyYear: Bool
-        let limitToPast: Bool
-        @Binding var date: Date?
-        @State private var isPickerVisible = false
+struct WheelDatePicker: View {
+    let title: String
+    let showEmptyYear: Bool
+    let limitToPast: Bool
+    @Binding var date: Date?
+    @State private var isPickerVisible = false
         
-        var body: some View {
-            VStack(alignment: .leading) {
-                if !title.isEmpty {
-                    Text(title)
-                        .font(.headline)
-                }
+    var body: some View {
+        VStack(alignment: .leading) {
+            if !title.isEmpty {
+                Text(title)
+                    .font(.headline)
+            }
                 
-                Button {
-                    isPickerVisible.toggle()
-                } label: {
-                    HStack {
-                        Text(date != nil ? formattedDate(date!) : "선택 안함")
-                            .foregroundColor(date != nil ? .primary : .gray)
-                    }
-                }
-                
-                if isPickerVisible {
-                    DatePicker(
-                        "",
-                        selection: Binding(
-                            get: { date ?? Date() },
-                            set: { date = $0 }
-                        ),
-                        in: dateRange,
-                        displayedComponents: .date
-                    )
-                    .datePickerStyle(.wheel)
-                    .labelsHidden()
+            Button {
+                isPickerVisible.toggle()
+            } label: {
+                HStack {
+                    Text(date != nil ? formattedDate(date!) : "선택 안함")
+                        .foregroundColor(date != nil ? .primary : .gray)
                 }
             }
-        }
-        
-        private var dateRange: ClosedRange<Date> {
-            let maxDate = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
-            return limitToPast ? Date.distantPast...maxDate : Date.distantPast...Date.distantFuture
-        }
-        
-        private func formattedDate(_ date: Date) -> String {
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "ko_KR")
-            formatter.dateFormat = "yyyy년 M월 d일"
-            return formatter.string(from: date)
+                
+            if isPickerVisible {
+                DatePicker(
+                    "",
+                    selection: Binding(
+                        get: { date ?? Date() },
+                        set: { date = $0 }
+                    ),
+                    in: dateRange,
+                    displayedComponents: .date
+                )
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+            }
         }
     }
+        
+    private var dateRange: ClosedRange<Date> {
+        let maxDate = Calendar.current.date(
+            byAdding: .day,
+            value: -1,
+            to: Date()
+        )!
+        return limitToPast ? Date.distantPast...maxDate : Date.distantPast...Date.distantFuture
+    }
+        
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "yyyy년 M월 d일"
+        return formatter.string(from: date)
+    }
+}
     
-    struct ProfileView_Previews: PreviewProvider {
-        static var previews: some View {
-            let dummyFriend = Friend(
-                id: UUID(),
-                name: "미리보기용",
-                image: nil,
-                imageURL: nil,
-                source: .kakao,
-                frequency: .monthly,
-                remindCategory: .message,
-                phoneNumber: "010-1234-5678",
-                relationship: "동료",
-                birthDay: Date(),
-                anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
-                memo: "테스트 메모",
-                nextContactAt: Date().addingTimeInterval(86400 * 30),
-                lastContactAt: Date().addingTimeInterval(-86400 * 10),
-                checkRate: 75,
-                position: 0,
-                fileName: "preview.jpg"
-            )
-            
-            let dummyVM = ProfileEditViewModel(person: dummyFriend)
-            
-            return ProfileEditView(profileEditViewModel: dummyVM)
-        }
-    }
