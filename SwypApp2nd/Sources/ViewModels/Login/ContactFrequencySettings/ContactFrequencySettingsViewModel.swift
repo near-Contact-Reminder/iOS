@@ -39,15 +39,15 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         unifiedFrequency = frequency
         if isUnified {
             let nextDate = calculateNextContactDate(for: frequency)
-            people = people.map {
-                Friend(id: $0.id, name: $0.name, image: $0.image, source: $0.source, frequency: frequency, nextContactAt: nextDate)
+            for i in people.indices {
+                people[i].frequency = frequency
+                people[i].nextContactAt = nextDate
             }
         }
     }
     
     // RegisterViewModel에서 선택한 연락처 받아오는 메소드, 기존 친구(friends)에 이미 있는 친구는 제외하고, 새 친구만 저장
     func setPeople(from contacts: [Friend]) {
-        self.people = contacts.map { $0 }
         let existing = UserSession.shared.user?.friends ?? []
         let existingIds = Set(existing.map { $0.id })
 
@@ -58,6 +58,14 @@ class ContactFrequencySettingsViewModel: ObservableObject {
             
         if newFriends.count > allowedCount {
             print("⚠️ 최대 10명까지만 등록할 수 있어요.")
+        }
+        for i in people.indices {
+            let original = newFriends.first(where: { $0.id == people[i].id })
+            people[i].relationship = original?.relationship
+            people[i].memo = original?.memo
+            people[i].birthDay = original?.birthDay
+            people[i].anniversary = original?.anniversary
+            people[i].phoneNumber = original?.phoneNumber
         }
     }
     
@@ -97,6 +105,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         BackEndAuthService.shared.sendInitialFriends(friends: friends, accessToken: accessToken) { result in
             switch result {
             case .success(let registeredFriends):
+                let group = DispatchGroup()
                 
                 // 서버에서 받은 id로 업데이트
                 for friendWithURL in registeredFriends {
@@ -124,12 +133,14 @@ class ContactFrequencySettingsViewModel: ObservableObject {
                         print("🟡 [ContactFrequencySettingsViewModel] 업로드 파일 이름 예상: \(localFriend.fileName ?? "nil")")
                         print("🟡 [ContactFrequencySettingsViewModel] 업로드 대상 URL: \(url)")
                         
+                        group.enter()
                         BackEndAuthService.shared.uploadImageWithPresignedURL(imageData: image, presignedURL: url, contentType: "image/jpeg") { success in
                             if success {
                                 print("🟢 [ContactFrequencySettingsViewModel] \(friendWithURL.name)의 이미지 업로드: 성공")
                             } else {
                                 print("🔴 [ContactFrequencySettingsViewModel] \(friendWithURL.name)의 이미지 업로드: 실패")
                             }
+                            group.leave()
                         }
                     } else {
                         print("🔴 이미지 업로드 조건 실패 - 이름: \(friendWithURL.name)")
@@ -145,7 +156,10 @@ class ContactFrequencySettingsViewModel: ObservableObject {
                         }
                     }
                 }
-                completion()
+                group.notify(queue: .main) {
+                    print("🟢 [ContactFrequencySettingsViewModel] 모든 이미지 업로드 완료, completion 호출")
+                    completion()
+                }
             case .failure(let error):
                 print("🔴 [ContactFrequencySettingsViewModel] 친구 등록 실패: \(error)")
             }
