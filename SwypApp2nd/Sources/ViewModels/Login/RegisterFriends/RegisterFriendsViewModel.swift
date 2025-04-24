@@ -59,12 +59,17 @@ class RegisterFriendsViewModel: ObservableObject {
             let name = $0.familyName + $0.givenName
             let image = $0.thumbnailImageData.flatMap { UIImage(data: $0) }
             let birthDay = $0.birthday?.date
-            let anniversaryDay = $0.dates.first?.value as? Date
+            let anniversaryDateComponents = $0.dates.first?.value as? DateComponents
+            let anniversaryDay = anniversaryDateComponents?.date
             let anniversaryDayTitle = $0.dates.first?.label
+            let anniversary: AnniversaryModel? = {
+                guard let date = anniversaryDay else { return nil }
+                return AnniversaryModel(title: anniversaryDayTitle, Date: date)
+            }()
             let relationship = $0.contactRelations.first?.label
             
             let phoneNumber =  $0.phoneNumbers.first?.value.stringValue
-//            let memo = $0.note
+            let memo = $0.note
             return Friend(
                         id: UUID(),
                         name: name,
@@ -76,10 +81,8 @@ class RegisterFriendsViewModel: ObservableObject {
                         phoneNumber: phoneNumber,
                         relationship: relationship,
                         birthDay: birthDay,
-                        anniversary: AnniversaryModel(
-                            title: anniversaryDayTitle ?? nil,
-                            Date: anniversaryDay ?? nil),
-//                        memo: memo,
+                        anniversary: anniversary,
+                        memo: memo,
                         nextContactAt: nil,
                         lastContactAt: nil,
                         checkRate: nil,

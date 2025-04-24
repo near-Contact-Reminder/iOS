@@ -113,6 +113,7 @@ extension Friend {
             else { return nil }
 
             let formatted = date.formattedYYYYMMDD()
+            // TODO: - 기념일 Array로 변경시 추후 수정 필요
             return AnniversaryDTO(title: title, date: formatted)
         }()
         
@@ -130,7 +131,7 @@ extension Friend {
             anniversary: anniversaryDTO,
             birthDay: birthDayString,
             relation: mappedRelation(from: relationship),
-//            memo: memo,
+            memo: memo,
             phone: phoneNumber
         )
     }
@@ -160,6 +161,15 @@ extension Friend {
 }
 
 extension ContactSource {
+    init(serverValue: String) {
+        switch serverValue.uppercased() {
+        case "KAKAO": self = .kakao
+        case "APPLE": self = .phone
+        default:
+            print("🔴 [ContactSource] 알 수 없는 값 '\(serverValue)', 기본값 .phone 사용")
+            self = .phone
+        }
+    }
     func toServerValue() -> String? {
         switch self {
         case .phone: return "APPLE"
@@ -219,7 +229,7 @@ struct FriendInitDTO: Codable {
     let anniversary: AnniversaryDTO?
     let birthDay: String?
     let relation: String?
-//    let memo: String?
+    let memo: String?
     let phone: String?
 }
 
@@ -252,8 +262,14 @@ struct FriendWithUploadURL: Codable {
     let phone: String?
     let nextContactAt: String?
     let preSignedImageUrl: String?
-    let anniversary: AnniversaryDTO?
+    let anniversary: FriendInitResponseAnniversary?
     let fileName: String?
+}
+
+struct FriendInitResponseAnniversary: Codable {
+    let id: Int
+    let title: String
+    let date: String
 }
 
 extension Friend {

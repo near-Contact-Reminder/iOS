@@ -62,14 +62,14 @@ public struct ContentView: View {
                 }, complete: { updatedPeoples in
                     DispatchQueue.main.async {
                         print("🟢 [ContactFrequencySettingsView] 전달받은 people: \(updatedPeoples.map { $0.name })")
-//                        homeViewModel.peoples = updatedPeoples
-                        UserSession.shared.user?.friends = updatedPeoples
+                        registerFriendsViewModel.selectedContacts.removeAll()
+                        contactFrequencyViewModel.people.removeAll()
+                        homeViewModel.loadFriendList()
                         userSession.appStep = .home
                     }
                 })
                 
             case .home:
-                //                HomeView(homeViewModel: homeViewModel, notificationViewModel: notificationViewModel, path: )
                 NavigationStack(path: $path) {
                     HomeView(homeViewModel: homeViewModel, notificationViewModel: notificationViewModel, path: $path)
                         .transition(.move(edge: .leading))

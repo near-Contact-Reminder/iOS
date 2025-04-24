@@ -12,6 +12,7 @@ class HomeViewModel: ObservableObject {
     
     init() {
         UserSession.shared.$user
+            .receive(on: DispatchQueue.main)
             .compactMap { $0?.friends }
             .sink { [weak self] friends in
                 self?.allFriends = friends
@@ -69,37 +70,35 @@ class HomeViewModel: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let friendList):
-                    DispatchQueue.main.async {
-                        var loadedFriends: [Friend] = friendList.map {
-                            Friend(
-                                id: UUID(uuidString: $0.friendId) ?? UUID(),
-                                name: $0.name,
-                                imageURL: $0.imageUrl,
-                                // TODO: - $0.source로 변경
-                                source: .kakao,
-                                position: $0.position,
-                                fileName: $0.fileName
-                            )
-                        }
-                        
-                        let group = DispatchGroup()
-                        
-                        // 이미지 다운로드 진행
-                        for index in loadedFriends.indices {
-                            group.enter()
-                            self.fetchAndSetImage(for: loadedFriends[index], accessToken: token) { image in
-                                DispatchQueue.main.async {
-                                    loadedFriends[index].image = image
-                                    group.leave()
-                                }
+                    var loadedFriends: [Friend] = friendList.map {
+                        let source = ContactSource(serverValue: $0.source ?? "")
+                        return Friend(
+                            id: UUID(uuidString: $0.friendId) ?? UUID(),
+                            name: $0.name,
+                            imageURL: $0.imageUrl,
+                            source: source,
+                            position: $0.position,
+                            fileName: $0.fileName
+                        )
+                    }
+                    
+                    let group = DispatchGroup()
+                    
+                    // 이미지 다운로드 진행
+                    for index in loadedFriends.indices {
+                        group.enter()
+                        self.fetchAndSetImage(for: loadedFriends[index], accessToken: token) { image in
+                            DispatchQueue.main.async {
+                                loadedFriends[index].image = image
+                                group.leave()
                             }
                         }
-                        
-                        group.notify(queue: .main) {
-                            self.allFriends = loadedFriends
-                            UserSession.shared.user?.friends = loadedFriends
-                            print("🟢 [HomeViewModel] 모든 친구 이미지 로드 완료")
-                        }
+                    }
+                    
+                    group.notify(queue: .main) {
+                        self.allFriends = loadedFriends
+                        UserSession.shared.user?.friends = loadedFriends
+                        print("🟢 [HomeViewModel] 모든 친구 이미지 로드 완료")
                     }
                 case .failure(let error):
                     print("🔴 친구 목록 API 실패: \(error)")

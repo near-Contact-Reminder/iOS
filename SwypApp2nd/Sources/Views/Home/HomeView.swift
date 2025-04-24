@@ -1,9 +1,5 @@
 import SwiftUI
 
-// TODO: - 로그아웃 버튼 이동시 삭제.
-import KakaoSDKUser
-import AuthenticationServices
-
 public struct HomeView: View {
 
     @ObservedObject var homeViewModel: HomeViewModel
@@ -17,15 +13,6 @@ public struct HomeView: View {
     
     public var body: some View {
         VStack(spacing: 24) {
-//            // MARK: - Test
-//            ForEach(notificationViewModel.reminders, id: \.self) { reminder in
-//            }
-//                
-//            Button(action: {
-//                notificationViewModel.deleteAllReminders()
-//            }) {
-//                Label("전체 삭제하기", systemImage: "trash")
-//            }
                     
             ZStack(alignment: .top) {
                 Image("img_bg")
@@ -79,7 +66,6 @@ struct CustomNavigationBar: View {
             HStack {
                 Spacer()
                 Button{
-                    // TODO: - MyPage 연결
                     onTapMy()
                 } label: {
                     Text("My")
@@ -87,7 +73,6 @@ struct CustomNavigationBar: View {
                         .foregroundStyle(Color.white)
                 }
                 Button {
-                    // TODO: - Notification 연결
                     onTapBell()
                 } label: {
                     if badgeCount > 0 {

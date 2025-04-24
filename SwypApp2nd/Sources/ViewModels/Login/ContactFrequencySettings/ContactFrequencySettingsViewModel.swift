@@ -91,7 +91,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
         }
     }
     
-    func uploadAllFriendsToServer(_ friends: [Friend]) {
+    func uploadAllFriendsToServer(_ friends: [Friend], completion: @escaping () -> Void) {
         guard let accessToken = UserSession.shared.user?.serverAccessToken else { return }
         
         BackEndAuthService.shared.sendInitialFriends(friends: friends, accessToken: accessToken) { result in
@@ -145,6 +145,7 @@ class ContactFrequencySettingsViewModel: ObservableObject {
                         }
                     }
                 }
+                completion()
             case .failure(let error):
                 print("🔴 [ContactFrequencySettingsViewModel] 친구 등록 실패: \(error)")
             }

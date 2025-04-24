@@ -127,11 +127,10 @@ struct ContactFrequencySettingsView: View {
                     // 카카오는 이미지 저장 후 BackEnd 서버에 전송
                     viewModel.downloadKakaoImageData { friendsWithImages in
                         DispatchQueue.main.async {
-                            viewModel.uploadAllFriendsToServer(viewModel.people)
-                            UserSession.shared.user?.friends = viewModel.people
-                            viewModel.people = []
-                            // TODO: - Complete로 people 안넘기는 Test 필요
-                            complete(viewModel.people)
+                            viewModel.uploadAllFriendsToServer(viewModel.people) {
+                                UserSession.shared.user?.friends = viewModel.people
+                                complete(viewModel.people)
+                            }
                         }
                     }
                 }

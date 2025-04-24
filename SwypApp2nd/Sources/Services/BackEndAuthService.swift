@@ -40,6 +40,7 @@ struct FriendListResponse: Codable, Identifiable {
     let position: Int
     let name: String
     let imageUrl: String?
+    let source: String?
     let fileName: String?
     
     var id: String { friendId }
