@@ -41,7 +41,7 @@ public struct ContentView: View {
     }
 
     public var body: some View {
-        VStack {
+        Group {
             switch userSession.appStep {
             case .login, .terms:
                 LoginView(loginViewModel: loginViewModel)
