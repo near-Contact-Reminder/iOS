@@ -42,7 +42,8 @@ struct ReminderListView: View {
         List {
             ForEach(notificationViewModel.reminders, id: \.self) { reminder in
                 ReminderRowView(notificationViewModel: notificationViewModel, reminder: reminder, person: reminder.person, onSelect: { person in
-                    path.append(.person(person))})
+                    let friend = Friend(from: person)
+                    path.append(.personDetail(friend))})
                     .listRowBackground(reminder.isRead ? Color.bg02 : Color.white)
             }
             .onDelete(perform: notificationViewModel.deleteReminder)
