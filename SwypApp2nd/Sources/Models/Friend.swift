@@ -31,6 +31,7 @@ struct Friend: Identifiable, Equatable, Hashable, Codable {
 }
 
 struct AnniversaryModel: Codable, Equatable, Hashable {
+    var id: Int?
     var title: String?
     var Date: Date?
 }
@@ -110,9 +111,13 @@ extension Friend {
             guard let anniversary = anniversary,
                   let title = anniversary.title,
                   let date = anniversary.Date
-            else { return nil }
+            else {
+                print("🔴 [toInitRequestDTO] 기념일 정보 없음 - \(name)")
+                return nil
+            }
 
             let formatted = date.formattedYYYYMMDD()
+            print("🟢 [toInitRequestDTO] \(name)의 기념일 DTO: \(title) / \(formatted)")
             // TODO: - 기념일 Array로 변경시 추후 수정 필요
             return AnniversaryDTO(title: title, date: formatted)
         }()
@@ -120,6 +125,17 @@ extension Friend {
         let birthDayString = birthDay?.formattedYYYYMMDD()
         let relationship = relationship ?? "ACQUAINTANCE" // TODO FORCED
 
+        
+        print("""
+        🧩 \(name)의 InitDTO 생성 요약
+        - phone: \(phoneNumber ?? "없음")
+        - memo: \(memo ?? "없음")
+        - birthday: \(birthDayString ?? "없음")
+        - relation(raw): \(relationship)
+        - relation(mapped): \(mappedRelation(from: relationship))
+        - anniversary: \(anniversaryDTO?.title ?? "없음") / \(anniversaryDTO?.date ?? "없음")
+        """)
+        
         return FriendInitDTO(
             name: name,
             source: sourceString,
@@ -183,9 +199,9 @@ extension CheckInFrequency {
         switch self {
         case .daily: return "EVERY_DAY"
         case .weekly: return "EVERY_WEEK"
-        case .biweekly: return "EVERY_2WEEK"
+        case .biweekly: return "EVERY_TWO_WEEK"
         case .monthly: return "EVERY_MONTH"
-        case .semiAnnually: return "EVERY_6MONTH"
+        case .semiAnnually: return "EVERY_SIX_MONTH"
         default: return nil
         }
     }

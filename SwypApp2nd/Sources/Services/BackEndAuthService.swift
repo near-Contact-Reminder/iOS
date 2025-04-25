@@ -98,6 +98,23 @@ struct FriendDetailResponse: Codable {
     }
 }
 
+// MARK: - 친구 상세 정보 업데이트
+struct FriendUpdateRequestDTO: Codable {
+    let name: String
+    let relation: String?
+    let contactFrequency: ContactFrequencyDTO?
+    let birthday: String?
+    let anniversaryList: [FriendUpdateRequestAnniversaryDTO]?
+    let memo: String?
+    let phone: String?
+}
+
+struct FriendUpdateRequestAnniversaryDTO: Codable {
+    var id: Int?
+    var title: String?
+    var date: String?
+}
+
 // MARK: - 서버 통신 로직
 final class BackEndAuthService {
     static let shared = BackEndAuthService()
@@ -467,11 +484,11 @@ final class BackEndAuthService {
                     let friendDetail = FriendDetail(
                         friendId: detail.friendId,
                         imageUrl: detail.imageUrl,
-                        relation: detail.relation,
+                        relation: detail.relation?.uppercased(),
                         contactFrequency: CheckInFrequency(from: detail.contactFrequency),
                         birthDay: detail.birthday,
                         anniversaryList: detail.anniversaryList?.compactMap { $0 }.map {
-                            AnniversaryModel(title: $0.title, Date: $0.date.toDate())
+                            AnniversaryModel(id: $0.id ,title: $0.title, Date: $0.date.toDate())
                         },
                         memo: detail.memo,
                         phone: detail.phone
@@ -504,6 +521,46 @@ final class BackEndAuthService {
                     completion(.success(()))
                 case .failure(let error):
                     print("🔴 [BackEndAuthService] 친구 삭제 전송 실패: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+    }
+    
+    /// 백엔드: 친구 상세 정보 업데이트
+    func updateFriend(friendId: UUID, request: FriendUpdateRequestDTO, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        print("🟡 [BackEndAuthService] 친구 상세 정보 업데이트 - friendId: \(friendId)")
+        
+        let url = "\(baseURL)/friend/\(friendId.uuidString)"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            let jsonData = try encoder.encode(request)
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("🟡 [updateFriend] 서버에 보낸 요청 JSON:\n\(jsonString)")
+            }
+        } catch {
+            print("🔴 [updateFriend] 요청 JSON 인코딩 실패: \(error)")
+        }
+        
+        AF.request(
+                url,
+                method: .put,
+                parameters: request,
+                encoder: JSONParameterEncoder.default,
+                headers: headers
+            )
+            .validate(statusCode: 200..<300)
+            .response{ response in
+                switch response.result {
+                case .success:
+                    print("🟢 [BackEndAuthService] 친구 상세 정보 업데이 성공")
+                    completion(.success(()))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 친구 상세 정보 업데이트 실패: \(error.localizedDescription)")
                     completion(.failure(error))
                 }
             }
