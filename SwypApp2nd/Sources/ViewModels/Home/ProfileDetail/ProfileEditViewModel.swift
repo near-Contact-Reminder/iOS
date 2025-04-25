@@ -40,7 +40,7 @@ class ProfileEditViewModel: ObservableObject {
             birthday: person.birthDay?.formattedYYYYMMDD(),
             anniversaryList: {
                 if let anniversary = person.anniversary {
-                    return [FriendUpdateRequestAnniversaryDTO(id: anniversary.id ?? 0, title: anniversary.title, date: anniversary.Date?.formattedYYYYMMDD())]
+                    return [FriendUpdateRequestAnniversaryDTO(id: anniversary.id, title: anniversary.title, date: anniversary.Date?.formattedYYYYMMDD())]
                 } else {
                     return nil
                 }
