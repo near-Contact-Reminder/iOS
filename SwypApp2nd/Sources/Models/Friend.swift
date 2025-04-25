@@ -273,21 +273,33 @@ struct FriendInitResponseAnniversary: Codable {
 }
 
 extension Friend {
+    init(from entity: PersonEntity) {
+        self.id = entity.id
+        self.name = entity.name
+        self.image = nil
+        self.imageURL = nil
+        self.source = .phone
+        self.frequency = nil
+        self.remindCategory = nil
+        self.phoneNumber = nil
+        self.relationship = nil
+        self.birthDay = nil
+        self.anniversary = nil
+        self.memo = nil
+        self.nextContactAt = nil
+        self.lastContactAt = nil
+        self.checkRate = nil
+        self.position = nil
+        self.fileName = nil
+        self.entity = entity
+    }
+}
+
+extension Friend {
     func toPersonEntity(context: NSManagedObjectContext) -> PersonEntity {
         let entity = PersonEntity(context: context)
         entity.id = self.id
         entity.name = self.name
-//        entity.imageURL = self.imageURL
-//        entity.phoneNumber = self.phoneNumber
-//        entity.relationship = self.relationship
-//        entity.birthDay = self.birthDay
-//        entity.anniversaryTitle = self.anniversary?.title
-//        entity.anniversaryDate = self.anniversary?.Date
-//        entity.memo = self.memo
-//        entity.nextContactAt = self.nextContactAt
-//        entity.lastContactAt = self.lastContactAt
-        entity.reminderInterval = self.frequency?.rawValue
-//        entity.position = Int64(self.position ?? 0)
         return entity
     }
 }

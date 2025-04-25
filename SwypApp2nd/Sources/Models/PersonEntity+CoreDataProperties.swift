@@ -7,12 +7,14 @@ extension PersonEntity {
     @nonobjc public class func fetchRequest() -> NSFetchRequest<PersonEntity> {
         return NSFetchRequest<PersonEntity>(entityName: "PersonEntity")
     }
-    
-    static func mockPerson(context: NSManagedObjectContext) -> PersonEntity {
-        let person = PersonEntity(context: context)
-        person.name = "강다연"
-        return person
-        }
+}
+
+extension PersonEntity {
+    convenience init(context: NSManagedObjectContext, from friend: Friend) {
+        self.init(context: context)
+        self.id = friend.id
+        self.name = friend.name
+    }
 }
 
 // MARK: Generated accessors for reminders

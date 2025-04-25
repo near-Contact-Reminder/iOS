@@ -101,8 +101,6 @@ struct AccountSettingSectionView: View {
 
 struct NotificationSettingsView: View {
     @ObservedObject var viewModel: MyViewModel
-    @Environment(\.scenePhase) var scenePhase
-
     var body: some View {
         Toggle("알림설정", isOn: $viewModel.isNotificationOn)
             .padding(.horizontal)
@@ -111,9 +109,11 @@ struct NotificationSettingsView: View {
             .onAppear {
                 viewModel.loadInitialState()
             }
-            .onChange(of: scenePhase) { newPhase in
-                if newPhase == .active {
-                    viewModel.loadInitialState()
+            .onChange(of: viewModel.isNotificationOn) {newValue in
+                if newValue {
+                        viewModel.handleToggleOn()
+                } else {
+                    viewModel.turnOffNotifications()
                 }
             }
             .alert("휴대폰 알림이 꺼져 있어요.", isPresented: $viewModel.showSettingsAlert) {

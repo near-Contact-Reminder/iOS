@@ -3,7 +3,6 @@
     <entity name="PersonEntity" representedClassName="PersonEntity" syncable="YES">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="name" optional="YES" attributeType="String"/>
-        <attribute name="reminderInterval" optional="YES" attributeType="String"/>
         <relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ReminderEntity" inverseName="person" inverseEntity="ReminderEntity"/>
     </entity>
     <entity name="ReminderEntity" representedClassName="ReminderEntity" syncable="YES">
