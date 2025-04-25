@@ -15,7 +15,6 @@ enum AppStep {
 enum AppRoute: Hashable {
     case inbox
     case my
-    case person(PersonEntity)
     case personDetail(Friend)
 }
 
@@ -42,7 +41,7 @@ public struct ContentView: View {
     }
 
     public var body: some View {
-        Group {
+        VStack {
             switch userSession.appStep {
             case .login, .terms:
                 LoginView(loginViewModel: loginViewModel)
@@ -76,11 +75,7 @@ public struct ContentView: View {
                         .navigationDestination(for: AppRoute.self) { route in
                             switch route {
                             case .inbox:
-                                NotificationInboxView(path: $path)
-//                            case .person(let person):
-//                                ProfileDetailView(person: person)
-                            case .person(_):
-                                NotificationInboxView(path: $path)
+                                NotificationInboxView(path: $path, notificationViewModel: notificationViewModel)
                             case .my:
                                 MyProfileView(path: $path)
                             case .personDetail(let friend):

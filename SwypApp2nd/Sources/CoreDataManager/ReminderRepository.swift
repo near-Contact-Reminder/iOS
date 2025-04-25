@@ -1,39 +1,55 @@
 import CoreData
-import UserNotifications
 
 class ReminderRepository {
     private let context = CoreDataStack.shared.context
 
     func addReminder(person: Friend, type: NotificationType, scheduledDate: Date) {
         let newReminder = ReminderEntity(context: context)
-        newReminder.id = UUID()
+        newReminder.id = person.id
         newReminder.date = scheduledDate
         newReminder.isRead = false
+        print(type.rawValue)
         newReminder.type = type.rawValue
         
         // MARK: - Person 연결
-        guard let personID = person.entity?.id.uuidString else {
-            print("❌ 친구에 연결된 PersonEntity 없음")
-            return
-        }
-
-        let fetchRequest: NSFetchRequest<PersonEntity> = PersonEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", personID as CVarArg)
-
-        let entity: PersonEntity
-        if let existing = try? context.fetch(fetchRequest).first {
-            entity = existing
+        var entity: PersonEntity?
+        
+        if let existingEntity = person.entity {
+               entity = existingEntity
         } else {
-            entity = person.toPersonEntity(context: context)
-        }
-        newReminder.person = entity
+            // CoreData에서 찾아보기
+            let personID = person.entity?.id ?? person.id
+            
+            let fetchRequest: NSFetchRequest<PersonEntity> = PersonEntity.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", personID as CVarArg)
+            
+            do {
+                if let found = try context.fetch(fetchRequest).first {
+                    entity = found
+                } else {
+                        entity = person.toPersonEntity(context: context) // 새로 생성
+                    }
+                } catch {
+                    print("❌ PersonEntity fetch 실패: \(error.localizedDescription)")
+                    return
+                    }
+                }
+        
+        
+        guard let personEntity = entity else {
+                print("❌ PersonEntity 설정 실패")
+                return
+            }
+
+        newReminder.person = personEntity
+
 
         // 알림 브로드캐스트
         NotificationCenter.default.post(
             name: NSNotification.Name("NewReminderAdded"),
             object: nil,
             userInfo: [
-                "personID": "", // entity.id.uuidString,
+                "personID": personEntity.id.uuidString,
                 "type": type.rawValue
             ]
         )
@@ -77,7 +93,7 @@ class ReminderRepository {
         }
     }
     
-    func fetchPerson(from userInfo: [AnyHashable: Any]) -> PersonEntity? {
+    func fetchPerson(from userInfo: [AnyHashable: Any]) -> Friend? {
        guard let personID = userInfo["personID"] as? String,
                 let uuid = UUID(uuidString: personID) else {
            print("❌ UserInfo에서 personID 가져오기 실패")
@@ -87,13 +103,18 @@ class ReminderRepository {
        let fetchRequest: NSFetchRequest<PersonEntity> = PersonEntity.fetchRequest()
        fetchRequest.predicate = NSPredicate(format: "id == %@", uuid as CVarArg)
 
-       do {
-           return try context.fetch(fetchRequest).first
-       } catch {
-           print("❌ PersonEntity 찾기 실패: \(error.localizedDescription)")
-           return nil
-       }
-   }
+        do {
+            if let entity = try context.fetch(fetchRequest).first {
+                return Friend(from: entity) 
+            } else {
+                print("[reminder repo] ❌ entity 연결 Friend 찾기 실패")
+                return nil
+            }
+        } catch {
+            print("[reminder repo] ❌ PersonEntity 찾기 실패: \(error.localizedDescription)")
+            return nil
+        }
+    }
     
     func markAsRead(_ reminder: ReminderEntity) {
         reminder.isRead = true

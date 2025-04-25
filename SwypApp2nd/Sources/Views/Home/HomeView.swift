@@ -51,6 +51,13 @@ public struct HomeView: View {
         .onAppear {
             homeViewModel.loadFriendList()
         }
+        .onReceive(notificationViewModel.$navigateToPerson.compactMap { $0 }) { person in
+            DispatchQueue.main.async {
+                path = []
+                path.append(.personDetail(person))
+                notificationViewModel.navigateToPerson = nil
+            }
+        }
     }
 }
 
