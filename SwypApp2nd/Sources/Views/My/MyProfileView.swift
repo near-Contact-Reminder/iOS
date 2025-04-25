@@ -82,7 +82,7 @@ struct AccountSettingSectionView: View {
                     Spacer()
                     let (loginName, imageName): (String, String) = {
                         switch loginType {
-                        case .kakao: return ("카카오톡", "img_32_kakao")
+                        case .kakao: return ("카카오", "img_32_kakao")
                         case .apple: return ("애플", "img_32_apple")
                         }
                     }()
