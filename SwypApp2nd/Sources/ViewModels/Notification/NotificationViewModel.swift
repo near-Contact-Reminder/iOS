@@ -35,8 +35,7 @@ class NotificationViewModel: ObservableObject {
     
     //MARK: - Inbox View에서 알림 스와이프해서 삭제 (알림 자체가 삭제되는 것 아님!)
     func deleteReminder(indexSet: IndexSet) {
-        let sorted = visibleReminders.sorted(by: { $0.date > $1.date })
-        let targets = indexSet.map { sorted[$0] }
+        let targets = indexSet.map { visibleReminders[$0] }
         targets.forEach { reminderRepo.deleteReminder($0) }
         loadAllReminders()
     }
@@ -149,22 +148,33 @@ class NotificationViewModel: ObservableObject {
             print("❌ 잘못된 리마인더 주기")
             return nil
         }
-        
-        var dateComponents = calendar.dateComponents([.year, .month, .day], from: nextDate)
-        dateComponents.hour = 23
-        dateComponents.minute = 16
+//
+//        var dateComponents = calendar.dateComponents([.year, .month, .day], from: nextDate)
+//        dateComponents.hour = 23
+//        dateComponents.minute = 32
+//        guard let scheduledDate = calendar.date(from: dateComponents) else { return nil }
+//
+        let future = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
+        let dateComponents = Calendar.current.dateComponents([.hour, .minute], from: future)
         guard let scheduledDate = calendar.date(from: dateComponents) else { return nil }
+
         
         let content = UNMutableNotificationContent()
         content.title = "📌 챙김 알림"
         content.body = "\(person.name)님에게 연락해보세요!"
         content.sound = .default
         content.badge = 1
-        content.userInfo = ["personID": person.id, "type": "regular"]
+        content.userInfo = ["personID": person.id.uuidString, "type": "regular"]
         
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
         
         print("🟢 [NotificationViewModel] \(person.name) 알림 등록 완료")
+        // ✅ 등록된 알림 확인 로그
+            UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+                for req in requests {
+                    print("🧾 예약된 알림: \(req.identifier), trigger: \(req.trigger!)")
+                }
+            }
         return (content, trigger, scheduledDate, person.id)
     }
     
