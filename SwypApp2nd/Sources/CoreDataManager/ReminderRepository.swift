@@ -8,7 +8,6 @@ class ReminderRepository {
         newReminder.id = person.id
         newReminder.date = scheduledDate
         newReminder.isRead = false
-        print(type.rawValue)
         newReminder.type = type.rawValue
         
         // MARK: - Person 연결
@@ -43,7 +42,6 @@ class ReminderRepository {
 
         newReminder.person = personEntity
 
-
         // 알림 브로드캐스트
         NotificationCenter.default.post(
             name: NSNotification.Name("NewReminderAdded"),
@@ -66,19 +64,19 @@ class ReminderRepository {
             }
         }
 
-    // 특정 `PersonEntity`에 대한 Reminder 가져오기
-    func fetchReminders(for person: PersonEntity) -> [ReminderEntity] {
-        let request: NSFetchRequest<ReminderEntity> = ReminderEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "person == %@", person)
-        request.sortDescriptors = [NSSortDescriptor(key: "Date", ascending: false)]
-
-        do {
-            return try context.fetch(request)
-        } catch {
-            print("❌ \(person.name)의 reminder 가져오기 실패: \(error.localizedDescription)")
-            return []
-        }
-    }
+//    // 특정 `PersonEntity`에 대한 Reminder 가져오기
+//    func fetchReminders(for person: PersonEntity) -> [ReminderEntity] {
+//        let request: NSFetchRequest<ReminderEntity> = ReminderEntity.fetchRequest()
+//        request.predicate = NSPredicate(format: "person == %@", person)
+//        request.sortDescriptors = [NSSortDescriptor(key: "Date", ascending: false)]
+//
+//        do {
+//            return try context.fetch(request)
+//        } catch {
+//            print("❌ \(person.name)의 reminder 가져오기 실패: \(error.localizedDescription)")
+//            return []
+//        }
+//    }
     
     // 모든 Reminder 가져오기
     func fetchAllReminders() -> [ReminderEntity] {
