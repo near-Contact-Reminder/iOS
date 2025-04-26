@@ -103,7 +103,11 @@ class ReminderRepository {
 
         do {
             if let entity = try context.fetch(fetchRequest).first {
-                return Friend(from: entity) 
+                var friend = UserSession.shared.user?.friends.filter({$0.id == entity.id}).first
+                
+                friend?.initEntity(from: entity)
+                print("[reminder repo] \(friend?.name ?? "nil" ) 로 설정됨)")
+                return friend
             } else {
                 print("[reminder repo] ❌ entity 연결 Friend 찾기 실패")
                 return nil
