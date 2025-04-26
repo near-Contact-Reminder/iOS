@@ -41,10 +41,19 @@ struct ReminderListView: View {
     var body: some View {
         List {
             ForEach(notificationViewModel.reminders, id: \.self) { reminder in
-                ReminderRowView(notificationViewModel: notificationViewModel, reminder: reminder, person: reminder.person, onSelect: { person in
-                    let friend = Friend(from: person)
-                    path.append(.personDetail(friend))})
-                    .listRowBackground(reminder.isRead ? Color.bg02 : Color.white)
+                ReminderRowView(notificationViewModel: notificationViewModel,
+                                reminder: reminder,
+                                person: reminder.person,
+                                onSelect: { person in
+                    
+                    var friend = UserSession.shared.user?.friends.filter({$0.id == person.id}).first
+                    
+                    friend?.initEntity(from: person)
+                    if let friend = friend {
+                        path.append(.personDetail(friend))
+                    }
+                })
+                .listRowBackground(reminder.isRead ? Color.bg02 : Color.white)
             }
             .onDelete(perform: notificationViewModel.deleteReminder)
         }
