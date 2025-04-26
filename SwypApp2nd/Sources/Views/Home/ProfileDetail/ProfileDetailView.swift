@@ -15,7 +15,7 @@ struct ProfileDetailView: View {
         
         VStack(alignment: .leading, spacing: 32) {
             
-            ProfileHeader(people: viewModel.people, onDelete: {
+            ProfileHeader(people: viewModel.people, checkInRecords: viewModel.checkInRecords, onDelete: {
                 viewModel.deleteFriend(friendId: viewModel.people.id) {
                     DispatchQueue.main.async {
                         path.removeAll()
@@ -175,6 +175,7 @@ struct HistorySection: View {
 
 private struct ProfileHeader: View {
     let people: Friend
+    let checkInRecords: [CheckInRecord]
     let onDelete: () -> Void
     
     var emojiImageName: String {
@@ -215,9 +216,16 @@ private struct ProfileHeader: View {
                     .font(Font.Pretendard.h2Bold())
                     .multilineTextAlignment(.center)
                 
-                Text("\(people.lastContactAt?.formattedYYYYMMDDMoreCloser() ?? "-")") //MM월dd일 더 가까워졌어요
-                    .font(Font.Pretendard.b1Medium())
-                    .foregroundColor(Color.blue01)
+                //MM월dd일 더 가까워졌어요
+                if let latestRecordDate = checkInRecords.sorted(by: { $0.createdAt > $1.createdAt }).first?.createdAt {
+                    Text("\(latestRecordDate.formattedYYYYMMDDMoreCloser())")
+                        .font(Font.Pretendard.b2Medium())
+                        .foregroundColor(Color.blue01)
+                } else {
+                    Text("-")
+                        .font(Font.Pretendard.b2Medium())
+                        .foregroundColor(Color.blue01)
+                }
             }
         }
         

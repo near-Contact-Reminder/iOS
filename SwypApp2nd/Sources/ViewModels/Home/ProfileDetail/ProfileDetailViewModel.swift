@@ -71,7 +71,7 @@ class ProfileDetailViewModel: ObservableObject {
         }
     }
     
-    // 친구 상세 API 사용 메소드
+    // 친구 챙김 기록 API
     func fetchFriendRecords(friendId: UUID) {
         guard let token = UserSession.shared.user?.serverAccessToken else { return }
         
@@ -79,7 +79,7 @@ class ProfileDetailViewModel: ObservableObject {
             switch result {
             case .success(let checkInRecords):
                 DispatchQueue.main.async {
-                    self.checkInRecords = checkInRecords
+                    self.checkInRecords = checkInRecords.sorted { $0.createdAt > $1.createdAt }
                 }
                     
             case .failure(let error):
