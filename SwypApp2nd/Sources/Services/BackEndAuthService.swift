@@ -98,6 +98,47 @@ struct FriendDetailResponse: Codable {
     }
 }
 
+// MARK: - 친구 챙김 로그 리스트
+struct CheckInRecord: Identifiable, Codable {
+    var id: UUID = UUID()
+    let isChecked: Bool
+    let createdAt: Date
+
+    private enum CodingKeys: String, CodingKey {
+        case isChecked
+        case createdAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.isChecked = try container.decode(Bool.self, forKey: .isChecked)
+
+        let createdAtString = try container.decode(String.self, forKey: .createdAt)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        
+        if let date = formatter.date(from: createdAtString) {
+            self.createdAt = date
+        } else {
+            throw DecodingError.dataCorruptedError(forKey: .createdAt, in: container, debugDescription: "Date string does not match format.")
+        }
+
+        self.id = UUID()
+    }
+
+    init(isChecked: Bool, createdAt: Date) {
+        self.isChecked = isChecked
+        self.createdAt = createdAt
+        self.id = UUID()
+    }
+}
+
+// MARK: - 챙김 버튼
+struct RecordButtonResponse: Codable {
+    let message: String
+}
+
 // MARK: - 친구 상세 정보 업데이트
 struct FriendUpdateRequestDTO: Codable {
     let name: String
@@ -449,8 +490,6 @@ final class BackEndAuthService {
     
     /// 백엔드: 친구별 상세정보 조회
     func getFriendDetail(friendId: UUID, accessToken: String, completion: @escaping (Result<FriendDetail, Error>) -> Void) {
-        // TODO: 서버 API 명세 나오면 실제 요청 구현
-        
         print("🟡 [BackEndAuthService] 친구 상세정보 조회 요청됨 - friendId: \(friendId)")
         
         let url = "\(baseURL)/friend/\(friendId.uuidString)"
@@ -565,6 +604,69 @@ final class BackEndAuthService {
                 }
             }
     }
+    
+    /// 백엔드: 친구별 챙김 로그 리스트
+    func getFriendRecords(friendId: UUID, accessToken: String, completion: @escaping (Result<[CheckInRecord], Error>) -> Void) {
+        
+        print("🟡 [BackEndAuthService] 친구 친구별 챙김 로그 리스트 조회 요청됨 - friendId: \(friendId)")
+        
+        let url = "\(baseURL)/friend/record/\(friendId.uuidString)"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        AF.request(url, method: .get, headers: headers)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: [CheckInRecord].self) { response in
+                switch response.result {
+                case .success(let checkInRecords):
+                    print(
+                        "🟢 [BackEndAuthService] 친구별 챙김 로그 리스트 조회 성공 - \(checkInRecords)"
+                    )
+                    
+                    do {
+                        let encoder = JSONEncoder()
+                        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                        let jsonData = try encoder.encode(checkInRecords)
+                        if let jsonString = String(
+                            data: jsonData,
+                            encoding: .utf8
+                        ) {
+                            print("🟡 [getFriendRecords] 서버 응답 JSON:\n\(jsonString)")
+                        }
+                    } catch {
+                        print("🔴 [getFriendRecords] JSON 인코딩 실패: \(error)")
+                    }
+                    
+                    completion(.success(checkInRecords))
+                    
+                case .failure(let error):
+                    print(
+                        "🔴 [BackEndAuthService] 친구별 챙김 로그 리스트 조회 실패: \(error.localizedDescription)"
+                    )
+                    completion(.failure(error))
+                }
+            }
+    }
+    
+    func postFriendCheck(friendId: UUID, accessToken: String, completion: @escaping (Result<String, Error>) -> Void) {
+            let url = "\(baseURL)/friend/record/\(friendId.uuidString)"
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+            
+            AF.request(url, method: .post, headers: headers)
+                .validate()
+                .responseDecodable(of: RecordButtonResponse.self) { response in
+                    switch response.result {
+                    case .success(let result):
+                        completion(.success(result.message))
+                    case .failure(let error):
+                        completion(.failure(error))
+                    }
+                }
+        }
 }
 
 

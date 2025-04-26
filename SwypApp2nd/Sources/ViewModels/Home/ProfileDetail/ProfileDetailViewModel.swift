@@ -2,10 +2,22 @@ import Foundation
 
 class ProfileDetailViewModel: ObservableObject {
     @Published var people: Friend
+    @Published var checkInRecords: [CheckInRecord] = []
+    
+    var canCheckInToday: Bool {
+        let today = Calendar.current.startOfDay(for: Date())
+
+        // createdAt이 오늘 && isChecked true
+        return !checkInRecords.contains { record in
+            let recordDate = Calendar.current.startOfDay(for: record.createdAt)
+            return recordDate == today && record.isChecked
+        }
+    }
     
     init(people: Friend) {
         self.people = people
         fetchFriendDetail(friendId: people.id)
+        fetchFriendRecords(friendId: people.id)
     }
     
     // 친구 상세 API 사용 메소드
@@ -57,5 +69,45 @@ class ProfileDetailViewModel: ObservableObject {
                 print("🔴 [ProfileDetailViewModel] 친구 삭제 실패: \(error)")
             }
         }
+    }
+    
+    // 친구 상세 API 사용 메소드
+    func fetchFriendRecords(friendId: UUID) {
+        guard let token = UserSession.shared.user?.serverAccessToken else { return }
+        
+        BackEndAuthService.shared.getFriendRecords(friendId: friendId, accessToken: token) { result in
+            switch result {
+            case .success(let checkInRecords):
+                DispatchQueue.main.async {
+                    self.checkInRecords = checkInRecords
+                }
+                    
+            case .failure(let error):
+                print("🔴 [ProfileDetailViewModel] 친구 챙김 로그 가져오기 실패: \(error)")
+            }
+        }
+    }
+    
+    func checkFriend() {
+        guard let token = UserSession.shared.user?.serverAccessToken else {
+            return
+        }
+            
+        BackEndAuthService.shared
+            .postFriendCheck(
+                friendId: people.id,
+                accessToken: token
+            ) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let message):
+                        print("🟢 [ProfileDetailViewModel] 챙김 성공: \(message)")
+                        self.fetchFriendDetail(friendId: self.people.id)
+                        self.fetchFriendRecords(friendId: self.people.id)
+                    case .failure(let error):
+                        print("🔴 [ProfileDetailViewModel] 챙김 실패: \(error)")
+                    }
+                }
+            }
     }
 }
