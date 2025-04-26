@@ -5,7 +5,7 @@ import CoreData
 class ProfileEditViewModel: ObservableObject {
     @Published var person: Friend
     
-    private let personRepo = PersonRepository()
+//    private let personRepo = PersonRepository()
     private let reminderRepo = ReminderRepository()
     
     @Published var people: [PersonEntity] = []
@@ -16,11 +16,11 @@ class ProfileEditViewModel: ObservableObject {
         self.people = people
     }
     
-    func addNewPerson(name: String,reminderInterval: String) {
-        let newPerson = personRepo.addPerson(name: name, reminderInterval: reminderInterval)
-        //entity id -> friend.id -> friend.type return
-//        reminderRepo.addReminder(person: newPerson, type: friend.type ., )
-    }
+//    func addNewPerson(name: String,reminderInterval: String) {
+//        let newPerson = personRepo.addPerson(name: name, reminderInterval: reminderInterval)
+//        //entity id -> friend.id -> friend.type return
+////        reminderRepo.addReminder(person: newPerson, type: friend.type ., )
+//    }
     
     // 친구 상세 정보 업데이트 메소드
     func updateFriendDetail(friendId: UUID, completion: @escaping () -> Void) {

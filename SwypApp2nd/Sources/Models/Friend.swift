@@ -289,21 +289,16 @@ struct FriendInitResponseAnniversary: Codable {
 }
 
 extension Friend {
+    mutating func initEntity(from entity: PersonEntity) {
+        self.entity = entity
+    }
+}
+
+extension Friend {
     func toPersonEntity(context: NSManagedObjectContext) -> PersonEntity {
         let entity = PersonEntity(context: context)
         entity.id = self.id
         entity.name = self.name
-//        entity.imageURL = self.imageURL
-//        entity.phoneNumber = self.phoneNumber
-//        entity.relationship = self.relationship
-//        entity.birthDay = self.birthDay
-//        entity.anniversaryTitle = self.anniversary?.title
-//        entity.anniversaryDate = self.anniversary?.Date
-//        entity.memo = self.memo
-//        entity.nextContactAt = self.nextContactAt
-//        entity.lastContactAt = self.lastContactAt
-        entity.reminderInterval = self.frequency?.rawValue
-//        entity.position = Int64(self.position ?? 0)
         return entity
     }
 }

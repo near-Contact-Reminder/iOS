@@ -1,15 +1,14 @@
 import Foundation
-import UserNotifications
 import SwiftUI
 
 class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     
     static let shared = NotificationManager()
-    let notificationViewModel = NotificationViewModel()
-    let context = CoreDataStack.shared.context
     private let reminderRepo = ReminderRepository()
+    var notificationViewModel: NotificationViewModel
     
-    override private init() {
+    init(viewModel: NotificationViewModel = NotificationViewModel()) {
+        self.notificationViewModel = viewModel
         super.init()
         UNUserNotificationCenter.current().delegate = self
     }
@@ -64,11 +63,3 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     }
 }
     
-extension NotificationManager {
-    
-//    // MARK: - 알림 등록
-//    func scheduleReminders(for person: Friend) {
-//        scheduleBirthdayAnniversaryReminder(for: person)
-//    }
- 
-}
