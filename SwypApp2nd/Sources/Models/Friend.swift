@@ -289,24 +289,7 @@ struct FriendInitResponseAnniversary: Codable {
 }
 
 extension Friend {
-    init(from entity: PersonEntity) {
-        self.id = entity.id
-        self.name = entity.name
-        self.image = nil
-        self.imageURL = nil
-        self.source = .phone
-        self.frequency = nil
-        self.remindCategory = nil
-        self.phoneNumber = nil
-        self.relationship = nil
-        self.birthDay = nil
-        self.anniversary = nil
-        self.memo = nil
-        self.nextContactAt = nil
-        self.lastContactAt = nil
-        self.checkRate = nil
-        self.position = nil
-        self.fileName = nil
+    mutating func initEntity(from entity: PersonEntity) {
         self.entity = entity
     }
 }
