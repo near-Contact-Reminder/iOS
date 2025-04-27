@@ -113,6 +113,12 @@ extension Date {
         return formatter.string(from: self)
     }
     
+    func formattedYYMMDDWithDot() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yy.MM.dd"
+        return formatter.string(from: self)
+    }
+    
     func formattedYYYYMMDDMoreCloser() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "M월 dd일 더 가까워졌어요"

@@ -15,7 +15,7 @@ struct ProfileDetailView: View {
         
         VStack(alignment: .leading, spacing: 32) {
             
-            ProfileHeader(people: viewModel.people, onDelete: {
+            ProfileHeader(people: viewModel.people, checkInRecords: viewModel.checkInRecords, onDelete: {
                 viewModel.deleteFriend(friendId: viewModel.people.id) {
                     DispatchQueue.main.async {
                         path.removeAll()
@@ -33,14 +33,18 @@ struct ProfileDetailView: View {
             
             ZStack {
                 ProfileInfoSection(people: viewModel.people)
-                    .padding(.top, -82)
+                    .padding(.top, -16)
                     .opacity(selectedTab == .profile ? 1 : 0)
-                HistorySection(people: viewModel.people)
+                HistorySection(records: viewModel.checkInRecords)
                     .opacity(selectedTab == .records ? 1 : 0)
             }
+            .padding(.bottom, 8)
             
-            ConfirmButton(title: "챙김 기록하기") {
-                // TODO: - 챙김 기록 API 필요
+            ConfirmButton(
+                title: viewModel.canCheckInToday ? "챙김 기록하기" : "챙김 기록 완료",
+                isEnabled: viewModel.canCheckInToday
+            ) {
+                viewModel.checkFriend()
             }
         }
         .padding(.horizontal, 24)
@@ -96,22 +100,18 @@ struct ProfileDetailView: View {
     }
 }
 
-struct CheckInRecord: Identifiable {
-    let id = UUID()
-    let index: Int
-    let date: Date
-}
-
 struct HistorySection: View {
-    let people: Friend
+    let records: [CheckInRecord]
     
-    let records: [CheckInRecord] = (1...14).map {
-        CheckInRecord(
-            index: $0,
-            date: Date().addingTimeInterval(TimeInterval(-$0 * 86400))
+    var filteredRecords: [(offset: Int, element: CheckInRecord)] {
+        Array(
+            records
+                .filter { $0.isChecked }
+                .sorted(by: { $0.createdAt > $1.createdAt })
+                .enumerated()
         )
     }
-
+    
     let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -119,30 +119,54 @@ struct HistorySection: View {
     ]
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("챙김 기록")
-                    .font(Font.Pretendard.h2Bold())
-                    .foregroundColor(.black)
-
-                LazyVGrid(columns: columns, spacing: 24) {
-                    ForEach(records.sorted(by: { $0.index > $1.index })) { record in
-                        VStack(spacing: 8) {
-                            Image("img_100_character_success")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 64, height: 64)
-
-                            Text("\(record.index)번째 챙김")
-                                .font(Font.Pretendard.captionBold())
-                                .foregroundColor(.blue01)
-
-                            Text(record.date.formattedYYYYMMDD())
-                                .font(Font.Pretendard.captionMedium())
-                                .foregroundColor(.gray02)
-                        }
-                        .frame(maxWidth: .infinity)
+      
+        VStack(alignment: .leading, spacing: 16) {
+            Text("챙김 기록")
+                .font(Font.Pretendard.h2Bold())
+                .foregroundColor(.black)
+            ScrollView {
+                if records.isEmpty {
+                    VStack {
+                        Spacer()
+                        Text("챙긴 기록이 없어요.\n오늘 챙겨볼까요?")
+                            .font(Font.Pretendard.b1Bold())
+                            .foregroundColor(.blue02)
+                            .multilineTextAlignment(.center)
+                        Spacer()
                     }
+                    .frame(maxWidth: .infinity)
+                } else {
+                    LazyVGrid(columns: columns, spacing: 24) {
+                        ForEach(filteredRecords, id: \.element.id) { index, record in
+                            VStack(spacing: 8) {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 44, style: .continuous)
+                                        .fill(Color.white)
+                                        .frame(width: 98, height: 98)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 44, style: .continuous)
+                                                .stroke(Color.gray03, lineWidth: 1)
+                                        )
+                                    
+                                    VStack(spacing: 4) {
+                                        Image("img_100_character_success")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 40, height: 40)
+                                                                           
+                                        Text("\(index + 1)번째 챙김")
+                                            .font(Font.Pretendard.b2Medium())
+                                            .foregroundColor(.blue01)
+                                    }
+                                }
+                                Text(record.createdAt.formattedYYMMDDWithDot())
+                                    .font(Font.Pretendard.b2Medium())
+                                    .foregroundColor(.gray01)
+                            }
+                            
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
                 }
             }
         }
@@ -151,6 +175,7 @@ struct HistorySection: View {
 
 private struct ProfileHeader: View {
     let people: Friend
+    let checkInRecords: [CheckInRecord]
     let onDelete: () -> Void
     
     var emojiImageName: String {
@@ -191,9 +216,16 @@ private struct ProfileHeader: View {
                     .font(Font.Pretendard.h2Bold())
                     .multilineTextAlignment(.center)
                 
-                Text("\(people.lastContactAt?.formattedYYYYMMDDMoreCloser() ?? "-")") //MM월dd일 더 가까워졌어요
-                    .font(Font.Pretendard.b1Medium())
-                    .foregroundColor(Color.blue01)
+                //MM월dd일 더 가까워졌어요
+                if let latestRecordDate = checkInRecords.sorted(by: { $0.createdAt > $1.createdAt }).first?.createdAt {
+                    Text("\(latestRecordDate.formattedYYYYMMDDMoreCloser())")
+                        .font(Font.Pretendard.b2Medium())
+                        .foregroundColor(Color.blue01)
+                } else {
+                    Text("-")
+                        .font(Font.Pretendard.b2Medium())
+                        .foregroundColor(Color.blue01)
+                }
             }
         }
         
@@ -419,7 +451,7 @@ private struct MemoRow: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
         .background(Color.white)
         .cornerRadius(10)
         .overlay(
@@ -431,17 +463,20 @@ private struct MemoRow: View {
 
 private struct ConfirmButton: View {
     var title: String
+    var isEnabled: Bool = true
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Text(title)
+                .font(Font.Pretendard.b1Medium())
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue01)
+                .background(isEnabled ? Color.blue01 : Color.gray02)
                 .cornerRadius(12)
         }
+        .disabled(!isEnabled)
     }
 }
 
@@ -470,7 +505,8 @@ struct ProfileDetailView_Previews: PreviewProvider {
                     relationship: "동료",
                     birthDay: Date(),
                     anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
-                    memo: "테스트 메모",
+//                    memo: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque",
+                    memo: "",
                     nextContactAt: Date().addingTimeInterval(86400 * 30),
                     lastContactAt: Date().addingTimeInterval(-86400 * 10),
                     checkRate: 75,
