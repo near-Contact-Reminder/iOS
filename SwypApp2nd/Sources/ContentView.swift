@@ -18,10 +18,6 @@ enum AppRoute: Hashable {
     case personDetail(Friend)
 }
 
-enum ProfileDetailRoute {
-    case edit
-}
-
 public struct ContentView: View {
     @StateObject private var userSession = UserSession.shared
     @StateObject private var loginViewModel = LoginViewModel()
@@ -32,7 +28,6 @@ public struct ContentView: View {
     @StateObject private var contactFrequencyViewModel = ContactFrequencySettingsViewModel()
     @StateObject private var myViewModel = MyViewModel()
     
-    private let skipLoginForTesting: Bool = true
     @State private var path: [AppRoute] = []
     
     public init() {
@@ -88,7 +83,13 @@ public struct ContentView: View {
         }
         .sheet(isPresented: Binding<Bool>(
             get: { userSession.appStep == .terms },
-            set: { if !$0 { userSession.appStep = .registerFriends } }
+            set: { isPresented in
+                if !isPresented {
+                    if userSession.appStep == .terms {
+                        userSession.appStep = .login
+                    }
+                }
+            }
         )) {
             TermsView(viewModel: termsViewModel) {
                 DispatchQueue.main.async {
