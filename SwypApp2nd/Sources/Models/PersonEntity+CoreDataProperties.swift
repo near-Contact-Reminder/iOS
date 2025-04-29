@@ -31,7 +31,6 @@ extension PersonEntity {
 
     @objc(removeReminders:)
     @NSManaged public func removeFromReminders(_ values: NSSet)
-
 }
 
 extension PersonEntity : Identifiable {
