@@ -421,11 +421,11 @@ final class BackEndAuthService {
 
     // 백엔드: 리마인더 전송
     func sendReminder(friendId: UUID, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let url = "\(baseURL)/friend/reminder"
+        let url = "\(baseURL)/friend/reminder/\(friendId.uuidString)"
         let headers : HTTPHeaders = ["Authorization":  "Bearer \(accessToken)"]
-        let params: Parameters = [ "friend-id": friendId.uuidString]
+//        let params: Parameters = [ "friend-id": friendId.uuidString]
 
-        AF.request(url, method: .post, parameters: params, encoding: URLEncoding(destination: .queryString), headers: headers)
+        AF.request(url, method: .post, headers: headers)
             .validate(statusCode: 200..<300)
             .response { response in
                 switch response.result {
