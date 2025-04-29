@@ -110,18 +110,24 @@ extension Date {
     func formattedYYYYMMDDWithDot() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy.MM.dd"
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter.string(from: self)
     }
     
     func formattedYYMMDDWithDot() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yy.MM.dd"
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter.string(from: self)
     }
     
     func formattedYYYYMMDDMoreCloser() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "M월 dd일 더 가까워졌어요"
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter.string(from: self)
     }
 

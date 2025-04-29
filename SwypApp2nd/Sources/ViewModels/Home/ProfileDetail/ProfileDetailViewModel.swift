@@ -5,11 +5,13 @@ class ProfileDetailViewModel: ObservableObject {
     @Published var checkInRecords: [CheckInRecord] = []
     
     var canCheckInToday: Bool {
-        let today = Calendar.current.startOfDay(for: Date())
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(abbreviation: "UTC")!
 
-        // createdAt이 오늘 && isChecked true
+        let today = calendar.startOfDay(for: Date())
+
         return !checkInRecords.contains { record in
-            let recordDate = Calendar.current.startOfDay(for: record.createdAt)
+            let recordDate = calendar.startOfDay(for: record.createdAt)
             return recordDate == today && record.isChecked
         }
     }
