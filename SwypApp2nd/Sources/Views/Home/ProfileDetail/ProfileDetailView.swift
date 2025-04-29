@@ -2,11 +2,12 @@ import SwiftUI
 
 struct ProfileDetailView: View {
     @ObservedObject var viewModel: ProfileDetailViewModel
+    @ObservedObject var notificationViewModel: NotificationViewModel
     @Binding var path: [AppRoute]
     @State private var selectedTab: Tab = .profile
     @State private var showActionSheet = false
     @State private var isEditing = false
-
+    
     enum Tab {
         case profile, records
     }
@@ -81,6 +82,10 @@ struct ProfileDetailView: View {
                     }
                     Button("삭제", role: .destructive) {
                         viewModel.deleteFriend(friendId: viewModel.people.id) {
+//                            print("삭제 버튼 클릭 됨")
+//                            print("❌ 리마인드 삭제")
+                            notificationViewModel.deleteRemindersEternally(person: viewModel.people)
+//                            print("❌ 리마인드 삭제")
                             DispatchQueue.main.async {
                                 path.removeAll()
                             }
@@ -480,41 +485,38 @@ private struct ConfirmButton: View {
     }
 }
 
-
-struct ProfileDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            previewForDevice("iPhone 13 mini")
-            previewForDevice("iPhone 16")
-            previewForDevice("iPhone 16 Pro")
-            previewForDevice("iPhone 16 Pro Max")
-        }
-    }
-    
-    static func previewForDevice(_ deviceName: String) -> some View {
-        ProfileDetailView(
-            viewModel: ProfileDetailViewModel(
-                people: Friend(
-                    id: UUID(),
-                    name: "임시 친구",
-                    image: nil,
-                    imageURL: nil,
-                    source: .kakao,
-                    frequency: .monthly,
-                    phoneNumber: "010-1234-5678",
-                    relationship: "동료",
-                    birthDay: Date(),
-                    anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
-//                    memo: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque",
-                    memo: "",
-                    nextContactAt: Date().addingTimeInterval(86400 * 30),
-                    lastContactAt: Date().addingTimeInterval(-86400 * 10),
-                    checkRate: 75,
-                    position: 0,
-                    fileName: ".jpg")
-            ), path: .constant([])
-        )
-    }
-}
-
-
+//struct ProfileDetailView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        Group {
+//            previewForDevice("iPhone 13 mini")
+//            previewForDevice("iPhone 16")
+//            previewForDevice("iPhone 16 Pro")
+//            previewForDevice("iPhone 16 Pro Max")
+//        }
+//    }
+//    
+//    static func previewForDevice(_ deviceName: String) -> some View {
+//        ProfileDetailView(
+//            viewModel: ProfileDetailViewModel(
+//                people: Friend(
+//                    id: UUID(),
+//                    name: "임시 친구",
+//                    image: nil,
+//                    imageURL: nil,
+//                    source: .kakao,
+//                    frequency: .monthly,
+//                    phoneNumber: "010-1234-5678",
+//                    relationship: "동료",
+//                    birthDay: Date(),
+//                    anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
+////                    memo: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque",
+//                    memo: "",
+//                    nextContactAt: Date().addingTimeInterval(86400 * 30),
+//                    lastContactAt: Date().addingTimeInterval(-86400 * 10),
+//                    checkRate: 75,
+//                    position: 0,
+//                    fileName: ".jpg")
+//            ), path: .constant([])
+//        )
+//    }
+//}
