@@ -156,6 +156,14 @@ struct FriendUpdateRequestAnniversaryDTO: Codable {
     var date: String?
 }
 
+// MARK: - 이번달 챙길 친구
+struct FriendMonthlyResponse: Codable {
+    var friendId: String
+    var name: String
+    var type: String
+    var nextContactAt: String
+}
+
 // MARK: - 서버 통신 로직
 final class BackEndAuthService {
     static let shared = BackEndAuthService()
@@ -649,24 +657,68 @@ final class BackEndAuthService {
             }
     }
     
+    /// 백엔드: 챙기기 버튼 클릭
     func postFriendCheck(friendId: UUID, accessToken: String, completion: @escaping (Result<String, Error>) -> Void) {
-            let url = "\(baseURL)/friend/record/\(friendId.uuidString)"
+        let url = "\(baseURL)/friend/record/\(friendId.uuidString)"
             
-            let headers: HTTPHeaders = [
-                "Authorization": "Bearer \(accessToken)"
-            ]
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
             
-            AF.request(url, method: .post, headers: headers)
-                .validate()
-                .responseDecodable(of: RecordButtonResponse.self) { response in
-                    switch response.result {
-                    case .success(let result):
-                        completion(.success(result.message))
-                    case .failure(let error):
-                        completion(.failure(error))
-                    }
+        AF.request(url, method: .post, headers: headers)
+            .validate()
+            .responseDecodable(of: RecordButtonResponse.self) { response in
+                switch response.result {
+                case .success(let result):
+                    completion(.success(result.message))
+                case .failure(let error):
+                    completion(.failure(error))
                 }
-        }
+            }
+    }
+    
+    /// 백엔드: 이번달 챙길 친구 조회
+    func getMonthlyFriends(accessToken: String, completion: @escaping (Result<[FriendMonthlyResponse], Error>) -> Void) {
+        let url = "\(baseURL)/friend/monthly"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        print("🟡 [BackEndAuthService] 이번달 친구 조회 요청 URL: \(url)")
+        
+        AF.request(url, method: .get, headers: headers)
+            .validate()
+            .responseDecodable(
+                of: [FriendMonthlyResponse].self
+            ) { response in
+                switch response.result {
+                case .success(let monthlyFriends):
+                    print(
+                        "🟢 [BackEndAuthService] 이번달 친구 조회 성공 - \(monthlyFriends.map { $0.name })"
+                    )
+                    do {
+                        let encoder = JSONEncoder()
+                        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                        let jsonData = try encoder.encode(monthlyFriends)
+                        if let jsonString = String(
+                            data: jsonData,
+                            encoding: .utf8
+                        ) {
+                            print(
+                                "🟡 [getMonthlyFriends] 서버 응답 JSON:\n\(jsonString)"
+                            )
+                        }
+                    } catch {
+                        print(
+                            "🔴 [getMonthlyFriends] 서버 응답 JSON 인코딩 실패: \(error)"
+                        )
+                    }
+                    completion(.success(monthlyFriends))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+    }
 }
 
 

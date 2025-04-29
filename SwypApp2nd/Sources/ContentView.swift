@@ -59,6 +59,7 @@ public struct ContentView: View {
                         registerFriendsViewModel.selectedContacts.removeAll()
                         contactFrequencyViewModel.people.removeAll()
                         homeViewModel.loadFriendList()
+                        homeViewModel.loadMonthlyFriends()
                         userSession.appStep = .home
                     }
                 })

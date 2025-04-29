@@ -64,7 +64,14 @@ class RegisterFriendsViewModel: ObservableObject {
             let anniversaryDayTitle = $0.dates.first?.label
             let anniversary: AnniversaryModel? = {
                 guard let date = anniversaryDay else { return nil }
-                return AnniversaryModel(title: anniversaryDayTitle, Date: date)
+                guard var title = anniversaryDayTitle else { return nil }
+                if title == "_$!<Anniversary>!$_" || title.isEmpty {
+                    title =  "기념일"
+                } else {
+                    title = title
+                }
+                
+                return AnniversaryModel(title: title, Date: date)
             }()
             let relationship = $0.contactRelations.first?.label
             
