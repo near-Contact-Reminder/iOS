@@ -50,6 +50,7 @@ public struct HomeView: View {
         .environmentObject(userSession)
         .onAppear {
             homeViewModel.loadFriendList()
+            homeViewModel.loadMonthlyFriends()
         }
         .onReceive(notificationViewModel.$navigateToPerson.compactMap { $0 }) { friend in
             path.removeAll()
@@ -125,7 +126,7 @@ struct GreetingSection: View {
 
 // MARK: - 이번달 챙길 사람
 struct ThisMonthSection: View {
-    var peoples: [Friend]
+    var peoples: [FriendMonthlyResponse]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -163,7 +164,7 @@ struct ThisMonthSection: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        ForEach(peoples, id: \.id) { contact in
+                        ForEach(peoples, id: \.friendId) { contact in
                             ThisMonthContactCell(contact: contact) { selected in
                                 // TODO: 상세 네비게이션 연결
                                 print("\(selected.name) tapped")
@@ -178,8 +179,8 @@ struct ThisMonthSection: View {
 }
 
 struct ThisMonthContactCell: View {
-    let contact: Friend
-    let onTap: (Friend) -> Void
+    let contact: FriendMonthlyResponse
+    let onTap: (FriendMonthlyResponse) -> Void
 
     var body: some View {
         Button {
@@ -212,32 +213,30 @@ struct ThisMonthContactCell: View {
         }
     }
 
-    var emojiImageName: String {
-        guard let rate = contact.checkRate else {
-            return "icon_visual_24_emoji_0"
-        }
-        switch rate {
-        case 0...30: return "icon_visual_24_emoji_0"
-        case 31...60: return "icon_visual_24_emoji_50"
-        default: return "icon_visual_24_emoji_100"
-        }
-    }
-
     var categoryIconName: String? {
-        switch contact.remindCategory {
-        case .message: return "icon_visual_mail"
-        case .birth: return "icon_visual_cake"
-        case .anniversary: return "icon_visual_24_heart"
-        case .none: return nil
+            switch contact.type {
+            case "MESSAGE": return "icon_visual_mail"
+            case "BIRTHDAY": return "icon_visual_cake"
+            case "ANNIVERSARY": return "icon_visual_24_heart"
+            default: return nil
+            }
         }
-    }
+
 
     var dDayString: String {
-        guard let target = contact.nextContactAt else { return "" }
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let targetDay = calendar.startOfDay(for: target)
-        let diff = calendar.dateComponents([.day], from: today, to: targetDay).day ?? 0
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let target = formatter.date(from: contact.nextContactAt) else {
+            return ""
+        }
+            
+        let today = Calendar.current.startOfDay(for: Date())
+        let targetDay = Calendar.current.startOfDay(for: target)
+        let diff = Calendar.current.dateComponents(
+            [.day],
+            from: today,
+            to: targetDay
+        ).day ?? 0
 
         if diff == 0 {
             return "D-DAY"

@@ -6,7 +6,7 @@ class HomeViewModel: ObservableObject {
     /// 내 사람들
     @Published var allFriends: [Friend] = []
     /// 이번달 챙길 사람
-    @Published var thisMonthFriends: [Friend] = []
+    @Published var thisMonthFriends: [FriendMonthlyResponse] = []
     private var cancellables = Set<AnyCancellable>()
 
     
@@ -61,6 +61,30 @@ class HomeViewModel: ObservableObject {
                 }
             }
         }.resume()
+    }
+    
+    // 이번달 챙길 사람 목록 가져오기
+    func loadMonthlyFriends() {
+        guard let token = UserSession.shared.user?.serverAccessToken else { return }
+        
+        BackEndAuthService.shared.getMonthlyFriends(accessToken: token) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let monthlyFriendDTOs):
+                    self.thisMonthFriends = monthlyFriendDTOs.map { dto in
+                        FriendMonthlyResponse(
+                            friendId: dto.friendId,
+                                name: dto.name,
+                                type: dto.type.uppercased(),
+                                nextContactAt: dto.nextContactAt
+                            )
+                        
+                    }
+                case .failure(let error):
+                    print("🔴 [HomeViewModel] 이번달 친구 목록 로드 실패: \(error)")
+                }
+            }
+        }
     }
     
     func loadFriendList() {
