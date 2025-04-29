@@ -126,7 +126,6 @@ struct ContactFrequencySettingsView: View {
                         DispatchQueue.main.async {
                             viewModel.uploadAllFriendsToServer(viewModel.people) {
                                 UserSession.shared.user?.friends = viewModel.people
-                                notificationViewModel.scheduleAnbu(people: UserSession.shared.user?.friends ?? [])
                                 complete(viewModel.people)
                             }
                         }

@@ -21,7 +21,6 @@ struct Friend: Identifiable, Equatable, Hashable, Codable {
     var checkRate: Int? // 챙김률
     var position: Int? // 내사람들 리스트 순서
     var fileName: String? // 서버에서 받은 (friend.id).jpg
-    var entity: PersonEntity?
     
     enum CodingKeys: String, CodingKey {
         case id, name, imageURL, source, frequency, remindCategory,
@@ -286,19 +285,4 @@ struct FriendInitResponseAnniversary: Codable {
     let id: Int
     let title: String
     let date: String
-}
-
-extension Friend {
-    mutating func initEntity(from entity: PersonEntity) {
-        self.entity = entity
-    }
-}
-
-extension Friend {
-    func toPersonEntity(context: NSManagedObjectContext) -> PersonEntity {
-        let entity = PersonEntity(context: context)
-        entity.id = self.id
-        entity.name = self.name
-        return entity
-    }
 }

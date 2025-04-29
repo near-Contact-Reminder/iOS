@@ -8,4 +8,5 @@ public class ReminderEntity: NSManagedObject {
     @NSManaged var isRead: Bool
     @NSManaged var person: PersonEntity
     @NSManaged var type: String
+    @NSManaged var isTriggered: Bool
 }
