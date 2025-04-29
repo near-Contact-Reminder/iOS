@@ -23,7 +23,7 @@ public struct HomeView: View {
                     VStack {
                         VStack(spacing: 24) {
                             // 네비게이션 바
-                            CustomNavigationBar(badgeCount: notificationViewModel.badgeCount,
+                            CustomNavigationBar(showBadge: notificationViewModel.showBadge,
                                                 onTapMy: {DispatchQueue.main.async {
                                 path.append(.my)} },
                                                 onTapBell: { DispatchQueue.main.async { path.append(.inbox) }
@@ -61,7 +61,7 @@ public struct HomeView: View {
 // MARK: - 커스텀 네비게이션 바
 struct CustomNavigationBar: View {
     
-    let badgeCount: Int
+    let showBadge: Bool
     let onTapMy: () -> Void
     let onTapBell: () -> Void
     
@@ -79,7 +79,7 @@ struct CustomNavigationBar: View {
                 Button {
                     onTapBell()
                 } label: {
-                    if badgeCount > 0 {
+                    if showBadge {
                         Button(action: onTapBell) {
                             Image(systemName: "bell.badge.fill")
                                 .foregroundStyle(Color.white)
@@ -165,7 +165,7 @@ struct ThisMonthSection: View {
                     HStack(spacing: 12) {
                         ForEach(peoples, id: \.id) { contact in
                             ThisMonthContactCell(contact: contact) { selected in
-                                // TODO: 상세 네비게이션 연결
+                                // TODO: 상세 네비게이션 연결 -> 이거 지금 어떻게 연결 되고 있는 걸까요 ㅋㅋ
                                 print("\(selected.name) tapped")
                             }
                         }
@@ -319,10 +319,7 @@ struct MyPeopleSection: View {
                         TabView(selection: $currentPage) {
                             ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
                                 StarPositionLayout(peoples: $peoples , pageIndex: index) { selected in
-                                    // TODO: - 친구 상세 뷰 이동
                                     path.append(.personDetail(selected))
-                                    print("\(selected.name) tapped")
-                                    print("\(selected.id) tapped")
                                 }
                                 .tag(index)
                             }
