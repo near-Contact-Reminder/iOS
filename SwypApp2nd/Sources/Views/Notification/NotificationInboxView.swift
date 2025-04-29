@@ -16,7 +16,7 @@ struct NotificationInboxView: View {
 
     private var bodyView: some View {
         VStack {
-            if notificationViewModel.reminders.isEmpty {
+            if notificationViewModel.visibleReminders.isEmpty {
                 Text("오늘 예정된 알림이 없어요!")
                     .foregroundColor(.gray)
                     .padding()
@@ -40,15 +40,14 @@ struct ReminderListView: View {
     
     var body: some View {
         List {
-            ForEach(notificationViewModel.reminders, id: \.self) { reminder in
+            ForEach(notificationViewModel.visibleReminders, id: \.self) { reminder in
                 ReminderRowView(notificationViewModel: notificationViewModel,
                                 reminder: reminder,
                                 person: reminder.person,
                                 onSelect: { person in
                     
-                    var friend = UserSession.shared.user?.friends.filter({$0.id == person.id}).first
-                    
-                    friend?.initEntity(from: person)
+                    let friend = UserSession.shared.user?.friends.filter({$0.id == person.id}).first
+                    // friend.id == person.id 비교해야할까요?
                     if let friend = friend {
                         path.append(.personDetail(friend))
                     }
@@ -70,7 +69,7 @@ struct ReminderRowView: View {
     var body: some View {
         ReminderContent(person: person, reminder: reminder)
             .onTapGesture {
-                notificationViewModel.markAsRead(reminder)
+                notificationViewModel.isRead(reminder)
                 onSelect(person)
             }
             .background(NavigationLink(value: person) {
