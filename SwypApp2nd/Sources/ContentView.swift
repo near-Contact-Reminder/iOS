@@ -57,6 +57,7 @@ public struct ContentView: View {
                     DispatchQueue.main.async {
                         print("🟢 [ContactFrequencySettingsView] 전달받은 people: \(updatedPeoples.map { $0.name })")
                         registerFriendsViewModel.selectedContacts.removeAll()
+                        notificationViewModel.scheduleNotifications(people: contactFrequencyViewModel.people)
                         contactFrequencyViewModel.people.removeAll()
                         homeViewModel.loadFriendList()
                         userSession.appStep = .home
@@ -75,7 +76,7 @@ public struct ContentView: View {
                                 MyProfileView(path: $path)
                             case .personDetail(let friend):
                                 let profileDetailViewModel = ProfileDetailViewModel(people: friend)
-                                ProfileDetailView(viewModel: profileDetailViewModel, path: $path)
+                                ProfileDetailView(viewModel: profileDetailViewModel, notificationViewModel: notificationViewModel, path: $path)
                             }
                         }
                 }
