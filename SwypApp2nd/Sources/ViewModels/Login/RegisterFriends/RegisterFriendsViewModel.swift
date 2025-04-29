@@ -109,11 +109,11 @@ class RegisterFriendsViewModel: ObservableObject {
             }
 
             let newContacts = converted.filter { !existingIds.contains($0.id) }
-            let remainingPhone = max(0, 5 - self.phoneContacts.count)
+            let remainingPhone = max(0, 10 - self.phoneContacts.count)
             let limited = Array(newContacts.prefix(remainingPhone))
             
             if newContacts.count > remainingPhone {
-                self.alertItem = AlertItem(message: "연락처는 최대 5명까지만 선택할 수 있어요.")
+                self.alertItem = AlertItem(message: "연락처는 최대 10명까지만 선택할 수 있어요.")
                 return
             }
             
