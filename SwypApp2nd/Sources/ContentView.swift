@@ -100,6 +100,7 @@ public struct ContentView: View {
             }
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
+            .presentationCornerRadius(20)
         }
         .onAppear {
             userSession.tryAutoLogin()
