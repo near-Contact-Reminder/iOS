@@ -3,7 +3,9 @@ import Foundation
 extension Date {
     /// 주기 설정의 다음주기 M/d EEE
     func nextCheckInDate(for frequency: CheckInFrequency) -> String {
-        let calendar = Calendar.current
+        var calendar = Calendar.current
+        calendar.locale = Locale(identifier: "ko_KR")
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
         var nextDate: Date?
 
         switch frequency {
@@ -24,6 +26,7 @@ extension Date {
         guard let date = nextDate else { return "-" }
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         formatter.dateFormat = "M/d EEE"
 
         return formatter.string(from: date)
@@ -31,7 +34,9 @@ extension Date {
     
     /// 주기 설정의 다음주기의 요일 반환 EEEE
     func nextCheckInDateDayOfTheWeek(for frequency: CheckInFrequency) -> String {
-        let calendar = Calendar.current
+        var calendar = Calendar.current
+        calendar.locale = Locale(identifier: "ko_KR")
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
         var nextDate: Date?
 
         switch frequency {
@@ -52,13 +57,16 @@ extension Date {
         guard let date = nextDate else { return "-" }
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         formatter.dateFormat = "EEEE"
 
         return formatter.string(from: date)
     }
 
     func nextCheckInDateValue(for frequency: CheckInFrequency) -> Date? {
-        let calendar = Calendar.current
+        var calendar = Calendar.current
+        calendar.locale = Locale(identifier: "ko_KR")
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
         switch frequency {
         case .daily:
             return calendar.date(byAdding: .day, value: 1, to: self)
@@ -77,7 +85,9 @@ extension Date {
     
     static func nextSpecialDate(from baseDate: Date?) -> Date? {
         guard let baseDate else { return nil }
-        let calendar = Calendar.current
+        var calendar = Calendar.current
+        calendar.locale = Locale(identifier: "ko_KR")
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
         let now = Date()
         
         let month = calendar.component(.month, from: baseDate)
@@ -95,6 +105,7 @@ extension Date {
     func weekdayKorean() -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         formatter.dateFormat = "EEEE"
         return formatter.string(from: self)
     }
@@ -109,9 +120,9 @@ extension Date {
     
     func formattedYYYYMMDDWithDot() -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy.MM.dd"
         formatter.locale = Locale(identifier: "ko_KR")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        formatter.dateFormat = "yyyy.MM.dd"
         return formatter.string(from: self)
     }
     
@@ -119,7 +130,7 @@ extension Date {
         let formatter = DateFormatter()
         formatter.dateFormat = "yy.MM.dd"
         formatter.locale = Locale(identifier: "ko_KR")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         return formatter.string(from: self)
     }
     
@@ -127,8 +138,18 @@ extension Date {
         let formatter = DateFormatter()
         formatter.dateFormat = "M월 dd일 더 가까워졌어요"
         formatter.locale = Locale(identifier: "ko_KR")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         return formatter.string(from: self)
     }
-
+    
+    func startOfDayInKorea() -> Date {
+        var calendar = Calendar.current
+        calendar.locale = Locale(identifier: "ko_KR")
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
+        let components = calendar.dateComponents(
+            [.year, .month, .day],
+            from: self
+        )
+        return calendar.date(from: components) ?? self
+    }
 }

@@ -219,7 +219,7 @@ struct BirthdaySection: View {
                     "",
                     selection: Binding(
                         get: { birthday ?? Date() },
-                        set: { birthday = $0 }
+                        set: { birthday = $0.startOfDayInKorea() }
                     ),
                     displayedComponents: .date
                 )
@@ -234,6 +234,7 @@ struct BirthdaySection: View {
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         formatter.dateFormat = "yyyy년 M월 d일"
         return formatter.string(from: date)
     }
@@ -302,9 +303,9 @@ struct AnniversarySection: View {
                         get: { anniversary?.Date ?? Date() },
                         set: { newValue in
                             if anniversary == nil {
-                                anniversary = AnniversaryModel(title: "", Date: newValue)
+                                anniversary = AnniversaryModel(title: "", Date: newValue.startOfDayInKorea())
                             } else {
-                                anniversary?.Date = newValue
+                                anniversary?.Date = newValue.startOfDayInKorea()
                             }
                         }
                     ),
@@ -393,7 +394,7 @@ struct WheelDatePicker: View {
                     "",
                     selection: Binding(
                         get: { date ?? Date() },
-                        set: { date = $0 }
+                        set: { date = $0.startOfDayInKorea() }
                     ),
                     in: dateRange,
                     displayedComponents: .date
@@ -416,6 +417,7 @@ struct WheelDatePicker: View {
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         formatter.dateFormat = "yyyy년 M월 d일"
         return formatter.string(from: date)
     }

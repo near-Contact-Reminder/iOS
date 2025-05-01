@@ -5,10 +5,13 @@ class ProfileDetailViewModel: ObservableObject {
     @Published var checkInRecords: [CheckInRecord] = []
     
     var canCheckInToday: Bool {
+        guard let kstTimeZone = TimeZone(identifier: "Asia/Seoul") else {
+            fatalError("Could not load KST time zone")
+        }
         var calendar = Calendar.current
-        calendar.timeZone = TimeZone(abbreviation: "UTC")!
+        calendar.timeZone = kstTimeZone
 
-        let today = calendar.startOfDay(for: Date())
+        let today = calendar.startOfDay(for: .now)
 
         return !checkInRecords.contains { record in
             let recordDate = calendar.startOfDay(for: record.createdAt)
