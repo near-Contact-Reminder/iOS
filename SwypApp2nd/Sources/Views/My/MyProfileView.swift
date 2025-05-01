@@ -15,22 +15,47 @@ struct MyProfileView: View {
     
     @StateObject var myViewModel =  MyViewModel()
     @StateObject var termsViewModel = TermsViewModel()
-    var user = UserSession.shared.user!
+    var user: User? {
+        UserSession.shared.user
+    }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                UserProfileSectionView(name: user.name, profilePic: user.profileImageURL)
-                AccountSettingSectionView(loginType: user.loginType)
-                NotificationSettingsView(viewModel: myViewModel)
-                SimpleTermsView(termsViewModel: termsViewModel)
-                WithdrawalButtonView (
-                    loginType: user.loginType,
-                    onWithdrawTap: {
-                        showWithdrawalSheet = true
-                    },
-                    path: $path
-                )
+                if let user = UserSession.shared.user {
+                    NavigationView {
+                        VStack(spacing: 20) {
+                            UserProfileSectionView(
+                                name: user.name,
+                                profilePic: user.profileImageURL
+                            )
+                            AccountSettingSectionView(loginType: user.loginType)
+                            NotificationSettingsView(viewModel: myViewModel)
+                            SimpleTermsView(termsViewModel: termsViewModel)
+                            WithdrawalButtonView (
+                                loginType: user.loginType,
+                                onWithdrawTap: {
+                                    showWithdrawalSheet = true
+                                },
+                                path: $path
+                            )
+                        }
+                        .fullScreenCover(isPresented: $showWithdrawalSheet) {
+                            WithdrawalView(path: $path)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                } else {
+                    ProgressView()
+                        .onAppear {
+                            DispatchQueue.main.async {
+                                if path.last == .my { 
+                                    path.removeLast()
+                                }
+                            }
+                        }
+                }
+                
             }
             .fullScreenCover(isPresented: $showWithdrawalSheet) {
                 WithdrawalView(path: $path)
@@ -211,14 +236,18 @@ struct WithdrawalButtonView: View {
                 if loginType == .kakao {
                     UserSession.shared.kakaoLogout{ success in
                         if success {
-                            path.removeLast()
+                            DispatchQueue.main.async {
+                                path.removeLast()
+                            }
                         }
                     }
                 }
                 else {
                     UserSession.shared.appleLogout{ success in
                         if success {
-                            path.removeLast()
+                            DispatchQueue.main.async {
+                                path.removeLast()
+                            }
                         }
                     }
                 }
