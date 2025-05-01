@@ -225,13 +225,15 @@ struct ThisMonthContactCell: View {
 
     var dDayString: String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         formatter.dateFormat = "yyyy-MM-dd"
         guard let target = formatter.date(from: contact.nextContactAt) else {
             return ""
         }
             
-        let today = Calendar.current.startOfDay(for: Date())
-        let targetDay = Calendar.current.startOfDay(for: target)
+        let today = Calendar.current.startOfDay(for: Date().startOfDayInKorea())
+        let targetDay = Calendar.current.startOfDay(for: target.startOfDayInKorea())
         let diff = Calendar.current.dateComponents(
             [.day],
             from: today,
