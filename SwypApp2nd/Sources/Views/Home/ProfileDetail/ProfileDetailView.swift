@@ -50,6 +50,10 @@ struct ProfileDetailView: View {
         }
         .padding(.horizontal, 24)
         .navigationBarBackButtonHidden()
+        .onAppear {
+            viewModel.fetchFriendDetail(friendId: viewModel.people.id)
+            viewModel.fetchFriendRecords(friendId: viewModel.people.id)
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading)  {
                 Button(action: {
@@ -93,13 +97,15 @@ struct ProfileDetailView: View {
                     }
                     Button("취소", role: .cancel) {}
                 }
-                .fullScreenCover(isPresented: $isEditing) {
+        .fullScreenCover(isPresented: $isEditing) {
             NavigationStack {
+                let profileEditViewModel = ProfileEditViewModel(person: viewModel.people)
                 ProfileEditView(
-                    profileEditViewModel: ProfileEditViewModel(person: viewModel.people)) {
+                    profileEditViewModel: profileEditViewModel) {
                         viewModel.fetchFriendDetail(friendId: viewModel.people.id)
+                        viewModel.people = profileEditViewModel.person
                         isEditing = false
-                }
+                    }
             }
         }
     }
@@ -395,13 +401,6 @@ private struct ProfileInfoSection: View {
             InfoRow(label: "기념일", value: "\(people.anniversary?.title ?? "-") (\(people.anniversary?.Date?.formattedYYYYMMDDWithDot() ?? "-"))")
             MemoRow(label: "메모", value: people.memo ?? "-")
         }
-    }
-
-    private func formatDate(_ date: Date?) -> String {
-        guard let date = date else { return "-" }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy.MM.dd"
-        return formatter.string(from: date)
     }
     
     private func displayLabel(for rawValue: String?) -> String? {
