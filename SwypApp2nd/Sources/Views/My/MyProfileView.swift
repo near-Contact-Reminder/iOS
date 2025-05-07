@@ -40,9 +40,6 @@ struct MyProfileView: View {
                                 path: $path
                             )
                         }
-                        .fullScreenCover(isPresented: $showWithdrawalSheet) {
-                            WithdrawalView(path: $path)
-                        }
                     }
                     .padding(.horizontal, 12)
                 } else {
