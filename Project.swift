@@ -30,6 +30,9 @@ let project = Project(
                 with: [
                     "CFBundleDisplayName": "near - 연락 알리미",
                     "UIDeviceFamily": [1],
+                    "UISupportedInterfaceOrientations": [
+                        "UIInterfaceOrientationPortrait"
+                    ],
                     "UILaunchStoryboardName": "LaunchScreen",
                     "UIAppFonts": [
                         "Pretendard-Black.otf",
