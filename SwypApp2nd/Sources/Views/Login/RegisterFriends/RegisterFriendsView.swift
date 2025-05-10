@@ -7,6 +7,8 @@ struct RegisterFriendView: View {
     @ObservedObject var viewModel: RegisterFriendsViewModel
     
     @State private var showContactPicker = false
+    @State private var showPermissionAlert = false
+
     let proceed: () -> Void
     let skip: () -> Void
     
@@ -72,12 +74,18 @@ struct RegisterFriendView: View {
                             title: "연락처에서 불러오기",
                             hasContacts: !viewModel.phoneContacts.isEmpty,
                             action: {
-                                showContactPicker = true
+                                viewModel.requestContactsPermission { granted in
+                                    if granted {
+                                        showContactPicker = true
+                                    } else {
+                                        showPermissionAlert = true
+                                    }
+                                }
                             }
                         )
                         .sheet(isPresented: $showContactPicker) {
                             ContactPickerView { contacts in
-                                viewModel.fetchContactsFromPhone(contacts)
+                                viewModel.handleSelectedContacts(contacts)
                             }
                         }
                         
@@ -150,6 +158,20 @@ struct RegisterFriendView: View {
                 title: Text("⚠️ 제한 안내"),
                 message: Text(item.message),
                 dismissButton: .default(Text("확인"))
+            )
+        }
+        .alert(isPresented: $showPermissionAlert) {
+            Alert(
+                title: Text("연락처 권한이 꺼져 있어요"),
+                message: Text("소중한 사람을 불러오기 위해\n설정에서 연락처 접근을 켜주세요."),
+                primaryButton: .default(Text("설정으로 이동")) {
+                    if let url = URL(
+                        string: UIApplication.openSettingsURLString
+                    ) {
+                        UIApplication.shared.open(url)
+                    }
+                },
+                secondaryButton: .cancel(Text("취소"))
             )
         }
     }

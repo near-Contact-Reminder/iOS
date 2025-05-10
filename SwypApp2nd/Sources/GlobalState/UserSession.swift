@@ -9,7 +9,7 @@ class UserSession: ObservableObject {
     @Published var user: User?
     
     /// 앱 흐름
-    @Published var appStep: AppStep = .login
+    @Published var appStep: AppStep = .splash
     
 
     /// 카카오 로그아웃

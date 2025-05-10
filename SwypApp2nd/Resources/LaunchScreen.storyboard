@@ -19,23 +19,14 @@
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_bg" translatesAutoresizingMaskIntoConstraints="NO" id="nfE-MU-PXL">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                             </imageView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_120x48_logo_white" translatesAutoresizingMaskIntoConstraints="NO" id="Lb8-pX-h4w">
-                                <rect key="frame" x="136.66666666666666" y="402" width="119.99999999999997" height="48"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="120" id="4c6-Nv-3Gg"/>
-                                    <constraint firstAttribute="height" constant="48" id="eJv-Wf-HJg"/>
-                                </constraints>
-                            </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="nfE-MU-PXL" secondAttribute="bottom" id="C7c-VN-rU4"/>
-                            <constraint firstItem="Lb8-pX-h4w" firstAttribute="centerY" secondItem="5EZ-qb-Rvc" secondAttribute="centerY" id="D1U-dJ-vWq"/>
                             <constraint firstItem="nfE-MU-PXL" firstAttribute="top" secondItem="5EZ-qb-Rvc" secondAttribute="top" id="FJZ-WL-gmV"/>
                             <constraint firstItem="nfE-MU-PXL" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="Ql9-oq-4vW"/>
                             <constraint firstItem="nfE-MU-PXL" firstAttribute="centerY" secondItem="5EZ-qb-Rvc" secondAttribute="centerY" id="RV2-Ji-IYi"/>
-                            <constraint firstItem="Lb8-pX-h4w" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="ftB-6G-uVX"/>
                             <constraint firstItem="nfE-MU-PXL" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="shK-CZ-rZt"/>
                             <constraint firstItem="nfE-MU-PXL" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="yl8-TY-4O7"/>
                         </constraints>
@@ -47,7 +38,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="img_120x48_logo_white" width="120" height="48"/>
         <image name="img_bg" width="375" height="812"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

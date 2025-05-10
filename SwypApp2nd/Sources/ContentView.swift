@@ -4,6 +4,7 @@ import KakaoSDKAuth
 
 // TODO: - 연결후 파일로 분할
 enum AppStep {
+    case splash
     case login
     case terms
     case registerFriends
@@ -38,6 +39,13 @@ public struct ContentView: View {
     public var body: some View {
         Group {
             switch userSession.appStep {
+            case .splash:
+                SplashView()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                            userSession.tryAutoLogin()
+                        }
+                    }
             case .login, .terms:
                 LoginView(loginViewModel: loginViewModel)
                 
@@ -101,9 +109,6 @@ public struct ContentView: View {
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(20)
-        }
-        .onAppear {
-            userSession.tryAutoLogin()
         }
         .animation(.easeInOut(duration: 0.4), value: userSession.appStep)
         .environmentObject(userSession)

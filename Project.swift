@@ -22,12 +22,17 @@ let project = Project(
     targets: [
         .target(
             name: "SwypApp2nd",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .app,
             bundleId: "io.tuist.SwypApp2nd",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(
                 with: [
+                    "CFBundleDisplayName": "near - 연락 알리미",
+                    "UIDeviceFamily": [1],
+                    "UISupportedInterfaceOrientations": [
+                        "UIInterfaceOrientationPortrait"
+                    ],
                     "UILaunchStoryboardName": "LaunchScreen",
                     "UIAppFonts": [
                         "Pretendard-Black.otf",
@@ -47,7 +52,7 @@ let project = Project(
                     "UIUserInterfaceStyle": "Light",
                     "CFBundleShortVersionString": "$(MARKETING_VERSION)",
                     "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
-                    "NSContactsUsageDescription": "연락처에서 챙길 사람을 가져오려면\n 기기 설정에서 연락처를 허용해주세요.",
+                    "NSContactsUsageDescription": "내 사람들을 등록하려면 연락처 접근 권한이 필요합니다.\n선택한 연락처만 사용되며, 저장되지 않은 정보는 수집되지 않습니다.",
                     "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
                     "DEV_BASE_URL": "$(DEV_BASE_URL)",
                     "SERVICE_AGREED_TERMS_URL": "$(SERVICE_AGREED_TERMS_URL)",
@@ -74,8 +79,8 @@ let project = Project(
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
-                "MARKETING_VERSION": "0.1.5",
-                "CURRENT_PROJECT_VERSION": "7"
+                "MARKETING_VERSION": "1.0.0",
+                "CURRENT_PROJECT_VERSION": "11"
             ]),
             coreDataModels: [
                 .coreDataModel(
@@ -85,7 +90,7 @@ let project = Project(
         ),
         .target(
             name: "SwypApp2ndTests",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .unitTests,
             bundleId: "io.tuist.SwypApp2ndTests",
             infoPlist: .default,

@@ -42,16 +42,28 @@ class RegisterFriendsViewModel: ObservableObject {
     }
     
     // MARK: - 애플 연락처 연동
-    func fetchContactsFromPhone(_ contacts: [CNContact]) {
-        // 1. 권한 요청
-        contactStore
-            .requestAccess(for: .contacts) { granted, error in
-                guard granted, error == nil else {
-                    print("🔴 [RegisterFriendsViewModel] 연락처 접근 거부됨 또는 오류: \(String(describing: error))")
-                    return
+    func requestContactsPermission(completion: @escaping (Bool) -> Void) {
+        let status = CNContactStore.authorizationStatus(for: .contacts)
+
+        switch status {
+        case .notDetermined:
+            contactStore.requestAccess(for: .contacts) { granted, _ in
+                DispatchQueue.main.async {
+                    completion(granted)
                 }
-                self.handleSelectedContacts(contacts)
             }
+
+        case .authorized:
+            completion(true)
+
+        case .denied, .restricted:
+            completion(false)
+
+        case .limited:
+            completion(true)
+        @unknown default:
+            completion(false)
+        }
     }
     
     func handleSelectedContacts(_ contacts: [CNContact]) {
