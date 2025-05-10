@@ -85,7 +85,7 @@ struct RegisterFriendView: View {
                         )
                         .sheet(isPresented: $showContactPicker) {
                             ContactPickerView { contacts in
-                                viewModel.fetchContactsFromPhone(contacts)
+                                viewModel.handleSelectedContacts(contacts)
                             }
                         }
                         

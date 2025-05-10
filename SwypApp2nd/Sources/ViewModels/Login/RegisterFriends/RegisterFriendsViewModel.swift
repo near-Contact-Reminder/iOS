@@ -66,17 +66,6 @@ class RegisterFriendsViewModel: ObservableObject {
         }
     }
     
-    func fetchContactsFromPhone(_ contacts: [CNContact]) {
-        contactStore
-            .requestAccess(for: .contacts) { granted, error in
-                guard granted, error == nil else {
-                    print("🔴 [RegisterFriendsViewModel] 연락처 접근 거부됨 또는 오류: \(String(describing: error))")
-                    return
-                }
-                self.handleSelectedContacts(contacts)
-            }
-    }
-    
     func handleSelectedContacts(_ contacts: [CNContact]) {
         let converted: [Friend] = contacts.compactMap {
             let name = $0.familyName + $0.givenName
