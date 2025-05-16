@@ -112,15 +112,20 @@ class UserSession: ObservableObject {
                         print(
                             "🟢 [UserSession] fetchMemberInfo 성공 - 닉네임: \(info.nickname)"
                         )
-                        let user = User(
-                            id: info.memberId,
-                            name: info.nickname,
-                            friends: [],
-                            loginType: .kakao,
-                            serverAccessToken: accessToken,
-                            serverRefreshToken: TokenManager.shared.get(for: .server, isRefresh: true) ?? "" // TODO: - refresh토큰 재발급
-                        )
-                        self.updateUser(user)
+                        
+                        self.getUserCheckRate(accessToken: accessToken) { checkRate in
+                            let user = User(
+                                id: info.memberId,
+                                name: info.nickname,
+                                friends: [],
+                                checkRate: checkRate,
+                                loginType: .kakao,
+                                serverAccessToken: accessToken,
+                                serverRefreshToken: TokenManager.shared
+                                    .get(for: .server, isRefresh: true) ?? ""
+                            )
+                            self.updateUser(user)
+                        }
                     case .failure(let error):
                         print("🔴 [UserSession] 사용자 정보 조회 실패: \(error)")
                         self.logout()
@@ -152,15 +157,18 @@ class UserSession: ObservableObject {
                             BackEndAuthService.shared.fetchMemberInfo(accessToken: newAccessToken) { result in
                                 switch result {
                                 case .success(let info):
-                                    let user = User(
-                                        id: info.memberId,
-                                        name: info.nickname,
-                                        friends: [],
-                                        loginType: .kakao,
-                                        serverAccessToken: newAccessToken,
-                                        serverRefreshToken: refreshToken
-                                    )
-                                    self.updateUser(user)
+                                    self.getUserCheckRate(accessToken: newAccessToken) { checkRate in
+                                        let user = User(
+                                            id: info.memberId,
+                                            name: info.nickname,
+                                            friends: [],
+                                            checkRate: checkRate,
+                                            loginType: .kakao,
+                                            serverAccessToken: newAccessToken,
+                                            serverRefreshToken: refreshToken
+                                        )
+                                        self.updateUser(user)
+                                    }
                                 case .failure(let error):
                                     print(
                                         "🔴 [UserSession] 사용자 정보 조회 실패: \(error)"
@@ -199,16 +207,21 @@ class UserSession: ObservableObject {
                     print(
                         "🟢 [UserSession] fetchMemberInfo 성공 - 닉네임: \(info.nickname)"
                     )
-                    let user = User(
-                        id: info.memberId,
-                        name: info.nickname,
-                        friends: [],
-                        loginType: .apple,
-                        serverAccessToken: accessToken,
-                        serverRefreshToken: TokenManager.shared
-                            .get(for: .server, isRefresh: true) ?? ""
-                    )
-                    self.updateUser(user)
+                    
+                    self.getUserCheckRate(accessToken: accessToken) { checkRate in
+                        let user = User(
+                            id: info.memberId,
+                            name: info.nickname,
+                            friends: [],
+                            checkRate: checkRate,
+                            loginType: .apple,
+                            serverAccessToken: accessToken,
+                            serverRefreshToken: TokenManager.shared
+                                .get(for: .server, isRefresh: true) ?? ""
+                        )
+                        self.updateUser(user)
+                    }
+                    
                 case .failure(let error):
                     print("🔴 [UserSession] 사용자 정보 조회 실패: \(error)")
                     self.logout()
@@ -239,15 +252,20 @@ class UserSession: ObservableObject {
                         ) { result in
                             switch result {
                             case .success(let info):
-                                let user = User(
-                                    id: info.memberId,
-                                    name: info.nickname,
-                                    friends: [],
-                                    loginType: .apple,
-                                    serverAccessToken: newAccessToken,
-                                    serverRefreshToken: refreshToken
-                                )
-                                self.updateUser(user)
+                                
+                                self.getUserCheckRate(accessToken: newAccessToken) { checkRate in
+                                    let user = User(
+                                        id: info.memberId,
+                                        name: info.nickname,
+                                        friends: [],
+                                        checkRate: checkRate,
+                                        loginType: .apple,
+                                        serverAccessToken: newAccessToken,
+                                        serverRefreshToken: refreshToken
+                                    )
+                                    self.updateUser(user)
+                                }
+                                
                             case .failure(let error):
                                 print("🔴 [UserSession] 사용자 정보 조회 실패: \(error)")
                                 self.logout()
@@ -308,5 +326,21 @@ class UserSession: ObservableObject {
         }
     }
 
-
+    // 유저의 챙김률
+    func getUserCheckRate(accessToken: String, completion: @escaping (Int) -> Void) {
+            
+        BackEndAuthService.shared
+            .getUserCheckRate(accessToken: accessToken) { result in
+                switch result {
+                case .success(let success):
+                    print(
+                        "🟢 [UserSession] getUserCheckRate 성공 챙김률: \(success.checkRate)"
+                    )
+                    completion(success.checkRate)
+                case .failure(let error):
+                    print("🔴 [UserSession] getUserCheckRate 실패: \(error)")
+                    completion(0)
+                }
+            }
+    }
 }
