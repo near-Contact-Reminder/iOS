@@ -164,6 +164,17 @@ struct FriendMonthlyResponse: Codable {
     var nextContactAt: String
 }
 
+// MARK: - 친구 순서 변경
+struct FriendOrderUpdateRequestDTO: Codable {
+    let newPosition: Int
+}
+
+// MARK: - 체크율
+struct FriendCheckRateRespose: Codable {
+    var checkRate: Int
+}
+
+
 // MARK: - 서버 통신 로직
 final class BackEndAuthService {
     static let shared = BackEndAuthService()
@@ -719,6 +730,60 @@ final class BackEndAuthService {
                 }
             }
     }
+    
+    /// 백엔드: 친구 순서 변경
+    func patchFriendOrder(accessToken: String, id: String, newPosition: Int, completion: @escaping (Result<Void, Error>) -> Void) {
+        let url = "\(baseURL)/friend/list/\(id)"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let requestData = FriendOrderUpdateRequestDTO(newPosition: newPosition)
+        
+        AF.request(
+            url,
+            method: .patch,
+            parameters: requestData,
+            encoder: JSONParameterEncoder.default,
+            headers: headers
+        )
+        .validate(statusCode: 200..<300)
+        .response { response in
+            switch response.result {
+            case .success:
+                print("🟢 [BackEndAuthService] 친구 순서 변경 성공 - id: \(id), newPosition: \(response.result)")
+                completion(.success(()))
+            case .failure(let error):
+                print("🔴 [BackEndAuthService] 친구 순서 변경 실패 - \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }
+        
+    }
+    
+    
+    /// 백엔드: (챙김 기록 기반) 체크율
+    func getUserCheckRate(accessToken: String, completion: @escaping (Result<FriendCheckRateRespose, Error>) -> Void) {
+        let url = "\(baseURL)/member/check-rate"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        AF.request(url, method: .get, headers: headers)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: FriendCheckRateRespose.self) { response in
+                switch response.result {
+                case .success(let checkRate):
+                    print("🟢 [BackEndAuthService] 친구 챙김율 조회 성공 - \(checkRate)")
+                    completion(.success(checkRate))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 친구 챙김율율 조회 실패 - \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+    }
+        
+        
 }
 
 
