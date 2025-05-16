@@ -128,4 +128,19 @@ class HomeViewModel: ObservableObject {
             }
         }
     }
+    
+    // 친구 순서 변경
+    func patchFriendOrder(targetID: String, newPosition: Int) {
+        guard let token = UserSession.shared.user?.serverAccessToken else { return }
+        
+        BackEndAuthService.shared.patchFriendOrder(accessToken: token, id: targetID, newPosition: newPosition) { result in
+            switch result {
+            case .success(_):
+                print("🟢 [HomeViewModel] 친구 순서 변경 성공 - id: \(targetID), newPosition: \(newPosition)")
+            case .failure(let error):
+                print("🔴 [HomeViewModel] 친구 순서 변경 실패 - \(error.localizedDescription)")
+            }
+            
+        }
+    }
 }
