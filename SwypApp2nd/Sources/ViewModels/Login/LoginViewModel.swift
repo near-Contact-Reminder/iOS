@@ -37,13 +37,6 @@ class LoginViewModel: ObservableObject {
                     self.isLoading = false
                     switch result {
                     case .success(let tokenResponse):
-                        var user = User(
-                            id: "",
-                            name: "",
-                            friends: [], loginType: .kakao,
-                            serverAccessToken: tokenResponse.accessToken,
-                            serverRefreshToken: tokenResponse.refreshTokenInfo.token
-                        )
                         
                         // 서버 토큰 저장
                         TokenManager.shared
@@ -60,9 +53,18 @@ class LoginViewModel: ObservableObject {
                                 switch result {
                                 case .success(let userInfo):
                                     print("🟢 자동 로그인 성공: \(userInfo.nickname)")
-                                    user.name = userInfo.nickname
-                                    user.id = userInfo.memberId
-                                    self.updateUserSession(with: user)
+                                    self.getUserCheckRate(accessToken: tokenResponse.accessToken) { checkRate in
+                                        let user = User(
+                                            id: userInfo.memberId,
+                                            name: userInfo.nickname,
+                                            friends: [],
+                                            checkRate: checkRate,
+                                            loginType: .kakao,
+                                            serverAccessToken: tokenResponse.accessToken,
+                                            serverRefreshToken: tokenResponse.refreshTokenInfo.token
+                                        )
+                                        self.updateUserSession(with: user)
+                                    }
                                 case .failure(let error):
                                     print("🔴 자동 로그인 실패: \(error)")
                                 }
@@ -102,14 +104,6 @@ class LoginViewModel: ObservableObject {
                         switch result {
                         case .success(let tokenResponse):
                             
-                            var user = User(
-                                id: "",
-                                name: "",
-                                friends: [], loginType: .apple,
-                                serverAccessToken: tokenResponse.accessToken,
-                                serverRefreshToken: tokenResponse.refreshTokenInfo.token
-                            )
-                            
                             TokenManager.shared
                                 .save(
                                     token: tokenResponse.accessToken,
@@ -127,9 +121,18 @@ class LoginViewModel: ObservableObject {
                                     switch result {
                                     case .success(let userInfo):
                                         print("🟢 자동 로그인 성공: \(userInfo.nickname)")
-                                        user.name = userInfo.nickname
-                                        user.id = userInfo.memberId
-                                        self.updateUserSession(with: user)
+                                        self.getUserCheckRate(accessToken: tokenResponse.accessToken) { checkRate in
+                                            let user = User(
+                                                id: userInfo.memberId,
+                                                name: userInfo.nickname,
+                                                friends: [],
+                                                checkRate: checkRate,
+                                                loginType: .apple,
+                                                serverAccessToken: tokenResponse.accessToken,
+                                                serverRefreshToken: tokenResponse.refreshTokenInfo.token
+                                            )
+                                            self.updateUserSession(with: user)
+                                        }
                                     case .failure(let error):
                                         print("🔴 자동 로그인 실패: \(error)")
                                     }
@@ -138,6 +141,24 @@ class LoginViewModel: ObservableObject {
                             self.errorMessage = "서버 로그인 실패: \(error.localizedDescription)"
                         }
                     }
+            }
+    }
+    
+    // 유저의 챙김률
+    func getUserCheckRate(accessToken: String, completion: @escaping (Int) -> Void) {
+            
+        BackEndAuthService.shared
+            .getUserCheckRate(accessToken: accessToken) { result in
+                switch result {
+                case .success(let success):
+                    print(
+                        "🟢 [LoginViewModel] getUserCheckRate 성공 챙김률: \(success.checkRate)"
+                    )
+                    completion(success.checkRate)
+                case .failure(let error):
+                    print("🔴 [LoginViewModel] getUserCheckRate 실패: \(error)")
+                    completion(0)
+                }
             }
     }
 }
