@@ -45,6 +45,7 @@ let project = Project(
                         "Pretendard-SemiBold.otf",
                         "Pretendard-Thin.otf",
                     ],
+                    "FirebaseAutomaticScreenReportingEnabled": false,
 //                    "LSApplicationQueriesSchemes": [
 //                        "kakaokompassauth" // 앱으로 로그인
 //                    ],
