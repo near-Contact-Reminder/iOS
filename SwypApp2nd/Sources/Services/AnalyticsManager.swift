@@ -190,6 +190,12 @@ final class AnalyticsManager {
         print("📊 [Analytics] click_notification_list_item: \(careType) 로 전송")
     }
     
+    func trackNotificationInboxLogAnalytics() {
+        Analytics.logEvent(AnalyticsEventScreenView,
+                           parameters: [AnalyticsParameterScreenName: "NotificationInboxView",
+                                       AnalyticsParameterScreenClass: "NotificationInboxView"])
+    }
+    
     // MARK: - PushNotification
     /// 푸시 알림 클릭 시 ( push_type: "manual_reminder", "birthday_reminder", "anniversary_reminder" )
     func pushListItemTapped(pushType: String) {
