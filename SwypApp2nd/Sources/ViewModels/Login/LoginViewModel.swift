@@ -19,9 +19,7 @@ class LoginViewModel: ObservableObject {
        
     // MARK: - 카카오 로그인 흐름
     func loginWithKakao() {
-        Analytics.logEvent("LoginView", parameters: [
-            "button": "kakao_login"
-        ])
+        AnalyticsManager.shared.kakaoLoginLogAnalytics()
         
         isLoading = true
         SnsAuthService.shared.loginWithKakao { oauthToken in
@@ -81,9 +79,7 @@ class LoginViewModel: ObservableObject {
 
     // MARK: - 애플 로그인 요청 세팅
     func handleAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
-        Analytics.logEvent("LoginView", parameters: [
-            "button": "apple_login"
-        ])
+        AnalyticsManager.shared.appleLoginLogAnalytics()
         SnsAuthService.shared.configureAppleRequest(request)
     }
 

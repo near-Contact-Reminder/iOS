@@ -96,6 +96,7 @@ struct ContactFrequencySettingsView: View {
                         ) {
                             selectedPerson = person
                             showFrequencyPicker = true
+                            AnalyticsManager.shared.setCareFrequencyLogAnalytics()
                         }
                     }
                 }
@@ -121,15 +122,17 @@ struct ContactFrequencySettingsView: View {
                 }
 
                 Button{
-                    // 카카오는 이미지 저장 후 BackEnd 서버에 전송
-                    viewModel.downloadKakaoImageData { friendsWithImages in
-                        DispatchQueue.main.async {
-                            viewModel.uploadAllFriendsToServer(viewModel.people) {
-                                UserSession.shared.user?.friends = viewModel.people
-                                complete(viewModel.people)
-                            }
+                    // 카카오는 이미지 저장 후 BackEnd 서버에 전송 (스펙 아웃)
+//                    viewModel.downloadKakaoImageData { friendsWithImages in
+//                    }
+                    
+                    DispatchQueue.main.async {
+                        viewModel.uploadAllFriendsToServer(viewModel.people) {
+                            UserSession.shared.user?.friends = viewModel.people
+                            AnalyticsManager.shared.setProfileCountBucket(viewModel.people.count)
+                            AnalyticsManager.shared.completeButtonLogAnalytics()
+                            complete(viewModel.people)
                         }
-                        
                     }
                 }
                 label: {
@@ -162,6 +165,9 @@ struct ContactFrequencySettingsView: View {
             )
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
+        }
+        .onAppear {
+            AnalyticsManager.shared.trackContactFrequencySettingsViewLogAnalytics()
         }
     }
 }
@@ -312,23 +318,3 @@ struct FrequencyPickerView: View {
         .cornerRadius(20)
     }
 }
-
-//#Preview {
-//    let viewModel: ContactFrequencySettingsViewModel = {
-//        let vm = ContactFrequencySettingsViewModel()
-//        vm.people = [
-//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
-//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
-//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.kakao, frequency: CheckInFrequency.none),
-//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
-//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none),
-//            Friend(id: UUID(), name: "정종원", image: nil, source: ContactSource.phone, frequency: CheckInFrequency.none)
-//        ]
-//        return vm
-//    }()
-//    ContactFrequencySettingsView(
-//        viewModel: viewModel,
-//        back: { print("이전") },
-//        complete: { print("완료") }
-//    )
-//}

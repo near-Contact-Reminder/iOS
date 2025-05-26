@@ -23,11 +23,15 @@ public struct HomeView: View {
                     VStack {
                         VStack(spacing: 24) {
                             // 네비게이션 바
-                            CustomNavigationBar(showBadge: notificationViewModel.showBadge,
-                                                onTapMy: {DispatchQueue.main.async {
-                                path.append(.my)} },
-                                                onTapBell: { DispatchQueue.main.async { path.append(.inbox) }
-                            })
+                            CustomNavigationBar(
+                                showBadge: notificationViewModel.showBadge,
+                                onTapMy: { DispatchQueue.main.async { path.append(.my) }
+                                    AnalyticsManager.shared.myProfileLogAnalytics()
+                                },
+                                onTapBell: { DispatchQueue.main.async { path.append(.inbox) }
+                                    AnalyticsManager.shared.notificationLogAnalytics()
+                                }
+                            )
                             
                             // 인사 레이블
                             GreetingSection(userName: userSession.user?.name ?? "사용자")
@@ -51,6 +55,9 @@ public struct HomeView: View {
         .onAppear {
             homeViewModel.loadFriendList()
             homeViewModel.loadMonthlyFriends()
+                
+            AnalyticsManager.shared.trackHomeViewLogAnalytics()
+                
         }
         .onReceive(notificationViewModel.$navigateToPerson.compactMap { $0 }) { friend in
             path.removeAll()
@@ -300,6 +307,7 @@ struct MyPeopleSection: View {
                     VStack(alignment: .center, spacing: 8) {
                         Button {
                             UserSession.shared.appStep = .registerFriends
+                            AnalyticsManager.shared.addPersonLogAnalytics()
                         } label: {
                             Image(systemName: "plus")
                                 .font(.title)
@@ -321,6 +329,7 @@ struct MyPeopleSection: View {
                             ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
                                 StarPositionLayout(peoples: $peoples , pageIndex: index) { selected in
                                     path.append(.personDetail(selected))
+                                    AnalyticsManager.shared.selectPersonLogAnalytics()
                                 }
                                 .tag(index)
                             }
