@@ -9,6 +9,7 @@ struct ContactFrequencySettingsView: View {
     
     let back: () -> Void
     let complete: ([Friend]) -> Void
+    @State var isChecked: Bool = false
 
     var body: some View {
         Spacer()
@@ -20,41 +21,70 @@ struct ContactFrequencySettingsView: View {
                 HStack {
                     Text("챙김 주기 설정하기")
                         .font(.Pretendard.b1Bold())
+                    
                     Spacer()
+                    
                     Text("2 / 2")
                         .font(.Pretendard.captionBold())
                         .foregroundColor(.gray02)
                 }
+                
+                Spacer()
+                    .frame( height: 20)
 
                 Image("img_100_character_default")
                     .frame(height: 80)
 
                 Text("얼마나 자주\n챙기고 싶으세요?")
                     .font(.Pretendard.h1Bold())
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text("사람별로 챙기고 싶은 주기를 설정해주세요.")
-                    .font(.Pretendard.b2Bold())
+                    .font(.Pretendard.b1Medium())
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
                     .foregroundColor(.gray02)
+                
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 20)
 
             // 한 번에 설정
-            Button(action: {
-                viewModel.toggleUnifiedFrequency(!viewModel.isUnified)
-            }) {
-                HStack(spacing: 8) {
-                    Text("한번에 설정")
-                        .font(.Pretendard.b2Medium())
-                        .foregroundColor(.gray02)
-                    Image(
-                        systemName: viewModel.isUnified ? "checkmark.square.fill" : "square"
-                    )
-                    .foregroundColor(
-                        viewModel.isUnified ? .blue01 : .gray02
-                    )
+            HStack {
+                Spacer()
+                
+                Button(action: {
+                    viewModel.toggleUnifiedFrequency(!viewModel.isUnified)
+                    isChecked.toggle()
+                }) {
+                    HStack(spacing: 12) {
+                        Text("한번에 설정")
+                            .font(.Pretendard.b1Medium())
+                            .foregroundColor(.gray02)
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(
+                                    isChecked ? Color.blue01 : Color.gray03,
+                                    lineWidth: 2
+                                )
+                                .frame(width: 24, height: 24)
+                                .background(
+                                    isChecked ? Color.blue01 : Color.gray03
+                                )
+                                .cornerRadius(6)
+                        
+                            Image("icon_check_white")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 14, height: 14)
+                            
+                        }
+                    }
+                    
                 }
+//                .buttonStyle(.plain)
+                .padding(.horizontal, 20)
             }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 24)
+            
             // 공통 주기 설정 드롭다운
             if viewModel.isUnified {
                 Button(action: {
@@ -64,7 +94,7 @@ struct ContactFrequencySettingsView: View {
                         Text(
                             viewModel.unifiedFrequency?.rawValue ?? "주기 선택"
                         )
-                        .font(.Pretendard.b2Medium())
+                        .font(.Pretendard.b1Medium())
                         .foregroundColor(
                             viewModel.unifiedFrequency == nil ? .gray02 : .black
                         )
@@ -77,13 +107,14 @@ struct ContactFrequencySettingsView: View {
                     .padding()
                     .padding(.horizontal, 8)
                     .background(Color.white)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
                 }
-                .padding(.horizontal, 24)
+                .frame(height: 52)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+                .padding(.horizontal, 20)
             }
 
             // 사람 리스트
@@ -100,7 +131,7 @@ struct ContactFrequencySettingsView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
             }
 
             // 하단 버튼
@@ -165,6 +196,7 @@ struct ContactFrequencySettingsView: View {
             )
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
+            .presentationCornerRadius(20)
         }
         .onAppear {
             AnalyticsManager.shared.trackContactFrequencySettingsViewLogAnalytics()
@@ -203,7 +235,7 @@ struct FrequencyRow: View {
             
         }
         .padding()
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 4)
         .background(Color.bg02)
         .cornerRadius(12)
     }
@@ -212,7 +244,7 @@ struct FrequencyRow: View {
 // MARK: - 주기 설정 바텀 시트
 struct FrequencyPickerView: View {
     @Environment(\.dismiss) var dismiss
-    @State private var tempSelected: CheckInFrequency?
+    @State private var tempSelected: CheckInFrequency? = .weekly
     
     let selected: CheckInFrequency?
     let onSelect: (CheckInFrequency) -> Void
@@ -241,13 +273,17 @@ struct FrequencyPickerView: View {
                         .foregroundColor(.blue01)
 
                     Spacer()
-
+                    
+                    Divider()
+                        .foregroundColor(.gray02)
+                        .frame(height: 20)
+                    
                     Text("다음 주기: \(nextDate)")
                         .font(.caption)
                         .foregroundColor(.gray02)
                 }
                 .padding()
-                .background(Color.bg01)
+                .background(Color.bg02)
                 .cornerRadius(12)
                 .padding(.horizontal)
                 .padding(.top, 8)
@@ -265,8 +301,10 @@ struct FrequencyPickerView: View {
                                 .foregroundColor(.black)
                             Spacer()
                             if frequency == tempSelected {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.blue01)
+                                Image("icon_check_blue")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 14, height: 14)
                             }
                         }
                         .padding(.horizontal, 24)
@@ -285,7 +323,7 @@ struct FrequencyPickerView: View {
                     Text("취소")
                         .font(.body.bold())
                         .frame(maxWidth: .infinity)
-                        .frame(height: 44)
+                        .frame(height: 56)
                         .background(Color.white)
                         .foregroundColor(.black)
                         .overlay(
@@ -306,7 +344,7 @@ struct FrequencyPickerView: View {
                     Text("완료")
                         .font(.body.bold())
                         .frame(maxWidth: .infinity)
-                        .frame(height: 44)
+                        .frame(height: 56)
                         .background(Color.blue01)
                         .foregroundColor(.white)
                         .cornerRadius(10)
@@ -316,5 +354,20 @@ struct FrequencyPickerView: View {
         }
         .background(Color.white)
         .cornerRadius(20)
+    }
+}
+
+#Preview {
+    ContactFrequencySettingsView(
+        viewModel: ContactFrequencySettingsViewModel(),
+        notificationViewModel: NotificationViewModel(),
+        back: {}) { _ in
+            
+        }
+}
+
+#Preview("FrequencyPickerView") {
+    FrequencyPickerView(selected: CheckInFrequency.none) { _ in
+        print("test")
     }
 }
