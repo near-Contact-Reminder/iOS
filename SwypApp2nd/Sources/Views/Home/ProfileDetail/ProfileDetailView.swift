@@ -46,6 +46,7 @@ struct ProfileDetailView: View {
                 isEnabled: viewModel.canCheckInToday
             ) {
                 viewModel.checkFriend()
+                AnalyticsManager.shared.dailyCheckButtonLogAnalytics()
             }
         }
         .padding(.horizontal, 24)
@@ -53,6 +54,8 @@ struct ProfileDetailView: View {
         .onAppear {
             viewModel.fetchFriendDetail(friendId: viewModel.people.id)
             viewModel.fetchFriendRecords(friendId: viewModel.people.id)
+            
+            AnalyticsManager.shared.trackProfileDetailViewLogAnalytics()
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading)  {
@@ -363,10 +366,16 @@ private struct ProfileTabBar: View {
     var body: some View {
         HStack {
             TabButton(title: "프로필", isSelected: selected == .profile)
-                .onTapGesture { selected = .profile }
+                .onTapGesture {
+                    selected = .profile
+                    AnalyticsManager.shared.profileTabLogAnalytics()
+                }
 
             TabButton(title: "기록", isSelected: selected == .records)
-                .onTapGesture { selected = .records }
+                .onTapGesture {
+                    selected = .records
+                    AnalyticsManager.shared.historyTapLogAnalytics()
+                }
 
         }
     }

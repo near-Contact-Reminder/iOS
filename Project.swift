@@ -45,6 +45,7 @@ let project = Project(
                         "Pretendard-SemiBold.otf",
                         "Pretendard-Thin.otf",
                     ],
+                    "FirebaseAutomaticScreenReportingEnabled": false,
 //                    "LSApplicationQueriesSchemes": [
 //                        "kakaokompassauth" // 앱으로 로그인
 //                    ],
@@ -63,7 +64,8 @@ let project = Project(
             sources: [
                 "SwypApp2nd/Sources/**"
             ],
-            resources: ["SwypApp2nd/Resources/**"
+            resources: ["SwypApp2nd/Resources/**",
+                        "Tuist/GoogleService-Info.plist"
 //                       "SwypApp2nd/Resources/External/KakaoSDKFriendResources.bundle"
                        ],
             entitlements: "Tuist/SignInWithApple.entitlements",
@@ -75,12 +77,15 @@ let project = Project(
                 .external(name: "KakaoSDKAuth"),
                 .external(name: "KakaoSDKUser"),
                 .external(name: "KakaoSDKTalk"),
-                .external(name: "KakaoSDKFriend")
+                .external(name: "KakaoSDKFriend"),
+                .external(name: "FirebaseAnalytics")
+                
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
                 "MARKETING_VERSION": "1.0.0",
-                "CURRENT_PROJECT_VERSION": "11"
+                "CURRENT_PROJECT_VERSION": "11",
+                "OTHER_LDFLAGS": "$(inherited) -ObjC"
             ]),
             coreDataModels: [
                 .coreDataModel(

@@ -38,6 +38,9 @@ struct WithdrawalView: View {
             )
         }
         .padding(.horizontal, 24)
+        .onAppear {
+            AnalyticsManager.shared.trackWithDrawalViewLogAnalytics()
+        }
 }
 
 struct WithdrawalHeaderView: View {

@@ -59,6 +59,9 @@ struct MyProfileView: View {
             }
         }
         .padding(.horizontal, 12)
+        .onAppear {
+            AnalyticsManager.shared.trackMyProfileViewLogAnalytics()
+        }
     }
 }
 
@@ -133,10 +136,11 @@ struct NotificationSettingsView: View {
             }
             .onChange(of: viewModel.isNotificationOn) {newValue in
                 if newValue {
-                        viewModel.handleToggleOn()
+                    viewModel.handleToggleOn()
                 } else {
                     viewModel.turnOffNotifications()
                 }
+                AnalyticsManager.shared.notificationSettingButtonLogAnalytics(isOn: newValue)
             }
             .alert("휴대폰 알림이 꺼져 있어요.", isPresented: $viewModel.showSettingsAlert) {
             Button("설정하러 가기") {
@@ -248,6 +252,7 @@ struct WithdrawalButtonView: View {
                         }
                     }
                 }
+                AnalyticsManager.shared.logoutButtonLogAnalytics()
             }) {
                 Text("로그아웃")
                     .font(Font.Pretendard.b1Bold())
@@ -264,6 +269,7 @@ struct WithdrawalButtonView: View {
             
             Button(action: {
                 onWithdrawTap()
+                AnalyticsManager.shared.withdrawButtonLogAnalytics()
             }) {
                 Text("탈퇴하기")
                     .font(Font.Pretendard.b2Medium())

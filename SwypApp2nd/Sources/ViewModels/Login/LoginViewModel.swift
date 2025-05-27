@@ -2,6 +2,7 @@ import AuthenticationServices
 import Foundation
 import Combine
 import KakaoSDKUser
+import FirebaseAnalytics
 
 class LoginViewModel: ObservableObject {
 
@@ -18,6 +19,8 @@ class LoginViewModel: ObservableObject {
        
     // MARK: - 카카오 로그인 흐름
     func loginWithKakao() {
+        AnalyticsManager.shared.kakaoLoginLogAnalytics()
+        
         isLoading = true
         SnsAuthService.shared.loginWithKakao { oauthToken in
             guard let token = oauthToken else {
@@ -78,6 +81,7 @@ class LoginViewModel: ObservableObject {
 
     // MARK: - 애플 로그인 요청 세팅
     func handleAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
+        AnalyticsManager.shared.appleLoginLogAnalytics()
         SnsAuthService.shared.configureAppleRequest(request)
     }
 

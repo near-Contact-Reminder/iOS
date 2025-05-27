@@ -54,13 +54,16 @@ public struct ContentView: View {
                     contactFrequencyViewModel.setPeople(from: registerFriendsViewModel.selectedContacts) // 선택된 연락처 전달
                     print("🟢 [RegisterFriendsViewModel] \(registerFriendsViewModel.selectedContacts) 전달됨")
                     userSession.appStep = .setFrequency
+                    AnalyticsManager.shared.nextButtonLogAnalytics()
                 }, skip: {
                     userSession.appStep = .home
+                    AnalyticsManager.shared.skipButtonLogAnalytics()
                 })
                 
             case .setFrequency:
                 ContactFrequencySettingsView(viewModel: contactFrequencyViewModel, notificationViewModel: notificationViewModel, back: {
                     userSession.appStep = .registerFriends
+                    AnalyticsManager.shared.previousButtonLogAnalytics()
                 }, complete: { updatedPeoples in
                     DispatchQueue.main.async {
                         print("🟢 [ContactFrequencySettingsView] 전달받은 people: \(updatedPeoples.map { $0.name })")

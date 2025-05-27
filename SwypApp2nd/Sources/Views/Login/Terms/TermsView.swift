@@ -107,6 +107,8 @@ public struct TermsView: View {
                     print("🟢 [TermsView] didAgreeToAppleTerms 저장됨: \(UserDefaults.standard.bool(forKey: "didAgreeToAppleTerms"))")
                 }
                 
+                AnalyticsManager.shared.agreementLogAnalytics()
+                
                 completion()
             }) {
                 Text("가입")
@@ -145,6 +147,9 @@ public struct TermsView: View {
                     }
                 }
             }
+        }
+        .onAppear {
+            AnalyticsManager.shared.trackTermsViewLogAnalytics()
         }
     }
 }

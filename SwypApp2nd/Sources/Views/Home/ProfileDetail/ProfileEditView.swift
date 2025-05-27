@@ -1,5 +1,4 @@
 import SwiftUI
-import CoreData
 
 struct ProfileEditView: View {
     @ObservedObject var profileEditViewModel: ProfileEditViewModel
@@ -25,6 +24,9 @@ struct ProfileEditView: View {
                 )
                 MemoSection(memo: $profileEditViewModel.person.memo)
             }
+        }
+        .onAppear {
+            AnalyticsManager.shared.trackProfileEditViewLogAnalytics()
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {

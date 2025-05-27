@@ -55,6 +55,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         let userInfo = response.notification.request.content.userInfo
         // auto login check -> app step 쌓는 과정
         notificationViewModel.navigateFromNotification(userInfo: userInfo)  // CoreData 저장
+        AnalyticsManager.shared.setEntryChannel("push")
         completionHandler()
     }
     

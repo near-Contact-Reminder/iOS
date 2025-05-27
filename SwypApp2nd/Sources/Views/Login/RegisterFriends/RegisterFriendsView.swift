@@ -81,6 +81,7 @@ struct RegisterFriendView: View {
                                         showPermissionAlert = true
                                     }
                                 }
+                                AnalyticsManager.shared.contactImportLogAnalytics()
                             }
                         )
                         .sheet(isPresented: $showContactPicker) {
@@ -173,6 +174,9 @@ struct RegisterFriendView: View {
                 },
                 secondaryButton: .cancel(Text("취소"))
             )
+        }
+        .onAppear {
+            AnalyticsManager.shared.trackRegisterFriendsViewLogAnalytics()
         }
     }
 }

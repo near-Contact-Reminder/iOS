@@ -132,3 +132,6 @@ Tuist/Package.resolved
 
 # Tuist Config
 Tuist/Config/Config.xcconfig
+
+# Firebase
+Tuist/GoogleService-Info.plist

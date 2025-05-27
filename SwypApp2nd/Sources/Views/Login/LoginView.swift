@@ -62,6 +62,9 @@ public struct LoginView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
+        .onAppear {
+            AnalyticsManager.shared.trackLoginViewLogAnalytics()
+        }
     }
 }
 #Preview {

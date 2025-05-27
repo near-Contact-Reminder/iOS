@@ -11,6 +11,8 @@ struct NotificationInboxView: View {
         .navigationTitle("알림")
         .onAppear {
             notificationViewModel.loadAllReminders()
+            
+            AnalyticsManager.shared.trackNotificationInboxLogAnalytics()
         }
     }
 
