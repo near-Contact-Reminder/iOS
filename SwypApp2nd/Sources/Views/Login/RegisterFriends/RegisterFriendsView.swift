@@ -1,7 +1,4 @@
 import SwiftUI
-import KakaoSDKTalk
-import KakaoSDKFriend
-import KakaoSDKAuth
 
 struct RegisterFriendView: View {
     @ObservedObject var viewModel: RegisterFriendsViewModel
@@ -51,18 +48,21 @@ struct RegisterFriendView: View {
                         .font(.Pretendard.captionBold())
                         .foregroundColor(.gray02)
                 }
+                
+                Spacer()
+                    .frame( height: 20)
 
                 Image("img_100_character_default")
                     .frame(height: 80)
 
-                Text("가까워지고 싶은 사람\n 10명까지 선택해주세요")
+                Text("가까워지고 싶은 사람\n10명까지 선택해주세요")
                     .font(.Pretendard.h1Bold())
 
                 Text("먼저, 더 가까워지고 싶은\n소중한 사람만 선택해주세요.")
-                    .font(.Pretendard.b2Bold())
+                    .font(.Pretendard.b1Medium())
                     .foregroundColor(.gray02)
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 20)
 
             // 불러오기 카드 버튼, 가져온 연락처
             ScrollView {
@@ -95,7 +95,7 @@ struct RegisterFriendView: View {
                                 ContactRow(contact: contact) {
                                     viewModel.removeContact(contact)
                                 }
-                                .padding(.horizontal, 8)
+                                .padding(.horizontal, 4)
                             }
                         }
                     }
@@ -146,7 +146,7 @@ struct RegisterFriendView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .background(viewModel.canProceed ? Color.blue01 : Color.gray01)
+                        .background(viewModel.canProceed ? Color.blue01 : Color.gray02)
                         .cornerRadius(12)
                 }
                 .disabled(!viewModel.canProceed)
@@ -238,7 +238,7 @@ struct ContactRow: View {
         HStack(spacing: 12) {
             iconImage
                 .resizable()
-                .frame(width: 32, height: 32)
+                .frame(width: 24, height: 24)
 
             Text(contact.name)
                 .font(.Pretendard.b2Medium())
@@ -251,8 +251,9 @@ struct ContactRow: View {
                     .foregroundColor(.gray)
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 24)
+        .padding()
+//        .padding(.vertical, 8)
+//        .padding(.horizontal, 24)
         .background(Color.bg02)
         .cornerRadius(12)
     }
