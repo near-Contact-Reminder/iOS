@@ -11,21 +11,22 @@ public struct LoginView: View {
 
             Spacer()
 
-            VStack(alignment: .center, spacing: 8) {
-                Image.Character.success
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 160, height: 160)
-                
-                Text("near")
-                    .font(Font.Pretendard.h1Bold(size: 48))
-                    .foregroundStyle(Color.blue02)
+            VStack(alignment: .center, spacing: 0) {
+                Group {
+                    Image.Character.success
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 160, height: 160)
+                    
+                    Image.Login.blueLogo
+                        .frame(width: 120, height: 48)
+                }
 
                 Text("소중한 사람들과 더 가까워지는 시간")
                     .font(Font.Pretendard.b1Medium())
-                    .foregroundStyle(Color.gray02)
+                    .foregroundStyle(Color.gray01)
+                    .padding(.top, 8)
             }
-            .padding(.horizontal, 24)
 
             Spacer()
 
@@ -68,6 +69,12 @@ public struct LoginView: View {
     }
 }
 #Preview {
+    let session: UserSession = {
+        let session = UserSession()
+        session.appStep = .login
+        return session
+    }()
+    
     LoginView(loginViewModel: LoginViewModel())
-        .environmentObject(UserSession())
+        .environmentObject(session)
 }

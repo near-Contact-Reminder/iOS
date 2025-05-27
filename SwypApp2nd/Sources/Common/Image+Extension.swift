@@ -48,6 +48,7 @@ extension Image {
         static let contactSquare32 = Image("img_32_contact_square")
         static let kakaoSquare32 = Image("img_32_kakao_square")
         static let kakao32 = Image("img_32_kakao")
+        static let blueLogo = Image("img_120x48_logo_blue")
     }
     
     // User Profile Images
