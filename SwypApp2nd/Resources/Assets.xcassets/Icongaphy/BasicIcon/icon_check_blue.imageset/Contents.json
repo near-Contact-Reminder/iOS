@@ -6,10 +6,12 @@
       "scale" : "1x"
     },
     {
+      "filename" : "icon_check_blue@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "icon_check_blue@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
