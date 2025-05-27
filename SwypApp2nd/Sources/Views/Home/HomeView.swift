@@ -21,7 +21,7 @@ public struct HomeView: View {
                     .ignoresSafeArea()
                 GeometryReader { geometry in
                     VStack {
-                        VStack(spacing: 24) {
+                        VStack(spacing: 32) {
                             // 네비게이션 바
                             CustomNavigationBar(
                                 showBadge: notificationViewModel.showBadge,
@@ -81,7 +81,7 @@ struct CustomNavigationBar: View {
                 Button{
                     onTapMy()
                 } label: {
-                    Text("My")
+                    Text("MY")
                         .font(Font.Pretendard.h2Bold())
                         .foregroundStyle(Color.white)
                 }
@@ -199,7 +199,9 @@ struct ThisMonthSection: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        ForEach(peoples, id: \.friendId) { contact in
+                        ForEach(peoples.sorted(by: { lhs, rhs in
+                            lhs.nextContactAt > rhs.nextContactAt
+                        }), id: \.friendId) { contact in
                             ThisMonthContactCell(contact: contact) { selected in
                                 // TODO: 상세 네비게이션 연결 -> 이거 지금 어떻게 연결 되고 있는 걸까요 ㅋㅋ
                                 print("\(selected.name) tapped")
@@ -237,9 +239,16 @@ struct ThisMonthContactCell: View {
                     .foregroundColor(.black)
                     .lineLimit(1)
                 
-                Text(dDayString)
-                    .font(.Pretendard.b2Bold())
-                    .foregroundColor(Color.blue01)
+                if dDayString != "D-DAY" {
+                    Text(dDayString)
+                        .font(.Pretendard.b2Bold())
+                        .foregroundColor(Color.gray02)
+                } else {
+                    Text(dDayString)
+                        .font(.Pretendard.b2Bold())
+                        .foregroundColor(Color.blue01)
+                }
+                
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
@@ -303,7 +312,7 @@ struct MyPeopleSection: View {
         VStack(spacing: 8) {
             HStack {
                 Text("내 사람들")
-                    .font(Font.Pretendard.h1Bold())
+                    .font(Font.Pretendard.h2Bold())
                     .foregroundStyle(Color.black)
                 Spacer()
                 Button {
@@ -373,7 +382,7 @@ struct MyPeopleSection: View {
                                     .frame(width: 6, height: 6)
                             }
                         }
-                        .padding(.bottom, 44)
+                        .padding(.bottom, 88)
                     }
                 }
             }
@@ -498,7 +507,7 @@ struct StarPositionLayout: View {
                     VStack {
                         Image(systemName: "plus")
                             .font(.title)
-                            .foregroundColor(.blue)
+                            .foregroundColor(Color.blue01)
                             .frame(width: 64, height: 64)
                             .background(Color.bg01)
                             .clipShape(Circle())
