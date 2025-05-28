@@ -3,27 +3,27 @@ import CoreData
 import Combine
 
 class NotificationViewModel: ObservableObject {
-    
+
     private let reminderRepo = ReminderRepository()
     private var cancellables = Set<AnyCancellable>()
     private let context = CoreDataStack.shared.context
-    
+
     @Published var navigateToPerson: Friend?
     @Published var reminders: [ReminderEntity] = []
     @Published var showBadge: Bool = false
     @Published var showToast: Bool = false
-    
+
     init() {
         loadAllReminders() // CoreData에서 기존 리마인더 불러오기
         setShowBadge() // 뱃지 숫자 세팅
         observeReminderAdded() // 알림 구독해서 새로 생긴 리마인더 감지 -> 추후 코멘트 아웃
     }
-    
+
     func loadAllReminders() {
         setShowBadge()
         reminders = reminderRepo.fetchAllReminders()
     }
-    
+
     /// 비동기로 안 읽은 알림 수 계산해서 뱃지 업데이트 (홈에서 종버튼에 사용)
     func setShowBadge() {
         $reminders
@@ -35,13 +35,13 @@ class NotificationViewModel: ObservableObject {
             .assign(to: \.showBadge, on: self)
             .store(in: &cancellables)
     }
-    
-    
+
+
     /// Inbox View에서 알림 스와이프해서 삭제 (알림 자체가 삭제되는 것 아님!)
     func deleteReminder(indexSet: IndexSet) {
         guard let index = indexSet.first else { return }
         let reminderToDelete = visibleReminders[index]
-        
+
         context.delete(reminderToDelete) // CoreData에서도 삭제
 
         do {
@@ -54,11 +54,11 @@ class NotificationViewModel: ObservableObject {
                 reminders.remove(at: indexInArray)
             }
     }
-    
+
     /// Inbox View에서 알림 전체 삭제 (알림 자체가 삭제되는 것 아님!)
     func deleteAllReminders() {
         let toRemove = visibleReminders
-        
+
         toRemove.forEach { reminder in
                 context.delete(reminder) // CoreData에서도 삭제
             }
@@ -73,23 +73,23 @@ class NotificationViewModel: ObservableObject {
 
     }
 
-    
+
     func deleteRemindersEternally(person: Friend) {
-        
+
         let selectedReminders = reminderRepo.fetchReminders(person: person)
         let ids = Array(reminders).compactMap { $0.id.uuidString }
-        
+
         // 1. 예약된 알림 삭제
         NotificationManager.shared.center.removePendingNotificationRequests(withIdentifiers: ids)
         NotificationManager.shared.center.removeDeliveredNotifications(withIdentifiers: ids)
            print("🗑️ 스케줄된 알림 삭제: \(ids)")
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             NotificationManager.shared.center.getPendingNotificationRequests { requests in
                 print("남아 있는 스케줄알람 개수: \(requests.count)")
             }
         }
-           
+
        // 2. CoreData Reminder 삭제
        for reminder in selectedReminders {
            context.delete(reminder)
@@ -100,7 +100,7 @@ class NotificationViewModel: ObservableObject {
         } catch {
             print("❌ Reminder 삭제 실패: \(error.localizedDescription)")
         }
-        
+
         DispatchQueue.main.async {
             self.reminders.removeAll { reminder in
                 selectedReminders.contains(reminder)
@@ -108,35 +108,35 @@ class NotificationViewModel: ObservableObject {
         }
     }
 
-    
+
     // MARK: - 알림에 연결된 사람 가지고 오고 해당 프로필 상세로 내비게이션 경로 설정
     func navigateFromNotification(userInfo: [AnyHashable: Any]) {
 
         guard let person = reminderRepo.fetchPerson(from: userInfo) else { return }
-        
+
         DispatchQueue.main.async {
             self.navigateToPerson = person
         }
     }
-    
+
     // MARK: - 알림 읽음 설정
     func isRead(_ reminder: ReminderEntity) {
         reminderRepo.markAsRead(reminder)
         loadAllReminders()
     }
-    
+
     func isTriggered(reminderId: UUID) {
-        
+
         let request: NSFetchRequest<ReminderEntity> = ReminderEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", reminderId as CVarArg)
         if let reminder = try? context.fetch(request).first {
             reminderRepo.markAsTriggered(reminder)
         }
-       
+
         loadAllReminders()
-        
+
     }
-    
+
     // MARK: - 새로운 알림 구독 (디버깅 목적)
     private func observeReminderAdded() {
         NotificationCenter.default.publisher(for: NSNotification.Name("NewReminderAdded"))
@@ -154,7 +154,7 @@ class NotificationViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
      // MARK: - 친구 목록을 순회하며 전체 안부 알림 설정
     func scheduleNotifications(people: [Friend]) {
          // 1. 내부 알림 설정 체크
@@ -162,13 +162,13 @@ class NotificationViewModel: ObservableObject {
 //            print("🛑 알림 꺼져 있어서 일반 알림 예약 안 함")
 //            return
 //        }
-        
+
          // 2. initial permission 체크
         NotificationManager.shared.requestPermissionIfNeeded()
-        
+
          // 3. friend 별로 안부 주기 설정
         for friend in people {
-            
+
 //            guard let personId = friend.entity?.id.uuidString else {
 //                print("❌ 친구에 연결된 PersonEntity 없음")
 //                return
@@ -176,20 +176,20 @@ class NotificationViewModel: ObservableObject {
             if (friend.birthDay != nil) {
                 setBDayReminder(person: friend)
             }
-                
+
             if (friend.anniversary != nil) {
                 setAnniversaryReminder(person: friend)
             }
-            
+
             guard let (content, trigger, scheduledDate, reminderId) = setAnbu(person: friend) else {
                 print("❌ 알림 생성 실패")
                 return
             }
-            
+
             let genRequest = UNNotificationRequest(identifier: reminderId.uuidString, content: content, trigger: trigger)
-            
+
             NotificationManager.shared.center.add(genRequest)
-            
+
              // person entity 찾기
             reminderRepo.addReminder(person: friend, reminderId: reminderId, type: NotificationType.regular, scheduledDate: scheduledDate)
             try? context.save()
@@ -198,7 +198,7 @@ class NotificationViewModel: ObservableObject {
                 print("⚠️ 서버 accessToken 없음 - 백엔드 요청 생략")
                 return
             }
-            
+
             BackEndAuthService.shared.sendReminder(friendId: friend.id, accessToken: token) { result in
                 switch result {
                 case .success:
@@ -214,42 +214,42 @@ class NotificationViewModel: ObservableObject {
             self.showToast = true
         }
     }
-    
+
      // MARK: - 친구 개개인당 안부 알림 설정
     func setAnbu(person: Friend) -> (content: UNMutableNotificationContent, trigger: UNNotificationTrigger, scheduledDate: Date, id : UUID)? {
-        
+
         let reminderID = UUID()
         let calendar = Calendar.current
         let now = Date()
 
         guard let frequency = CheckInFrequency(rawValue: person.frequency?.rawValue ?? CheckInFrequency.none.rawValue), let nextDate = now.nextCheckInDateValue(for: frequency)  else {
-            
+
             print("❌ 잘못된 리마인더 주기")
             return nil
         }
-        
+
         var dateComponents = calendar.dateComponents([.year, .month, .day], from: nextDate)
        dateComponents.hour = 9
        dateComponents.minute = 0
 
-//        테스트용 
+//        테스트용
         // if frequency == .daily {
         //     let future = Calendar.current.date(byAdding: .second, value: 20, to: Date())!
         //     dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: future)
         // }
-        
+
         guard let scheduledDate = calendar.date(from: dateComponents) else { return nil }
 
-        
+
         let content = UNMutableNotificationContent()
         content.title = "📌 챙김 알림"
         content.body = "\(person.name)님에게 연락해보세요!"
         content.sound = .default
         content.badge = 1
         content.userInfo = ["personID": person.id.uuidString, "reminderID" : reminderID.uuidString, "type": "regular"]
-        
+
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-        
+
         print("🟢 [NotificationViewModel] \(person.name) 알림 등록 완료")
         // ✅ 등록된 알림 확인 로그 TODO 나중에 삭제
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -265,44 +265,44 @@ class NotificationViewModel: ObservableObject {
     
      // MARK: - 프로필 상세 수정뷰에서 친구 별 생일 혹은 기념일 설정
     func setBDayReminder(person: Friend) {
-        
+
 //        guard UserDefaults.standard.bool(forKey: "isNotificationOn") else {
 //            print("🛑 알림 꺼져 있어서 일반 알림 예약 안 함")
 //            return
 //        }
-        
+
         NotificationManager.shared.requestPermissionIfNeeded()
         let calendar = Calendar.current
         let birthdayId = UUID()
-        
+
         if let birthday = person.birthDay,
            let adjustedBday = Date.nextSpecialDate(from: birthday) {
-        
+
             var birthdayComponents = calendar.dateComponents([.year, .month, .day], from: adjustedBday)
             birthdayComponents.hour = 8
             birthdayComponents.minute = 00
-            
+
             guard let scheduledDate = calendar.date(from: birthdayComponents) else {
                 print("❌ 생일 날짜 생성 실패")
                 return }
 
             reminderRepo.addReminder(person: person, reminderId: birthdayId, type: NotificationType.birthday, scheduledDate: scheduledDate)
-            
+
             let content = UNMutableNotificationContent()
             content.title = "🎂 생일 알림"
             content.body = "\(person.name)님의 생일이에요! 연락해보세요!"
             content.sound = .default
             content.badge = 1
             content.userInfo = ["personID": person.id.uuidString, "reminderID": birthdayId.uuidString, "type": "birthday"]
-            
+
             print("🟢 [NotificationViewModel] \(person.name)의 생일 알림 등록 완료")
 
             try? context.save()
-            
+
             let trigger = UNCalendarNotificationTrigger(dateMatching: birthdayComponents, repeats: true)
-            
+
             let bdayRequest = UNNotificationRequest(identifier: birthdayId.uuidString, content: content, trigger: trigger)
-            
+
             NotificationManager.shared.center.add(bdayRequest) { error in
                 if let error = error {
                     print("🔴 생일 알림 등록 실패: \(error.localizedDescription)")
@@ -310,12 +310,12 @@ class NotificationViewModel: ObservableObject {
                     print("🟢 생일 알림 등록 성공: \(bdayRequest.identifier)")
                 }
             }
-            
+
             guard let token = TokenManager.shared.get(for: .server) else {
                 print("⚠️ 서버 accessToken 없음 - 백엔드 요청 생략")
                 return
             }
-            
+
             BackEndAuthService.shared.sendReminder(friendId: person.id, accessToken: token) { result in
                 switch result {
                 case .success:
@@ -326,37 +326,37 @@ class NotificationViewModel: ObservableObject {
             }
         }
     }
-    
+
     func setAnniversaryReminder(person: Friend) {
-        
+
         NotificationManager.shared.requestPermissionIfNeeded()
         let calendar = Calendar.current
         let anniversaryId = UUID()
-        
+
         if let anniversary = person.anniversary?.Date,
             let adjustedAnniversary = Date.nextSpecialDate(from: anniversary) {
-            
+
             var anniversaryComponents = calendar.dateComponents([.year, .month, .day], from: adjustedAnniversary)
             anniversaryComponents.hour = 08
             anniversaryComponents.minute = 00
-            
+
             guard let scheduledDate = calendar.date(from: anniversaryComponents) else {
                 print("🔴 기념일 날짜 생성 실패")
                 return }
-            
+
             reminderRepo.addReminder(person: person, reminderId: anniversaryId, type: NotificationType.anniversary, scheduledDate: scheduledDate)
-            
+
             let content = UNMutableNotificationContent()
             content.title = "💖 기념일 알림"
             content.body = "\(person.name)님과의 기념일이에요! 연락해보세요!"
             content.sound = .default
             content.badge = 1
-            
+
             content.userInfo = ["personID": person.id.uuidString, "reminderID": anniversaryId.uuidString, "type": "anniversary"]
-           
+
             print("🟢 [NotificationViewModel] \(person.name)의 기념일 알림 등록 완료")
             try? context.save()
-                
+
             let trigger = UNCalendarNotificationTrigger(dateMatching: anniversaryComponents, repeats: true)
             let anniRequest = UNNotificationRequest(identifier: anniversaryId.uuidString, content: content, trigger: trigger)
             NotificationManager.shared.center.add(anniRequest) { error in
@@ -370,7 +370,7 @@ class NotificationViewModel: ObservableObject {
                 print("⚠️ 서버 accessToken 없음 - 백엔드 요청 생략")
                 return
             }
-            
+
             BackEndAuthService.shared.sendReminder(friendId: person.id, accessToken: token) { result in
                 switch result {
                 case .success:
@@ -379,7 +379,7 @@ class NotificationViewModel: ObservableObject {
                     print("📭 리마인더 서버 전송 실패: \(error)")
                 }
             }
-            
+
         }
         }
     }
