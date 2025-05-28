@@ -14,15 +14,14 @@ struct ProfileDetailView: View {
 
     var body: some View {
         
-        VStack(alignment: .leading, spacing: 32) {
-            
+        VStack(alignment: .leading, spacing: 28) {
             ProfileHeader(people: viewModel.people, checkInRecords: viewModel.checkInRecords, onDelete: {
                 viewModel.deleteFriend(friendId: viewModel.people.id) {
                     DispatchQueue.main.async {
                         path.removeAll()
                     }
                 }
-            })
+            }).padding(.top, 26)
             ActionButtonRow(people: viewModel.people)
             ZStack {
                 ProfileTabBar(selected: $selectedTab)
@@ -38,9 +37,7 @@ struct ProfileDetailView: View {
                     .opacity(selectedTab == .profile ? 1 : 0)
                 HistorySection(records: viewModel.checkInRecords)
                     .opacity(selectedTab == .records ? 1 : 0)
-            }
-            .padding(.bottom, 8)
-            
+            }            
             ConfirmButton(
                 title: viewModel.canCheckInToday ? "챙김 기록하기" : "챙김 기록 완료",
                 isEnabled: viewModel.canCheckInToday
@@ -48,6 +45,7 @@ struct ProfileDetailView: View {
                 viewModel.checkFriend()
                 AnalyticsManager.shared.dailyCheckButtonLogAnalytics()
             }
+            .padding(.bottom, 20)
         }
         .padding(.horizontal, 24)
         .navigationBarBackButtonHidden()
@@ -62,8 +60,12 @@ struct ProfileDetailView: View {
                 Button(action: {
                     path.removeLast()
                 }) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.black)
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("프로필 상세")
+                    }
+                    .foregroundColor(.black)
+                    .font(Font.Pretendard.b1Bold())
                 }
                 .padding(.leading, 12)
             }
@@ -136,15 +138,18 @@ struct HistorySection: View {
       
         VStack(alignment: .leading, spacing: 16) {
             Text("챙김 기록")
-                .font(Font.Pretendard.h2Bold())
+                .font(Font.Pretendard.b2Bold())
                 .foregroundColor(.black)
             ScrollView {
                 if records.isEmpty {
                     VStack {
                         Spacer()
+                        Image("img_100_character_empty")
+//                        Spacer()
                         Text("챙긴 기록이 없어요.\n오늘 챙겨볼까요?")
-                            .font(Font.Pretendard.b1Bold())
-                            .foregroundColor(.blue02)
+                            .font(Font.Pretendard.b2Medium())
+                            .font(Font.Pretendard.b2Medium())
+                            .foregroundColor(Color.gray01)
                             .multilineTextAlignment(.center)
                         Spacer()
                     }
@@ -355,7 +360,7 @@ private struct ActionButton: View {
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: 48)
-        .background(enabled ? Color.bg01 : Color.gray04)
+        .background(enabled ? Color.bg02 : Color.gray04)
         .cornerRadius(12)
     }
 }
@@ -386,7 +391,7 @@ private struct TabButton: View {
     let isSelected: Bool
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 9) {
             Text(title)
                 .font(Font.Pretendard.b2Medium())
                 .foregroundColor(isSelected ? .black : .gray02)
@@ -464,7 +469,7 @@ private struct MemoRow: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding()
-        .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 72, maxHeight:100, alignment: .topLeading)
         .background(Color.white)
         .cornerRadius(10)
         .overlay(
@@ -490,41 +495,53 @@ private struct ConfirmButton: View {
                 .cornerRadius(12)
         }
         .disabled(!isEnabled)
+        .frame(height: 56)
     }
 }
 
-//struct ProfileDetailView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        Group {
-//            previewForDevice("iPhone 13 mini")
-//            previewForDevice("iPhone 16")
-//            previewForDevice("iPhone 16 Pro")
-//            previewForDevice("iPhone 16 Pro Max")
-//        }
-//    }
-//    
-//    static func previewForDevice(_ deviceName: String) -> some View {
-//        ProfileDetailView(
-//            viewModel: ProfileDetailViewModel(
-//                people: Friend(
-//                    id: UUID(),
-//                    name: "임시 친구",
-//                    image: nil,
-//                    imageURL: nil,
-//                    source: .kakao,
-//                    frequency: .monthly,
-//                    phoneNumber: "010-1234-5678",
-//                    relationship: "동료",
-//                    birthDay: Date(),
-//                    anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
-////                    memo: "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque",
-//                    memo: "",
-//                    nextContactAt: Date().addingTimeInterval(86400 * 30),
-//                    lastContactAt: Date().addingTimeInterval(-86400 * 10),
-//                    checkRate: 75,
-//                    position: 0,
-//                    fileName: ".jpg")
-//            ), path: .constant([])
-//        )
-//    }
-//}
+struct ProfileDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            previewForDevice("iPhone 12 mini")
+            previewForDevice("iPhone 12")
+            previewForDevice("iPhone 13 mini")
+            previewForDevice("iPhone 16")
+            previewForDevice("iPhone 16 Pro")
+            previewForDevice("iPhone 16 Pro Max")
+        }
+    }
+
+    static func previewForDevice(_ deviceName: String) -> some View {
+        let friend = Friend(
+            id: UUID(),
+            name: "정종원",
+            image: nil,
+            imageURL: nil,
+            source: .kakao,
+            frequency: .monthly,
+            phoneNumber: "010-1234-5678",
+            relationship: "FRIEND",
+            birthDay: Date(),
+            anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
+            memo: "작년에 생일에 키링 선물함 🎁",
+            nextContactAt: Date().addingTimeInterval(86400 * 30),
+            lastContactAt: Date().addingTimeInterval(-86400 * 10),
+            checkRate: 75,
+            position: 0,
+            fileName: ".jpg"
+        )
+
+        let viewModel = ProfileDetailViewModel(people: friend)
+        let notificationViewModel = NotificationViewModel()
+
+        return NavigationStack {
+            ProfileDetailView(
+                viewModel: viewModel,
+                notificationViewModel: notificationViewModel,
+                path: .constant([])
+            )
+        }
+        .previewDevice(PreviewDevice(rawValue: deviceName))
+        .previewDisplayName(deviceName)
+    }
+}
