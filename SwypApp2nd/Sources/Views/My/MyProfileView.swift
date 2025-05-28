@@ -21,7 +21,7 @@ struct MyProfileView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 if let user = UserSession.shared.user {
                     NavigationView {
                         VStack(spacing: 20) {
@@ -41,7 +41,7 @@ struct MyProfileView: View {
                             )
                         }
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 24)
                 } else {
                     ProgressView()
                         .onAppear {
@@ -54,13 +54,31 @@ struct MyProfileView: View {
                 }
                 
             }
-            .fullScreenCover(isPresented: $showWithdrawalSheet) {
-                WithdrawalView(path: $path)
+            .sheet(isPresented: $showWithdrawalSheet) {
+                NavigationStack{
+                    WithdrawalView(path: $path)
+                }
             }
         }
         .padding(.horizontal, 12)
+        .navigationBarBackButtonHidden()
         .onAppear {
             AnalyticsManager.shared.trackMyProfileViewLogAnalytics()
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading)  {
+                Button(action: {
+                    path.removeLast()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("MY")
+                    }
+                    .foregroundColor(.black)
+                    .font(Font.Pretendard.b1Bold())
+                }
+                .padding(.leading, 12)
+            }
         }
     }
 }
@@ -98,7 +116,6 @@ struct AccountSettingSectionView: View {
                     .font(Font.Pretendard.b1Bold())
                     .fontWeight(.bold)
                     .padding(.top, 42)
-                    .padding(.horizontal)
                 
                 HStack {
                     Text("연결계정")
@@ -118,7 +135,6 @@ struct AccountSettingSectionView: View {
                         Image(imageName)
                     }
                 }
-                .padding(.horizontal)
             }
         }
     }
@@ -128,7 +144,6 @@ struct NotificationSettingsView: View {
     @ObservedObject var viewModel: MyViewModel
     var body: some View {
         Toggle("알림설정", isOn: $viewModel.isNotificationOn)
-            .padding(.horizontal)
             .font(Font.Pretendard.b1Medium())
             .tint(Color.blue02)
             .onAppear {
@@ -175,7 +190,6 @@ struct SimpleTermsView: View {
                 .fontWeight(.bold)
                 .padding(.top, 42)
                 .padding(.bottom, 14)
-                .padding(.horizontal)
 
         ForEach(Array(terms.enumerated()), id: \.1.id) { index, term in
                 Button {
@@ -196,7 +210,6 @@ struct SimpleTermsView: View {
                         .background(Color.gray02)
                 }
             }
-            .padding(.horizontal)
         }
         
         .fullScreenCover(item: $selectedAgreement) { agreement in
@@ -264,7 +277,6 @@ struct WithdrawalButtonView: View {
                             .stroke(Color.gray02, lineWidth: 1)
                     )
             }
-            .padding(.horizontal)
             .padding(.top, 42)
             
             Button(action: {
@@ -279,7 +291,6 @@ struct WithdrawalButtonView: View {
                     .foregroundColor(Color.gray01)
                     .padding(.bottom, 20)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
             }
             .padding(.top, 18)
         }
@@ -301,7 +312,7 @@ struct MyProfileView_Previews: PreviewProvider {
         let fakeFriends = [
             Friend(
                 id: UUID(), name: "정종원1", image: nil, imageURL: nil,
-                source: .kakao, frequency: CheckInFrequency.none, remindCategory: .message,
+                source: .phone, frequency: CheckInFrequency.none, remindCategory: .message,
                 nextContactAt: Date(), lastContactAt: Date().addingTimeInterval(-86400),
                 checkRate: 20, position: 0
             )
@@ -310,7 +321,7 @@ struct MyProfileView_Previews: PreviewProvider {
         UserSession.shared.user = User(
             id: "preview", name: "프리뷰",
             friends: fakeFriends,
-            loginType: .kakao,
+            loginType: .apple,
             serverAccessToken: "token",
             serverRefreshToken: "refresh"
         )
