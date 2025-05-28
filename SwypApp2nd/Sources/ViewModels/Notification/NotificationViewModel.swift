@@ -229,14 +229,14 @@ class NotificationViewModel: ObservableObject {
         }
         
         var dateComponents = calendar.dateComponents([.year, .month, .day], from: nextDate)
-        dateComponents.hour = 9
-        dateComponents.minute = 0
+       dateComponents.hour = 9
+       dateComponents.minute = 0
 
-        if frequency == .daily {
-            let future = Calendar.current.date(byAdding: .second, value: 20, to: Date())!
-            dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: future)
-        }
-
+//        테스트용 
+        // if frequency == .daily {
+        //     let future = Calendar.current.date(byAdding: .second, value: 20, to: Date())!
+        //     dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: future)
+        // }
         
         guard let scheduledDate = calendar.date(from: dateComponents) else { return nil }
 
@@ -279,8 +279,8 @@ class NotificationViewModel: ObservableObject {
            let adjustedBday = Date.nextSpecialDate(from: birthday) {
         
             var birthdayComponents = calendar.dateComponents([.year, .month, .day], from: adjustedBday)
-            birthdayComponents.hour = 1
-            birthdayComponents.minute = 54
+            birthdayComponents.hour = 8
+            birthdayComponents.minute = 00
             
             guard let scheduledDate = calendar.date(from: birthdayComponents) else {
                 print("❌ 생일 날짜 생성 실패")
