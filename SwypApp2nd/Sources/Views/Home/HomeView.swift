@@ -187,12 +187,13 @@ struct ThisMonthSection: View {
             .padding(.horizontal, 24)
 
             if peoples.isEmpty {
+                Image("img_100_character_empty")
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.white.opacity(0.2))
                     .frame(height: 48)
                     .overlay(
                         Text("이번달은 챙길 사람이 없네요.")
-                            .font(Font.Pretendard.b1Medium())
+                            .font(Font.Pretendard.b2Medium())
                             .foregroundColor(.white.opacity(0.8))
                     )
                     .padding(.horizontal, 24)
