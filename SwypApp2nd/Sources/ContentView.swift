@@ -5,6 +5,7 @@ import KakaoSDKAuth
 // TODO: - 연결후 파일로 분할
 enum AppStep {
     case splash
+    case onboarding
     case login
     case terms
     case registerFriends
@@ -46,6 +47,11 @@ public struct ContentView: View {
                             userSession.tryAutoLogin()
                         }
                     }
+            case .onboarding:
+                OnBoardingView() {
+                    UserDefaults.standard.didSeeOnboarding = true
+                    userSession.appStep = .login
+                }
             case .login, .terms:
                 LoginView(loginViewModel: loginViewModel)
                 

@@ -82,7 +82,11 @@ class UserSession: ObservableObject {
             tryAppleAutoLogin()
         } else {
             print("🔴 [UserSession] 저장된 SNS 토큰이 없음, 로그인 필요")
-            self.appStep = .login
+            if UserDefaults.standard.didSeeOnboarding {
+                self.appStep = .login
+            } else {
+                self.appStep = .onboarding
+            }
             print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
         }
     }

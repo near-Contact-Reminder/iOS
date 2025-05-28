@@ -58,6 +58,14 @@ extension Image {
         static let user3_64 = Image("_img_64_user3")
         static let user1_80 = Image("_img_80_user1")
     }
+    
+    // OnBoardings
+    enum OnBoarding {
+        static let Onboarding1_Home = Image("Onboarding1_Home")
+        static let Onboarding2_addProfile = Image("Onboarding2_addProfile")
+        static let Onboarding3_Frequency = Image("Onboarding3_Frequency")
+        static let Onboarding4_ProfileDetail = Image("Onboarding4_ProfileDetail")
+    }
 }
 
 // MARK: - Example
