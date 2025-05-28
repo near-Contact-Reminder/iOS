@@ -15,7 +15,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         center.delegate = self
     }
     
-    // MARK: - 최초 1회 권한 요청
+    /// 최초 1회 권한 요청
     func requestPermissionIfNeeded() {
         let key = "didRequestNotificationPermission"
         
@@ -47,19 +47,21 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         completionHandler([.list, .banner, .sound, .badge])
     }
     
-    // MARK: - 사용자가 푸시를 클릭했을 때 처리
+    /// 사용자가 푸시를 클릭했을 때 처리
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         print("🔔 유저가 알림을 클릭함")
         let userInfo = response.notification.request.content.userInfo
+        let identifier = response.notification.request.identifier
+        
         // auto login check -> app step 쌓는 과정
         notificationViewModel.navigateFromNotification(userInfo: userInfo)  // CoreData 저장
         AnalyticsManager.shared.setEntryChannel("push")
         completionHandler()
     }
     
-    // MARK: - 현재 권한 상태 확인
+    /// 현재 권한 상태 확인
     func checkAuthorizationStatus(completion: @escaping (UNAuthorizationStatus) -> Void) {
         center.getNotificationSettings { settings in
             DispatchQueue.main.async {
@@ -68,11 +70,17 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         }
     }
     
-    // MARK: - 알림 비활성화
+    /// 알림 비활성화
     func disableNotifications() {
         center.removeAllPendingNotificationRequests()
         UserDefaults.standard.set(true, forKey: "didManuallyDisableNotification")
         print("🚫 알림 비활성화됨")
+    }
+    
+    
+    func clearNotifications() {
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
     }
 }
     

@@ -64,6 +64,8 @@ class UserSession: ObservableObject {
 
     /// 로그아웃 처리
     func logout() {
+        // TODO: pending notifications는 삭제가 아니라 일시 정지 해야 함 
+        NotificationManager.shared.clearNotifications()
         DispatchQueue.main.async {
             TokenManager.shared.clear(type: .server)  // 토큰 삭제
             self.user = nil
@@ -82,7 +84,11 @@ class UserSession: ObservableObject {
             tryAppleAutoLogin()
         } else {
             print("🔴 [UserSession] 저장된 SNS 토큰이 없음, 로그인 필요")
-            self.appStep = .login
+            if UserDefaults.standard.didSeeOnboarding {
+                self.appStep = .login
+            } else {
+                self.appStep = .onboarding
+            }
             print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
         }
     }
@@ -313,6 +319,9 @@ class UserSession: ObservableObject {
                 // 2. 약관 동의 기록 삭제
                 UserDefaults.standard.removeObject(forKey: "didAgreeToKakaoTerms")
                 UserDefaults.standard.removeObject(forKey: "didAgreeToAppleTerms")
+                
+                //3. 예약된 / delivered된 알림들 삭제
+                NotificationManager.shared.clearNotifications()
 
                 // 3. 유저 세션 초기화
                 self.logout()

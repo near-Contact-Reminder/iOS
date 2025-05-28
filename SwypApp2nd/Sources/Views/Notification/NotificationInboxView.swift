@@ -8,11 +8,27 @@ struct NotificationInboxView: View {
         VStack {
             bodyView
         }
-        .navigationTitle("알림")
+//        .navigationTitle("알림")
         .onAppear {
             notificationViewModel.loadAllReminders()
             
             AnalyticsManager.shared.trackNotificationInboxLogAnalytics()
+        }
+        .navigationBarBackButtonHidden()
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading)  {
+                Button(action: {
+                    path.removeLast()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("알림")
+                    }
+                    .foregroundColor(.black)
+                    .font(Font.Pretendard.b1Bold())
+                }
+                .padding(.leading, 12)
+            }
         }
     }
 

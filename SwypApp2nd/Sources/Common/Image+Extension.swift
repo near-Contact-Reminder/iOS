@@ -48,6 +48,7 @@ extension Image {
         static let contactSquare32 = Image("img_32_contact_square")
         static let kakaoSquare32 = Image("img_32_kakao_square")
         static let kakao32 = Image("img_32_kakao")
+        static let blueLogo = Image("img_120x48_logo_blue")
     }
     
     // User Profile Images
@@ -56,6 +57,14 @@ extension Image {
         static let user2_64 = Image("_img_64_user2")
         static let user3_64 = Image("_img_64_user3")
         static let user1_80 = Image("_img_80_user1")
+    }
+    
+    // OnBoardings
+    enum OnBoarding {
+        static let Onboarding1_Home = Image("Onboarding1_Home")
+        static let Onboarding2_addProfile = Image("Onboarding2_addProfile")
+        static let Onboarding3_Frequency = Image("Onboarding3_Frequency")
+        static let Onboarding4_ProfileDetail = Image("Onboarding4_ProfileDetail")
     }
 }
 

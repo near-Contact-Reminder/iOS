@@ -21,7 +21,7 @@ public struct TermsView: View {
 
             Text("서비스 약관 동의")
                 .font(Font.Pretendard.h2Bold())
-                .padding(.leading, 20)
+                .padding(.leading, 24)
                 .padding(.top, 44)
 
             LazyVStack(spacing: 12) {
@@ -36,7 +36,7 @@ public struct TermsView: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.gray02, lineWidth: 1)
+                        .stroke(Color.gray03, lineWidth: 1)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 
@@ -53,8 +53,8 @@ public struct TermsView: View {
                         }
                     
                     Divider()
-                        .background(Color.gray02)
-                        .padding(.horizontal, 24)
+                        .background(Color.gray03)
+                        .padding(.horizontal, 14)
                     
                     AgreementRow(
                         isChecked: $viewModel.isPersonalInfoTermsAgreed,
@@ -68,8 +68,8 @@ public struct TermsView: View {
                         }
                     
                     Divider()
-                        .background(Color.gray02)
-                        .padding(.horizontal, 24)
+                        .background(Color.gray03)
+                        .padding(.horizontal, 14)
                         
                     
                     AgreementRow(
@@ -86,7 +86,7 @@ public struct TermsView: View {
                 .background(Color.white)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.gray02, lineWidth: 1)
+                        .stroke(Color.gray03, lineWidth: 2)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
@@ -115,7 +115,7 @@ public struct TermsView: View {
                     .foregroundColor(.white)
                     .font(Font.Pretendard.b1Bold())
                     .frame(maxWidth: .infinity)
-                    .frame(height: 48)
+                    .frame(height: 56)
                     .background(viewModel.canProceed ? Color.blue01 : Color.gray02)
                     .cornerRadius(8)
             }
@@ -206,7 +206,7 @@ public struct AgreementRow: View {
                         Image("icon_check_white")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 24, height: 24)
+                            .frame(width: 14, height: 14)
                         
                     }
                 } else {
@@ -214,7 +214,7 @@ public struct AgreementRow: View {
                     Image(isChecked.wrappedValue ? "icon_check_blue" : "icon_check_gray")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 24, height: 24)
+                        .frame(width: 14, height: 14)
                 }
             }
             
@@ -229,7 +229,7 @@ public struct AgreementRow: View {
                     onDetailTappedClosure?(title, detailURLString)
                 } label: {
                     Image(systemName: "chevron.right")
-                        .foregroundColor(.gray)
+                        .foregroundColor(Color(hex: "888888"))
                 }
             }
         }

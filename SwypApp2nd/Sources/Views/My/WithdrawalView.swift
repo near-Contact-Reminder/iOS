@@ -38,8 +38,21 @@ struct WithdrawalView: View {
             )
         }
         .padding(.horizontal, 24)
+        .padding(.top, 20)
         .onAppear {
             AnalyticsManager.shared.trackWithDrawalViewLogAnalytics()
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button() {
+                    isCustomReasonFocused = false
+                } label: {
+                    Image(
+                        systemName: "keyboard.chevron.compact.down"
+                    )
+                }
+            }
         }
 }
 
@@ -88,7 +101,7 @@ struct WithdrawalReasonListView: View {
     var body: some View {
         ForEach(reasons, id: \.self) { reason in
             HStack {
-                Image(systemName: selectedReason == reason ? "largecircle.fill.circle" : "circle")
+                Image(systemName: "largecircle.fill.circle")
                     .foregroundColor(selectedReason == reason ? Color.blue01 : Color.gray03)
                 Text(reason)
                 Spacer()
@@ -127,7 +140,7 @@ struct CustomReasonInputView: View {
                         .font(Font.Pretendard.b1Medium())
                         .foregroundColor(Color.gray02)
                         .padding(.leading, 16)
-                        .padding(.top, 16)
+                        .padding(.top, 20)
                         .zIndex(1)
                 }
 
@@ -140,7 +153,6 @@ struct CustomReasonInputView: View {
                     .frame(minHeight: 100)
                     .background(Color.clear)
                     .focused($isCustomReasonFocused)
-
                     HStack {
                         Spacer()
                         Text("\(customReason.count)/200")
@@ -226,7 +238,7 @@ struct WithdrawalView_Previews: PreviewProvider {
         let fakeFriends = [
             Friend(
                 id: UUID(), name: "정종원1", image: nil, imageURL: nil,
-                source: .kakao, frequency: CheckInFrequency.none, remindCategory: .message,
+                source: .phone, frequency: CheckInFrequency.none, remindCategory: .message,
                 nextContactAt: Date(), lastContactAt: Date().addingTimeInterval(-86400),
                 checkRate: 20, position: 0
             )
@@ -235,7 +247,7 @@ struct WithdrawalView_Previews: PreviewProvider {
         UserSession.shared.user = User(
             id: "preview", name: "프리뷰",
             friends: fakeFriends,
-            loginType: .kakao,
+            loginType: .apple,
             serverAccessToken: "token",
             serverRefreshToken: "refresh"
         )
