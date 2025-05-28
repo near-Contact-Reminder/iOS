@@ -50,6 +50,7 @@ public struct ContentView: View {
             case .onboarding:
                 OnBoardingView() {
                     UserDefaults.standard.didSeeOnboarding = true
+                    AnalyticsManager.shared.onboarding(true)
                     userSession.appStep = .login
                 }
             case .login, .terms:

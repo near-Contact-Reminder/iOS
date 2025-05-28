@@ -243,4 +243,10 @@ final class AnalyticsManager {
         Analytics.setUserProperty(isOn ? "y" : "n", forName: "notification_on")
         print("📊 [Analytics] notification_on: \(isOn) 로 전송")
     }
+    
+    // MARK: - Onboarding
+    func onboarding(_ seen: Bool) {
+        Analytics.setUserProperty(seen ? "y" : "n", forName: "onboarding_done")
+        print("📊 [Analytics] onboarding_done: \(seen) 로 전송")
+    }
 }
