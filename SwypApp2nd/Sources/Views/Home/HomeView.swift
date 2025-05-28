@@ -187,7 +187,6 @@ struct ThisMonthSection: View {
             .padding(.horizontal, 24)
 
             if peoples.isEmpty {
-                Image("img_100_character_empty")
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.white.opacity(0.2))
                     .frame(height: 48)
