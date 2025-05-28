@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileEditView: View {
     @ObservedObject var profileEditViewModel: ProfileEditViewModel
     @StateObject var notificationViewModel = NotificationViewModel()
+    @FocusState private var isMemoFocused: Bool
     
     let contactFrequencies = ["매일", "매주", "2주", "매달", "매분기", "6개월", "매년"]
     let onComplete: () -> Void
@@ -22,9 +23,16 @@ struct ProfileEditView: View {
                 AnniversarySection(
                     anniversary: $profileEditViewModel.person.anniversary
                 )
-                MemoSection(memo: $profileEditViewModel.person.memo)
+                MemoSection(
+                    memo: $profileEditViewModel.person.memo,
+                    isFocused: $isMemoFocused
+                )
             }
         }
+        .contentShape(Rectangle())
+           .onTapGesture {
+               isMemoFocused = false
+           }
         .onAppear {
             AnalyticsManager.shared.trackProfileEditViewLogAnalytics()
         }
@@ -53,10 +61,9 @@ struct ProfileEditView: View {
         }
         .scrollIndicators(.hidden)
         .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
         .background(Color.white)
         .padding(.horizontal, 24)
-        
-        
     }
 }
 
@@ -89,7 +96,7 @@ struct NameSection: View {
                         name = String(name.prefix(20))
                     }
                 }
-        }.padding(.top, 48)
+        }.padding(.top, 56)
     }
 }
     
@@ -103,15 +110,17 @@ struct RelationshipSection: View {
                 .foregroundColor(.gray)
                 .font(.Pretendard.b2Medium())
             Spacer()
-            HStack(spacing: 48) {
+            HStack(spacing: 24) {
                 ForEach(options, id: \.self) { option in
-                    HStack(spacing: 21)  {
-                        Image(systemName: displayLabel(for: relationship) == option ? "largecircle.fill.circle" : "circle")
+                    HStack(spacing: 16)  {
+                        Image(systemName: "largecircle.fill.circle")
                             .foregroundColor(displayLabel(for: relationship) == option ? Color.blue01 : Color.gray03)
                         
                         Text(option)
                             .font(.Pretendard.b2Medium())
                             .foregroundColor(.black)
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
                         }
                         .onTapGesture {
                             relationship = rawValue(for: option)
@@ -321,6 +330,7 @@ struct AnniversarySection: View {
 }
 struct MemoSection: View {
     @Binding var memo: String?
+    @FocusState.Binding var isFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -340,6 +350,7 @@ struct MemoSection: View {
                     get: { memo ?? "" },
                     set: { memo = $0 }
                 ))
+                .focused($isFocused)
                 .font(.Pretendard.b2Medium())
                 .padding(16)
                 .frame(minHeight: 120)
@@ -424,4 +435,3 @@ struct WheelDatePicker: View {
         return formatter.string(from: date)
     }
 }
-    
