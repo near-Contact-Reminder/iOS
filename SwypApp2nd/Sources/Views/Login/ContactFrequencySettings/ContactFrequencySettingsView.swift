@@ -54,7 +54,7 @@ struct ContactFrequencySettingsView: View {
                 
                 Button(action: {
                     viewModel.toggleUnifiedFrequency(!viewModel.isUnified)
-                    isChecked.toggle()
+                    self.isChecked.toggle()
                 }) {
                     HStack(spacing: 12) {
                         Text("한번에 설정")
@@ -136,7 +136,11 @@ struct ContactFrequencySettingsView: View {
 
             // 하단 버튼
             HStack(spacing: 12) {
-                Button(action: back) {
+                Button{
+                    back()
+                    isChecked = false
+                    viewModel.toggleUnifiedFrequency(isChecked)
+                } label: {
                     Text("이전")
                         .font(.body.bold())
                         .frame(maxWidth: .infinity)
