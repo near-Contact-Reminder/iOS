@@ -9,11 +9,11 @@ public struct HomeView: View {
     @Binding var path:[AppRoute]
 
     @EnvironmentObject var userSession: UserSession
-    
-    
+
+
     public var body: some View {
         VStack(spacing: 24) {
-                    
+
             ZStack(alignment: .top) {
                 Image("img_bg")
                     .resizable()
@@ -32,19 +32,19 @@ public struct HomeView: View {
                                     AnalyticsManager.shared.notificationLogAnalytics()
                                 }
                             )
-                            
+
                             // 인사 레이블
                             GreetingSection(userName: userSession.user?.name ?? "사용자",
                                             checkRate: userSession.user?.checkRate ?? 0)
-                            
+
                             // 이번달 챙길 사람
                             ThisMonthSection(peoples: homeViewModel.thisMonthFriends)
                         }
-                        
+
                         // 내 사람들
                         MyPeopleSection(peoples: $homeViewModel.allFriends, path: $path)
                             .ignoresSafeArea()
-                            .frame(height: geometry.size.height * 0.65)
+                            .frame(height: geometry.size.height * 0.6)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     .padding(.top, 44)
@@ -56,9 +56,9 @@ public struct HomeView: View {
         .onAppear {
             homeViewModel.loadFriendList()
             homeViewModel.loadMonthlyFriends()
-                
+
             AnalyticsManager.shared.trackHomeViewLogAnalytics()
-                
+
         }
         .onReceive(notificationViewModel.$navigateToPerson.compactMap { $0 }) { friend in
             path.removeAll()
@@ -69,11 +69,11 @@ public struct HomeView: View {
 
 // MARK: - 커스텀 네비게이션 바
 struct CustomNavigationBar: View {
-    
+
     let showBadge: Bool
     let onTapMy: () -> Void
     let onTapBell: () -> Void
-    
+
     var body: some View {
         VStack(alignment: .trailing) {
             HStack {
@@ -113,7 +113,7 @@ struct CustomNavigationBar: View {
 struct GreetingSection: View {
     var userName: String
     var checkRate: Int
-    
+
     private var message1: String {
         switch checkRate {
         case 1...30:
@@ -126,7 +126,7 @@ struct GreetingSection: View {
             return "누구를 챙길지"
         }
     }
-    
+
     private var message2: String {
         switch checkRate {
         case 1...30:
@@ -139,7 +139,7 @@ struct GreetingSection: View {
             return " 정해볼까요?"
         }
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("\(userName)님,")
@@ -173,7 +173,7 @@ struct ThisMonthSection: View {
                 // TODO: - 2차때..
 //                if !peoples.isEmpty {
 //                    Button {
-//                        
+//
 //                    } label: {
 //                        HStack {
 //                            Text("전체보기")
@@ -238,7 +238,7 @@ struct ThisMonthContactCell: View {
                     .font(.Pretendard.b1Bold())
                     .foregroundColor(.black)
                     .lineLimit(1)
-                
+
                 if dDayString != "D-DAY" {
                     Text(dDayString)
                         .font(.Pretendard.b2Bold())
@@ -248,7 +248,7 @@ struct ThisMonthContactCell: View {
                         .font(.Pretendard.b2Bold())
                         .foregroundColor(Color.blue01)
                 }
-                
+
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
@@ -275,7 +275,7 @@ struct ThisMonthContactCell: View {
         guard let target = formatter.date(from: contact.nextContactAt) else {
             return ""
         }
-            
+
         let today = Calendar.current.startOfDay(for: Date().startOfDayInKorea())
         let targetDay = Calendar.current.startOfDay(for: target.startOfDayInKorea())
         let diff = Calendar.current.dateComponents(
@@ -382,10 +382,11 @@ struct MyPeopleSection: View {
                                     .frame(width: 6, height: 6)
                             }
                         }
-                        .padding(.bottom, 88)
+                        .padding(.bottom)
                     }
                 }
             }
+            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.white)
@@ -398,7 +399,7 @@ struct StarPositionLayout: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     let pageIndex: Int
     let onTap: (Friend) -> Void
-        
+
     @State private var dragOffset: CGSize = .zero
     @State private var draggingIndex: Int? = nil
     @EnvironmentObject var userSession: UserSession
@@ -410,7 +411,7 @@ struct StarPositionLayout: View {
         CGPoint(x: -60, y: 110),
         CGPoint(x: 60, y: 110)
     ]
-    
+
     var body: some View {
         ZStack {
             let start = pageIndex * 5
@@ -469,7 +470,7 @@ struct StarPositionLayout: View {
                                     for (idx, _) in peoples.enumerated() {
                                         peoples[idx].position = idx
                                     }
-                                    
+
                                     print("=== 현재 position 순서 ===")
                                     for contact in peoples {
                                         print(
@@ -493,7 +494,7 @@ struct StarPositionLayout: View {
 
                                 draggingIndex = nil
                                 dragOffset = .zero
-                                
+
                             }
                     )
                     .animation(.spring(), value: dragOffset)
@@ -508,17 +509,17 @@ struct StarPositionLayout: View {
                         Image(systemName: "plus")
                             .font(.title)
                             .foregroundColor(Color.blue01)
-                            .frame(width: 64, height: 64)
+                            .frame(width: 72, height: 72)
                             .background(Color.bg01)
                             .clipShape(Circle())
                         Text("사람 추가")
-                            .font(Font.Pretendard.b1Medium())
+                            .font(Font.Pretendard.b2Bold())
                             .foregroundColor(.black)
                     }
                 }
                 .offset(
-                    x: positions[addIndex].x,
-                    y: positions[addIndex].y
+                    x: positions[addIndex].x+4,
+                    y: positions[addIndex].y-8
                 )
             }
         }
@@ -529,7 +530,7 @@ struct StarPositionLayout: View {
 struct PersonCircleView: View {
     let people: Friend
     let onTap: (Friend) -> Void
-    
+
     var emojiImageName: String {
         guard let rate = people.checkRate else {
             return "icon_visual_24_emoji_0"
@@ -542,12 +543,12 @@ struct PersonCircleView: View {
     }
 
     var formattedDate: String {
-        guard let date = people.lastContactAt else { return "" }
+        guard let date = people.lastContactAt else { return "챙김 기록이 없어요" }
         let formatter = DateFormatter()
         formatter.dateFormat = "yy.MM.dd"
         return formatter.string(from: date)
     }
-    
+
     var body: some View {
         VStack(spacing: 4) {
             ZStack {
@@ -563,7 +564,7 @@ struct PersonCircleView: View {
                             .foregroundColor(.gray)
                     }
                 }
-                .frame(width: 88, height: 88)
+                .frame(width: 80, height: 80)
                 .clipShape(Circle())
                 .overlay(
                     Image(emojiImageName)
@@ -573,9 +574,10 @@ struct PersonCircleView: View {
                     alignment: .topTrailing
                 )
             }
-            
+
             Text(people.name)
                 .font(Font.Pretendard.b2Bold())
+                .foregroundColor(.black)
             Text(formattedDate)
                 .font(Font.Pretendard.captionMedium())
                 .foregroundColor(Color.gray02)
