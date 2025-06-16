@@ -7,6 +7,20 @@ struct ProfileDetailView: View {
     @State private var selectedTab: Tab = .profile
     @State private var showActionSheet = false
     @State private var isEditing = false
+    @State private var showToast = false
+    @State private var toastTask: DispatchWorkItem?
+
+    /// 토스트를 일정 시간 뒤 사라지도록 묶어둔 헬퍼
+    private func presentToastTemporarily() {
+        showToast = true
+        toastTask?.cancel()
+
+        let task = DispatchWorkItem {
+            withAnimation { showToast = false }
+        }
+        toastTask = task
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.3, execute: task)
+    }
     
     enum Tab {
         case profile, records
@@ -14,38 +28,48 @@ struct ProfileDetailView: View {
 
     var body: some View {
         
-        VStack(alignment: .leading, spacing: 28) {
-            ProfileHeader(people: viewModel.people, checkInRecords: viewModel.checkInRecords, onDelete: {
-                viewModel.deleteFriend(friendId: viewModel.people.id) {
-                    DispatchQueue.main.async {
-                        path.removeAll()
+        ZStack {
+            if showToast {
+                CareToastView()
+                    .transition(.scale.combined(with: .opacity))
+                    .zIndex(1)
+            }
+            VStack(alignment: .leading, spacing: 28) {
+                ProfileHeader(people: viewModel.people, checkInRecords: viewModel.checkInRecords, onDelete: {
+                    viewModel.deleteFriend(friendId: viewModel.people.id) {
+                        DispatchQueue.main.async {
+                            path.removeAll()
+                        }
                     }
+                }).padding(.top, 26)
+                ActionButtonRow(people: viewModel.people)
+                ZStack {
+                    ProfileTabBar(selected: $selectedTab)
+                    Rectangle()
+                        .fill(Color.gray03)
+                        .frame(height: 1)
+                        .offset(x: 0, y: 15)
                 }
-            }).padding(.top, 26)
-            ActionButtonRow(people: viewModel.people)
-            ZStack {
-                ProfileTabBar(selected: $selectedTab)
-                Rectangle()
-                    .fill(Color.gray03)
-                    .frame(height: 1)
-                    .offset(x: 0, y: 15)
+                
+                ZStack {
+                    ProfileInfoSection(people: viewModel.people)
+                        .padding(.top, -16)
+                        .opacity(selectedTab == .profile ? 1 : 0)
+                    HistorySection(records: viewModel.checkInRecords)
+                        .opacity(selectedTab == .records ? 1 : 0)
+                }
+                ConfirmButton(
+                    title: viewModel.canCheckInToday ? "챙김 기록하기" : "챙김 기록 완료",
+                    isEnabled: viewModel.canCheckInToday
+                ) {
+                    viewModel.checkFriend() {
+                        presentToastTemporarily()
+                        viewModel.fetchFriendRecords(friendId: viewModel.people.id)
+                    }
+                    AnalyticsManager.shared.dailyCheckButtonLogAnalytics()
+                }
+                .padding(.bottom, 20)
             }
-            
-            ZStack {
-                ProfileInfoSection(people: viewModel.people)
-                    .padding(.top, -16)
-                    .opacity(selectedTab == .profile ? 1 : 0)
-                HistorySection(records: viewModel.checkInRecords)
-                    .opacity(selectedTab == .records ? 1 : 0)
-            }            
-            ConfirmButton(
-                title: viewModel.canCheckInToday ? "챙김 기록하기" : "챙김 기록 완료",
-                isEnabled: viewModel.canCheckInToday
-            ) {
-                viewModel.checkFriend()
-                AnalyticsManager.shared.dailyCheckButtonLogAnalytics()
-            }
-            .padding(.bottom, 20)
         }
         .padding(.horizontal, 24)
         .navigationBarBackButtonHidden()
@@ -156,7 +180,7 @@ struct HistorySection: View {
                     .frame(maxWidth: .infinity)
                 } else {
                     LazyVGrid(columns: columns, spacing: 24) {
-                        ForEach(filteredRecords, id: \.element.id) { index, record in
+                        ForEach(filteredRecords.reversed(), id: \.element.id) { index, record in
                             VStack(spacing: 8) {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 44, style: .continuous)
@@ -496,6 +520,29 @@ private struct ConfirmButton: View {
         }
         .disabled(!isEnabled)
         .frame(height: 56)
+    }
+}
+
+private struct CareToastView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            Image("img_100_character_success")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+
+            Text("더 가까워졌어요!")
+                .font(Font.Pretendard.b1Medium())
+                .foregroundColor(.black)
+        }
+        .padding(32)
+        .frame(width: 255, height: 186)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white)
+                .shadow(color: .black.opacity(0.15), radius: 12, y: 6)
+        )
+        .transition(.scale.combined(with: .opacity))
     }
 }
 
