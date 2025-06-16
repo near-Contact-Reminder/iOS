@@ -200,7 +200,7 @@ struct ThisMonthSection: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         ForEach(peoples.sorted(by: { lhs, rhs in
-                            lhs.nextContactAt > rhs.nextContactAt
+                            lhs.nextContactAt < rhs.nextContactAt
                         }), id: \.friendId) { contact in
                             ThisMonthContactCell(contact: contact) { selected in
                                 // TODO: 상세 네비게이션 연결 -> 이거 지금 어떻게 연결 되고 있는 걸까요 ㅋㅋ
@@ -258,15 +258,14 @@ struct ThisMonthContactCell: View {
     }
 
     var categoryIconName: String? {
-            switch contact.type {
-            case "MESSAGE": return "icon_visual_mail"
-            case "BIRTHDAY": return "icon_visual_cake"
-            case "ANNIVERSARY": return "icon_visual_24_heart"
-            default: return nil
-            }
+        switch contact.type {
+        case "MESSAGE": return "icon_visual_mail"
+        case "BIRTHDAY": return "icon_visual_cake"
+        case "ANNIVERSARY": return "icon_visual_24_heart"
+        default: return nil
         }
-
-
+    }
+    
     var dDayString: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
