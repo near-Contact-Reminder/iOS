@@ -108,23 +108,22 @@ struct CheckInRecord: Identifiable, Codable {
         case isChecked
         case createdAt
     }
-
+    
     init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.isChecked = try container.decode(Bool.self, forKey: .isChecked)
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        isChecked = try c.decode(Bool.self, forKey: .isChecked)
 
-        let createdAtString = try container.decode(String.self, forKey: .createdAt)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        
-        if let date = formatter.date(from: createdAtString) {
-            self.createdAt = date
-        } else {
-            throw DecodingError.dataCorruptedError(forKey: .createdAt, in: container, debugDescription: "Date string does not match format.")
+        // 오프셋 없는 "yyyy-MM-dd HH:mm:ss"
+        let str = try c.decode(String.self, forKey: .createdAt)
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(identifier: "Asia/Seoul")!
+        guard let d = f.date(from: str) else {
+            throw DecodingError.dataCorruptedError(forKey: .createdAt, in: c,
+                    debugDescription: "Unrecognized date format")
         }
-
-        self.id = UUID()
+        createdAt = d
     }
 
     init(isChecked: Bool, createdAt: Date) {
