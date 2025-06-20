@@ -180,7 +180,8 @@ struct HistorySection: View {
                     .frame(maxWidth: .infinity)
                 } else {
                     LazyVGrid(columns: columns, spacing: 24) {
-                        ForEach(filteredRecords.reversed(), id: \.element.id) { index, record in
+                        ForEach(filteredRecords, id: \.element.id) { index, record in
+                            let totalRecordCount = filteredRecords.count
                             VStack(spacing: 8) {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 44, style: .continuous)
@@ -197,7 +198,7 @@ struct HistorySection: View {
                                             .scaledToFit()
                                             .frame(width: 40, height: 40)
                                                                            
-                                        Text("\(index + 1)번째 챙김")
+                                        Text("\(totalRecordCount - index)번째 챙김")
                                             .font(Font.Pretendard.b2Medium())
                                             .foregroundColor(.blue01)
                                     }
@@ -241,10 +242,9 @@ private struct ProfileHeader: View {
                         .clipShape(Circle())
                         .frame(width: 80, height: 80)
                 } else {
-                    Image(systemName: "person.crop.circle.fill")
+                    Image("_img_80_user1")
                         .resizable()
                         .frame(width: 80, height: 80)
-                        .foregroundColor(.gray.opacity(0.3))
                 }
                 
                 Image(emojiImageName)
