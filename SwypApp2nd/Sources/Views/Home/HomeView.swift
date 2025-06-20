@@ -558,9 +558,10 @@ struct PersonCircleView: View {
                         Image(uiImage: image)
                             .resizable()
                     } else {
-                        Image(systemName: "person.circle.fill")
+                        let placeholders = ["_img_64_user1", "_img_64_user2", "_img_64_user3"]
+                        let index = abs(people.id.hashValue) % placeholders.count
+                        Image(placeholders[index])
                             .resizable()
-                            .foregroundColor(.gray)
                     }
                 }
                 .frame(width: 80, height: 80)
@@ -577,9 +578,18 @@ struct PersonCircleView: View {
             Text(people.name)
                 .font(Font.Pretendard.b2Bold())
                 .foregroundColor(.black)
-            Text(formattedDate)
-                .font(Font.Pretendard.captionMedium())
-                .foregroundColor(Color.gray02)
+            HStack(spacing: 4) {
+                Text(formattedDate)
+                    .font(Font.Pretendard.captionMedium())
+                    .foregroundColor(Color.gray02)
+                if formattedDate != "챙김 기록이 없어요" {
+                    Image("icon_check_blue")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 8, height: 8)
+                }
+            }
+            
         }
     }
 }
