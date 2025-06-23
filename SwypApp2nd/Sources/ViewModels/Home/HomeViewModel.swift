@@ -100,6 +100,7 @@ class HomeViewModel: ObservableObject {
                         name: $0.name,
                         imageURL: $0.imageUrl,
                         source: source,
+                        lastContactAt: $0.lastContactAt?.toDateWithDot(),
                         position: $0.position,
                         fileName: $0.fileName
                     )

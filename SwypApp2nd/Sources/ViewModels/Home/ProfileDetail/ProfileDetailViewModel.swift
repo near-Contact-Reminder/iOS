@@ -93,7 +93,7 @@ class ProfileDetailViewModel: ObservableObject {
         }
     }
     
-    func checkFriend() {
+    func checkFriend(checkToast: @escaping () -> Void) {
         guard let token = UserSession.shared.user?.serverAccessToken else {
             return
         }
@@ -109,6 +109,7 @@ class ProfileDetailViewModel: ObservableObject {
                         print("🟢 [ProfileDetailViewModel] 챙김 성공: \(message)")
                         self.fetchFriendDetail(friendId: self.people.id)
                         self.fetchFriendRecords(friendId: self.people.id)
+                        checkToast()
                     case .failure(let error):
                         print("🔴 [ProfileDetailViewModel] 챙김 실패: \(error)")
                     }
