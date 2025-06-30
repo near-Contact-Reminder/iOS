@@ -5,8 +5,7 @@ import Firebase
 struct SwypApp2ndApp: App {
     
     init() {
-//        NotificationManager.shared.requestPermissionIfNeeded()
-//        FirebaseApp.configure()
+        FirebaseApp.configure()
         AnalyticsManager.shared.setEntryChannel("direct")
     }
 
