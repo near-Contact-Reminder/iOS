@@ -8,6 +8,7 @@ import KakaoSDKAuth
 class SnsAuthService {
     static let shared = SnsAuthService()
     
+    // MARK: - Kakao Methods
     /// 카카오 로그인
     func loginWithKakao(
         completion: @escaping (_ oauthToken: OAuthToken?) -> Void
@@ -65,6 +66,40 @@ class SnsAuthService {
         }
     }
     
+    /// 카카오 토큰 만료 시 자동 재로그인
+    func tryAutoReLoginKakao(completion: @escaping (OAuthToken?) -> Void) {
+        if UserApi.isKakaoTalkLoginAvailable() {
+            UserApi.shared.loginWithKakaoTalk { oauthToken, error in
+                if let error = error {
+                    print("🔴 [SnsAuthService] 카카오톡 자동 재로그인 실패: \(error)")
+                    // 카카오톡 로그인 실패 시 계정 로그인 시도
+                    UserApi.shared.loginWithKakaoAccount { oauthToken, error in
+                        if let error = error {
+                            print("🔴 [SnsAuthService] 카카오 계정 자동 재로그인 실패: \(error)")
+                            completion(nil)
+                        } else {
+                            print("🟢 [SnsAuthService] 카카오 계정 자동 재로그인 성공")
+                            completion(oauthToken)
+                        }
+                    }
+                } else {
+                    print("🟢 [SnsAuthService] 카카오톡 자동 재로그인 성공")
+                    completion(oauthToken)
+                }
+            }
+        } else {
+            UserApi.shared.loginWithKakaoAccount { oauthToken, error in
+                if let error = error {
+                    print("🔴 [SnsAuthService] 카카오 계정 자동 재로그인 실패: \(error)")
+                    completion(nil)
+                } else {
+                    print("🟢 [SnsAuthService] 카카오 계정 자동 재로그인 성공")
+                    completion(oauthToken)
+                }
+            }
+        }
+    }
+    
     /// 카카오 이미지 저장
     func downloadImageData(from urlString: String, completion: @escaping (Data?) -> Void) {
         guard let url = URL(string: urlString) else {
@@ -87,6 +122,7 @@ class SnsAuthService {
             }
     }
     
+    // MARK: - Apple Methods
     /// 애플 로그인 요청 세팅
     func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         request.requestedScopes = [.fullName, .email]
@@ -114,5 +150,49 @@ class SnsAuthService {
             print("애플 로그인 실패: \(error)")
             completion(nil, nil, nil)
         }
+    }
+    
+    /// 애플 토큰 만료 시 자동 재로그인 시도
+    func tryAutoReLoginApple(presentationAnchor: ASPresentationAnchor, completion: @escaping (_ userId: String?, _ identityToken: String?, _ authorizationCode: String?) -> Void) {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.fullName, .email]
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        let delegate = AppleSignInDelegate { userId, identityToken, authorizationCode in
+            completion(userId, identityToken, authorizationCode)
+        }
+        controller.delegate = delegate
+        controller.presentationContextProvider = delegate
+        delegate.presentationAnchor = presentationAnchor
+        controller.performRequests()
+    }
+}
+/// AppleSignInDelegate 클래스
+class AppleSignInDelegate: NSObject, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+    var completion: (_ userId: String?, _ identityToken: String?, _ authorizationCode: String?) -> Void
+    var presentationAnchor: ASPresentationAnchor?
+
+    init(completion: @escaping (_ userId: String?, _ identityToken: String?, _ authorizationCode: String?) -> Void) {
+        self.completion = completion
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
+           let identityTokenData = appleIDCredential.identityToken,
+           let identityToken = String(data: identityTokenData, encoding: .utf8),
+           let authorizationCodeData = appleIDCredential.authorizationCode,
+           let authorizationCode = String(data: authorizationCodeData, encoding: .utf8) {
+            completion(appleIDCredential.user, identityToken, authorizationCode)
+        } else {
+            completion(nil, nil, nil)
+        }
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        print("🔴 [SnsAuthService] 애플 자동 재로그인 실패: \(error)")
+        completion(nil, nil, nil)
+    }
+
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return presentationAnchor ?? ASPresentationAnchor()
     }
 }
