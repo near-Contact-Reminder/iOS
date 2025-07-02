@@ -556,7 +556,7 @@ struct StarPositionLayout: View {
                         Image(systemName: "plus")
                             .font(.title)
                             .foregroundColor(Color.blue01)
-                            .frame(width: 72, height: 72)
+                            .frame(width: 80, height: 80)
                             .background(Color.bg01)
                             .clipShape(Circle())
                         Text("사람 추가")
