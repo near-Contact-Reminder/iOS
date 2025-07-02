@@ -108,6 +108,9 @@ public struct TermsView: View {
                 }
                 
                 AnalyticsManager.shared.agreementLogAnalytics()
+                viewModel.isServiceTermsAgreed = false
+                viewModel.isPersonalInfoTermsAgreed = false
+                viewModel.isPrivacyPolicyAgreed = false
                 
                 completion()
             }) {
