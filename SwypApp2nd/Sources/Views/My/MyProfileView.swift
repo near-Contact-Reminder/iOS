@@ -100,7 +100,7 @@ struct UserProfileSectionView: View {
                     .frame(width: 80, height: 80)
             }
             Text(name)
-                .font(Font.Pretendard.b1Bold())
+                .modifier(Font.Pretendard.b1BoldStyle())
         }
         .padding(.top, 20)
     }
@@ -113,13 +113,13 @@ struct AccountSettingSectionView: View {
         VStack(spacing: 1) {
             VStack(alignment: .leading, spacing: 24) {
                 Text("일반")
-                    .font(Font.Pretendard.b1Bold())
+                    .modifier(Font.Pretendard.b1BoldStyle())
                     .fontWeight(.bold)
                     .padding(.top, 42)
 
                 HStack {
                     Text("연결계정")
-                        .font(Font.Pretendard.b1Medium())
+                        .modifier(Font.Pretendard.b1MediumStyle())
                         .foregroundColor(.black)
                     Spacer()
                     let (loginName, imageName): (String, String) = {
@@ -144,7 +144,7 @@ struct NotificationSettingsView: View {
     var body: some View {
         HStack {
             Text("알림설정")
-                .font(Font.Pretendard.b1Medium())
+                .modifier(Font.Pretendard.b1MediumStyle())
             Spacer()
             Toggle("", isOn: $viewModel.isNotificationOn)
                 .tint(Color.blue02)
@@ -198,7 +198,7 @@ struct SimpleTermsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("서비스 정보")
-                .font(Font.Pretendard.b1Bold())
+                .modifier(Font.Pretendard.b1BoldStyle())
                 .fontWeight(.bold)
                 .padding(.top, 42)
                 .padding(.bottom, 14)
@@ -209,7 +209,7 @@ struct SimpleTermsView: View {
                 } label: {
                     HStack {
                         Text(term.title)
-                            .font(.body)
+                            .modifier(Font.Pretendard.b2MediumStyle())
                             .foregroundColor(.black)
                         Spacer()
                         Image(systemName: "chevron.right")
@@ -294,10 +294,10 @@ struct WithdrawalButtonView: View {
                 AnalyticsManager.shared.withdrawButtonLogAnalytics()
             }) {
                 Text("탈퇴하기")
-                    .font(Font.Pretendard.b2Medium())
+                    .modifier(Font.Pretendard.b2MediumStyle())
                     .underline()
                     .lineSpacing(4)
-                    .kerning(-0.25)  // TODO
+                    .kerning(-0.25)
                     .foregroundColor(Color.gray01)
                     .padding(.bottom, 20)
                     .frame(maxWidth: .infinity, alignment: .leading)

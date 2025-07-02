@@ -162,7 +162,7 @@ struct HistorySection: View {
       
         VStack(alignment: .leading, spacing: 16) {
             Text("챙김 기록")
-                .font(Font.Pretendard.b2Bold())
+                .modifier(Font.Pretendard.b2BoldStyle())
                 .foregroundColor(.black)
             ScrollView {
                 if records.isEmpty {
@@ -171,8 +171,7 @@ struct HistorySection: View {
                         Image("img_100_character_empty")
 //                        Spacer()
                         Text("챙긴 기록이 없어요.\n오늘 챙겨볼까요?")
-                            .font(Font.Pretendard.b2Medium())
-                            .font(Font.Pretendard.b2Medium())
+                            .modifier(Font.Pretendard.b2MediumStyle())
                             .foregroundColor(Color.gray01)
                             .multilineTextAlignment(.center)
                         Spacer()
@@ -199,12 +198,12 @@ struct HistorySection: View {
                                             .frame(width: 40, height: 40)
                                                                            
                                         Text("\(totalRecordCount - index)번째 챙김")
-                                            .font(Font.Pretendard.b2Medium())
+                                            .modifier(Font.Pretendard.b2MediumStyle())
                                             .foregroundColor(.blue01)
                                     }
                                 }
                                 Text(record.createdAt.formattedYYMMDDWithDot())
-                                    .font(Font.Pretendard.b2Medium())
+                                    .modifier(Font.Pretendard.b2MediumStyle())
                                     .foregroundColor(.gray01)
                             }
                             
@@ -256,17 +255,17 @@ private struct ProfileHeader: View {
                 
                 Text(people.name)
                     .frame(height: 22)
-                    .font(Font.Pretendard.h2Bold())
+                    .modifier(Font.Pretendard.h2BoldStyle())
                     .multilineTextAlignment(.center)
                 
                 //MM월dd일 더 가까워졌어요
                 if let latestRecordDate = checkInRecords.sorted(by: { $0.createdAt > $1.createdAt }).first?.createdAt {
                     Text("\(latestRecordDate.formattedYYYYMMDDMoreCloser())")
-                        .font(Font.Pretendard.b2Medium())
+                        .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(Color.blue01)
                 } else {
                     Text("-")
-                        .font(Font.Pretendard.b2Medium())
+                        .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(Color.blue01)
                 }
             }
@@ -376,10 +375,10 @@ private struct ActionButton: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: systemImage)
-                .font(Font.Pretendard.h1Bold())
+                .modifier(Font.Pretendard.h1BoldStyle())
                 .foregroundColor(enabled ? .blue01 : .gray02)
             Text(title)
-                .font(Font.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
                 .foregroundColor(enabled ? .black : .gray02)
         }
         .padding()
@@ -417,7 +416,7 @@ private struct TabButton: View {
     var body: some View {
         VStack(spacing: 9) {
             Text(title)
-                .font(Font.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
                 .foregroundColor(isSelected ? .black : .gray02)
             
             Rectangle()
@@ -458,11 +457,11 @@ private struct InfoRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(Font.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
                 .foregroundColor(.gray01)
             Spacer()
             Text(value)
-                .font(Font.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
         }
         .padding()
         .frame(minHeight: 54)
@@ -480,14 +479,14 @@ private struct MemoRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 4) {
             Text(label)
-                .font(Font.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
                 .foregroundColor(.gray01)
                 .frame(width: 60, alignment: .leading)
             
             Spacer()
             
             Text(value == "-" ? initialValue : value)
-                .font(Font.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
                 .foregroundColor(value == "-" ? Color.gray02 : Color.black)
                 .multilineTextAlignment(.trailing)
                 .fixedSize(horizontal: false, vertical: true)
@@ -511,7 +510,7 @@ private struct ConfirmButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(Font.Pretendard.b1Medium())
+                .modifier(Font.Pretendard.b1MediumStyle())
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -592,3 +591,4 @@ struct ProfileDetailView_Previews: PreviewProvider {
         .previewDisplayName(deviceName)
     }
 }
+

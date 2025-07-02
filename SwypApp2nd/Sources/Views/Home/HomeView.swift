@@ -82,7 +82,7 @@ struct CustomNavigationBar: View {
                     onTapMy()
                 } label: {
                     Text("MY")
-                        .font(Font.Pretendard.h2Bold())
+                        .modifier(Font.Pretendard.h2BoldStyle())
                         .foregroundStyle(Color.white)
                 }
                 Button {
@@ -143,14 +143,14 @@ struct GreetingSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("\(userName)님,")
-                .font(Font.Pretendard.h1Medium())
+                .modifier(Font.Pretendard.h1MediumStyle())
                 .foregroundColor(.white)
-            HStack {
+            HStack(spacing: 0) {
                 Text(message1)
-                    .font(Font.Pretendard.h1Bold())
+                    .modifier(Font.Pretendard.h1BoldStyle())
                     .foregroundColor(.white)
-                + Text(message2)
-                    .font(Font.Pretendard.h1Medium())
+                Text(message2)
+                    .modifier(Font.Pretendard.h1MediumStyle())
                     .foregroundColor(.white)
             }
         }
@@ -167,7 +167,7 @@ struct ThisMonthSection: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("이번달 챙길 사람")
-                    .font(Font.Pretendard.b1Bold())
+                    .modifier(Font.Pretendard.b1BoldStyle())
                     .foregroundColor(.white)
                 Spacer()
                 // TODO: - 2차때..
@@ -192,7 +192,7 @@ struct ThisMonthSection: View {
                     .frame(height: 48)
                     .overlay(
                         Text("이번달은 챙길 사람이 없네요.")
-                            .font(Font.Pretendard.b2Medium())
+                            .modifier(Font.Pretendard.b2MediumStyle())
                             .foregroundColor(.white.opacity(0.8))
                     )
                     .padding(.horizontal, 24)
@@ -235,17 +235,17 @@ struct ThisMonthContactCell: View {
                 }
 
                 Text(contact.name)
-                    .font(.Pretendard.b1Bold())
+                    .modifier(Font.Pretendard.b1BoldStyle())
                     .foregroundColor(.black)
                     .lineLimit(1)
 
                 if dDayString != "D-DAY" {
                     Text(dDayString)
-                        .font(.Pretendard.b2Bold())
+                        .modifier(Font.Pretendard.b2BoldStyle())
                         .foregroundColor(Color.gray02)
                 } else {
                     Text(dDayString)
-                        .font(.Pretendard.b2Bold())
+                        .modifier(Font.Pretendard.b2BoldStyle())
                         .foregroundColor(Color.blue01)
                 }
 
@@ -311,7 +311,7 @@ struct MyPeopleSection: View {
         VStack(spacing: 8) {
             HStack {
                 Text("내 사람들")
-                    .font(Font.Pretendard.h2Bold())
+                    .modifier(Font.Pretendard.h2BoldStyle())
                     .foregroundStyle(Color.black)
                 Spacer()
                 Button {
@@ -354,7 +354,7 @@ struct MyPeopleSection: View {
                         }
                         Text("가까워 지고 싶은 사람을\n추가해보세요.")
                             .multilineTextAlignment(.center)
-                            .font(Font.Pretendard.b1Medium())
+                            .modifier(Font.Pretendard.b1MediumStyle())
                             .foregroundColor(.gray02)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -560,7 +560,7 @@ struct StarPositionLayout: View {
                             .background(Color.bg01)
                             .clipShape(Circle())
                         Text("사람 추가")
-                            .font(Font.Pretendard.b2Bold())
+                            .modifier(Font.Pretendard.b2BoldStyle())
                             .foregroundColor(.black)
                     }
                 }
@@ -621,11 +621,11 @@ struct PersonCircleView: View {
             }
 
             Text(people.name)
-                .font(Font.Pretendard.b2Bold())
+                .modifier(Font.Pretendard.b2BoldStyle())
                 .foregroundColor(.black)
             HStack(spacing: 4) {
                 Text(formattedDate)
-                    .font(Font.Pretendard.captionMedium())
+                    .modifier(Font.Pretendard.captionMediumStyle())
                     .foregroundColor(Color.gray02)
                 if formattedDate != "챙김 기록이 없어요" {
                     Image("icon_check_blue")
