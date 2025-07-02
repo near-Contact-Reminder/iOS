@@ -63,7 +63,7 @@ public struct HomeView: View {
         .onReceive(notificationViewModel.$navigateToPerson.compactMap { $0 }) { friend in
             path.removeAll()
             path.append(.personDetail(friend))
-        } 
+        }
     }
 }
 
@@ -403,19 +403,68 @@ struct StarPositionLayout: View {
     @State private var draggingIndex: Int? = nil
     @EnvironmentObject var userSession: UserSession
 
-    let positions: [CGPoint] = [
-        CGPoint(x: 0, y: -120),
-        CGPoint(x: -110, y: -30),
-        CGPoint(x: 110, y: -30),
-        CGPoint(x: -60, y: 110),
-        CGPoint(x: 60, y: 110)
-    ]
+
+    /// 내 사람들 인원별 레이아웃
+    private func personPositions(for count: Int) -> [CGPoint] {
+        switch count {
+        case 0:
+            return []
+        case 1:
+            // 1명
+            return [
+                CGPoint(x:   -80, y: 0)
+            ]
+        case 2:
+            // 2명
+            return [
+                CGPoint(x:   0,  y: -80),
+                CGPoint(x: -100, y:   80)
+            ]
+        case 3:
+            // 3명
+            return [
+                CGPoint(x:   0,  y: -100),
+                CGPoint(x: -100, y:   30),
+                CGPoint(x:  100, y:   30)
+            ]
+        case 4:
+            // 4명
+            return [
+                CGPoint(x:   0,  y: -110),   // 위
+                CGPoint(x: -120, y:  -10),   // 왼쪽 중간
+                CGPoint(x:  120, y:  -10),   // 오른쪽 중간
+                CGPoint(x: -80, y:   120)    // 왼쪽 아래
+            ]
+        default:
+            // 5명
+            return [
+                CGPoint(x:    0,  y: -110),
+                CGPoint(x: -120,  y:  -20),
+                CGPoint(x:  120,  y:  -20),
+                CGPoint(x:  -80,  y:  120),
+                CGPoint(x:   80,  y:  120)
+            ]
+        }
+    }
+
+    ///  “사람 추가(+)” button
+    private func addButtonPosition(for count: Int) -> CGPoint? {
+        switch count {
+        case 0:  return CGPoint(x:    0, y:    0)   // 빈 상태 중앙
+        case 1:  return CGPoint(x:  80, y:    0)   // 오른쪽 중앙
+        case 2:  return CGPoint(x:  100, y:   80)   // 오른쪽 아래
+        case 3:  return CGPoint(x:    0, y:  150)   // 맨 아래 중앙
+        case 4:  return CGPoint(x:  80, y:   120)   // 오른쪽 아래
+        default: return nil                         // 5명 이상 → 표시 안함
+        }
+    }
 
     var body: some View {
         ZStack {
             let start = pageIndex * 5
             let end = min(start + 5, peoples.count)
             let pagePeople = Array(peoples[start..<end])
+            let personPositions = personPositions(for: pagePeople.count)
             ForEach(start..<end, id: \.self) { i in
                 let indexInPage = i - start
                 let person = peoples[i]
@@ -424,8 +473,8 @@ struct StarPositionLayout: View {
 
                 PersonCircleView(people: person, onTap: onTap)
                     .offset(
-                        x: positions[indexInPage].x + offset.width,
-                        y: positions[indexInPage].y + offset.height
+                        x: personPositions[indexInPage].x + offset.width,
+                        y: personPositions[indexInPage].y + offset.height
                     )
                     .gesture(
                         LongPressGesture(minimumDuration: 0.2)
@@ -444,7 +493,7 @@ struct StarPositionLayout: View {
                                 guard let dragging = draggingIndex else { return }
 
                                 let draggingInPage = dragging - start
-                                let draggingPos = positions[draggingInPage]
+                                let draggingPos = personPositions[draggingInPage]
                                 let currentPosition = CGPoint(
                                     x: draggingPos.x + dragOffset.width,
                                     y: draggingPos.y + dragOffset.height
@@ -452,7 +501,7 @@ struct StarPositionLayout: View {
 
                                 var closest = draggingInPage
                                 var minDist = CGFloat.infinity
-                                for (j, pos) in positions.enumerated() {
+                                for (j, pos) in personPositions.enumerated() {
                                     if j == draggingInPage { continue } // 자기 자신 제외
                                     let dist = hypot(pos.x - currentPosition.x, pos.y - currentPosition.y)
                                     if dist < minDist {
@@ -498,9 +547,8 @@ struct StarPositionLayout: View {
                     )
                     .animation(.spring(), value: dragOffset)
             }
-            // 추가 버튼 삽입 로직
-            if pagePeople.count < 5 {
-                let addIndex = pagePeople.count
+            // 추가 버튼
+            if let addPos = addButtonPosition(for: pagePeople.count) {
                 Button {
                     userSession.appStep = .registerFriends
                 } label: {
@@ -516,10 +564,7 @@ struct StarPositionLayout: View {
                             .foregroundColor(.black)
                     }
                 }
-                .offset(
-                    x: positions[addIndex].x+4,
-                    y: positions[addIndex].y-8
-                )
+                .offset(x: addPos.x + 4, y: addPos.y - 8)
             }
         }
         .frame(height: 240)
