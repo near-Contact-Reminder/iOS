@@ -75,14 +75,14 @@ struct NameSection: View {
             HStack(spacing: 0) {
                 Text("이름")
                     .foregroundColor(Color.gray)
-                    .font(Font.Pretendard.b2Medium())
+                    .modifier(Font.Pretendard.b2MediumStyle())
                 Text("*")
                     .foregroundColor(Color.blue01)
-                    .font(Font.Pretendard.b2Medium())
+                    .modifier(Font.Pretendard.b2MediumStyle())
             }
             Spacer()
             TextField("20자 내로 이름을 입력해주세요", text: $name)
-                .font(Font.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
                 .autocorrectionDisabled(true)
                 .textInputAutocapitalization(.never)
                 .padding(16)
@@ -108,7 +108,7 @@ struct RelationshipSection: View {
         HStack(alignment: .center, spacing: 12) {
             Text("관계")
                 .foregroundColor(.gray)
-                .font(.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
             Spacer()
             HStack(spacing: 24) {
                 ForEach(options, id: \.self) { option in
@@ -117,7 +117,7 @@ struct RelationshipSection: View {
                             .foregroundColor(displayLabel(for: relationship) == option ? Color.blue01 : Color.gray03)
                         
                         Text(option)
-                            .font(.Pretendard.b2Medium())
+                            .modifier(Font.Pretendard.b2MediumStyle())
                             .foregroundColor(.black)
                             .lineLimit(nil)
                             .fixedSize(horizontal: false, vertical: true)
@@ -158,7 +158,7 @@ struct FrequencySection: View {
         HStack(alignment: .center, spacing: 12) {
             Text("연락 주기")
                 .foregroundColor(.gray)
-                .font(.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
 
             Spacer()
 
@@ -169,14 +169,14 @@ struct FrequencySection: View {
                     }) {
                         Text(option)
                             .foregroundColor(.black)
-                            .font(Font.Pretendard.b2Medium())
+                            .modifier(Font.Pretendard.b2MediumStyle())
                     }
                 }
             } label: {
                 HStack {
                     Text(frequency?.rawValue ?? "선택")
                         .foregroundColor(.black)
-                        .font(Font.Pretendard.b2Medium())
+                        .modifier(Font.Pretendard.b2MediumStyle())
                     Spacer()
                     Image(systemName: "chevron.down")
                         .foregroundColor(.gray)
@@ -204,7 +204,7 @@ struct BirthdaySection: View {
             HStack(alignment: .center, spacing: 12) {
                 Text("생일")
                     .foregroundColor(.gray)
-                    .font(.Pretendard.b2Medium())
+                    .modifier(Font.Pretendard.b2MediumStyle())
 
                 Spacer()
 
@@ -212,7 +212,7 @@ struct BirthdaySection: View {
                     isPickerVisible.toggle()
                 } label: {
                     Text(birthday != nil ? formattedDate(birthday!) : "선택")
-                        .font(.Pretendard.b2Medium())
+                        .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(birthday != nil ? .black : .gray02)
                         .padding(16)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -261,7 +261,7 @@ struct AnniversarySection: View {
             // Label
             Text("기념일")
                 .foregroundColor(.gray)
-                .font(.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
 
             // Title Input
             TextField("기념일 이름", text: Binding(
@@ -290,7 +290,7 @@ struct AnniversarySection: View {
             } label: {
                 HStack {
                     Text(anniversary?.Date?.formattedYYYYMMDDWithDot() ?? "날짜 선택")
-                        .font(.Pretendard.b2Medium())
+                        .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(anniversary?.Date != nil ? .black : .gray02)
 
                     Spacer()
@@ -336,13 +336,13 @@ struct MemoSection: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("메모")
                 .foregroundColor(.gray)
-                .font(.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
 
             ZStack(alignment: .topLeading) {
                 if (memo ?? "").isEmpty {
                     Text("꼭 기억해야 할 내용을 기록해보세요. 예) 날생선 X, 작년에 생일에 키링 선물함 등")
                     .foregroundColor(.gray02)
-                    .font(Font.Pretendard.b1Bold())
+                    .modifier(Font.Pretendard.b1BoldStyle())
                     .padding(16)
                 }
 
@@ -390,7 +390,7 @@ struct WheelDatePicker: View {
         VStack(alignment: .leading) {
             if !title.isEmpty {
                 Text(title)
-                    .font(.headline)
+                    .modifier(Font.Pretendard.b1MediumStyle())
             }
                 
             Button {

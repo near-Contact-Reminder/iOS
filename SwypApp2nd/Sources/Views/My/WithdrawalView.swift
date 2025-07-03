@@ -75,12 +75,11 @@ struct WithdrawalHeaderView: View {
         }
         
         Text("\(name)님, \n떠나는 이유를 알려주시면 \n큰 도움이 될 거예요.")
-            .font(Font.Pretendard.h1Medium(size: 24))
-            .lineSpacing(8)
+            .modifier(Font.Pretendard.h1MediumStyle())
             .padding(.top, 42)
-        
+
         Text("소중한 의견을 받아 \n더 나은 서비스를 만들어갈게요.")
-            .font(Font.Pretendard.b1Medium())
+            .modifier(Font.Pretendard.b1MediumStyle())
             .foregroundColor(.gray)
             .padding(.bottom, 42)
     }
@@ -137,7 +136,7 @@ struct CustomReasonInputView: View {
 
                 if customReason.isEmpty {
                     Text("편하게 의견을 남겨주세요.")
-                        .font(Font.Pretendard.b1Medium())
+                        .modifier(Font.Pretendard.b1MediumStyle())
                         .foregroundColor(Color.gray02)
                         .padding(.leading, 16)
                         .padding(.top, 20)
@@ -190,7 +189,7 @@ struct WithdrawalActionButtonsView: View {
                 Text("그만두기")
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .font(Font.Pretendard.b1Bold())
+                    .modifier(Font.Pretendard.b1BoldStyle())
                     .foregroundColor(.white)
                     .background(Color.blue01)
                     .cornerRadius(12)
@@ -198,7 +197,7 @@ struct WithdrawalActionButtonsView: View {
 
             Button(action: {showConfirmAlert = true}) {
                 Text("탈퇴하기")
-                    .font(Font.Pretendard.b1Bold())
+                    .modifier(Font.Pretendard.b1BoldStyle())
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.clear)

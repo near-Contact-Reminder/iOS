@@ -41,11 +41,11 @@ struct RegisterFriendView: View {
                 
                 HStack {
                     Text("챙길 사람 불러오기")
-                        .font(.Pretendard.b1Bold())
+                        .modifier(Font.Pretendard.b1BoldStyle())
                         .foregroundColor(.black)
                     Spacer()
                     Text("1 / 2")
-                        .font(.Pretendard.captionBold())
+                        .modifier(Font.Pretendard.captionBoldStyle())
                         .foregroundColor(.gray02)
                 }
                 
@@ -56,10 +56,10 @@ struct RegisterFriendView: View {
                     .frame(height: 80)
 
                 Text("가까워지고 싶은 사람\n10명까지 선택해주세요")
-                    .font(.Pretendard.h1Bold())
+                    .modifier(Font.Pretendard.h1BoldStyle())
 
                 Text("먼저, 더 가까워지고 싶은\n소중한 사람만 선택해주세요.")
-                    .font(.Pretendard.b1Medium())
+                    .modifier(Font.Pretendard.b1MediumStyle())
                     .foregroundColor(.gray02)
             }
             .padding(.horizontal, 20)
@@ -129,7 +129,7 @@ struct RegisterFriendView: View {
             HStack(spacing: 12) {
                 Button(action: skip) {
                     Text("나중에 하기")
-                        .font(.Pretendard.b1Bold())
+                        .modifier(Font.Pretendard.b1BoldStyle())
                         .frame(maxWidth: .infinity)
                         .foregroundColor(.black)
                         .frame(height: 52)
@@ -142,7 +142,7 @@ struct RegisterFriendView: View {
 
                 Button(action: proceed) {
                     Text("다음")
-                        .font(.Pretendard.b1Bold())
+                        .modifier(Font.Pretendard.b1BoldStyle())
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
@@ -198,14 +198,14 @@ struct CardButton: View {
                     .cornerRadius(8)
 
                 Text(title)
-                    .font(.Pretendard.b2Medium())
+                    .modifier(Font.Pretendard.b2MediumStyle())
                     .foregroundColor(.black)
 
                 Spacer()
 
                 if hasContacts {
                     Text("다시 선택")
-                        .font(.Pretendard.b2Medium())
+                        .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(.blue01)
                 } else {
                     Image(systemName: "chevron.right")
@@ -241,7 +241,7 @@ struct ContactRow: View {
                 .frame(width: 24, height: 24)
 
             Text(contact.name)
-                .font(.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
                 .foregroundColor(.black)
 
             Spacer()

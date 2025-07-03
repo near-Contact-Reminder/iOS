@@ -20,7 +20,7 @@ public struct TermsView: View {
         VStack(alignment: .leading) {
 
             Text("서비스 약관 동의")
-                .font(Font.Pretendard.h2Bold())
+                .modifier(Font.Pretendard.h2BoldStyle())
                 .padding(.leading, 24)
                 .padding(.top, 44)
 
@@ -116,7 +116,7 @@ public struct TermsView: View {
             }) {
                 Text("가입")
                     .foregroundColor(.white)
-                    .font(Font.Pretendard.b1Bold())
+                    .modifier(Font.Pretendard.b1BoldStyle())
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
                     .background(viewModel.canProceed ? Color.blue01 : Color.gray02)
@@ -137,7 +137,7 @@ public struct TermsView: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Text(agreement.title)
-                            .font(Font.Pretendard.b1Medium())
+                            .modifier(Font.Pretendard.b1MediumStyle())
                             .foregroundStyle(Color.black)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
@@ -222,7 +222,7 @@ public struct AgreementRow: View {
             }
             
             Text(title)
-                .font(isBold ? .Pretendard.b1Bold() : .Pretendard.b1Medium())
+                .modifier(isBold ? Font.Pretendard.b1BoldStyle() : Font.Pretendard.b1MediumStyle())
                 .foregroundStyle(Color.black)
             
             Spacer()

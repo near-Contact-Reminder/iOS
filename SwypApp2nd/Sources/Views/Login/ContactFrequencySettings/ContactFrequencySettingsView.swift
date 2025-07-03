@@ -20,12 +20,12 @@ struct ContactFrequencySettingsView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("챙김 주기 설정하기")
-                        .font(.Pretendard.b1Bold())
+                        .modifier(Font.Pretendard.b1BoldStyle())
                     
                     Spacer()
                     
                     Text("2 / 2")
-                        .font(.Pretendard.captionBold())
+                        .modifier(Font.Pretendard.captionBoldStyle())
                         .foregroundColor(.gray02)
                 }
                 
@@ -36,11 +36,11 @@ struct ContactFrequencySettingsView: View {
                     .frame(height: 80)
 
                 Text("얼마나 자주\n챙기고 싶으세요?")
-                    .font(.Pretendard.h1Bold())
+                    .modifier(Font.Pretendard.h1BoldStyle())
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("사람별로 챙기고 싶은 주기를 설정해주세요.")
-                    .font(.Pretendard.b1Medium())
+                    .modifier(Font.Pretendard.b1MediumStyle())
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                     .foregroundColor(.gray02)
@@ -58,7 +58,7 @@ struct ContactFrequencySettingsView: View {
                 }) {
                     HStack(spacing: 12) {
                         Text("한번에 설정")
-                            .font(.Pretendard.b1Medium())
+                            .modifier(Font.Pretendard.b1MediumStyle())
                             .foregroundColor(.gray02)
                         ZStack {
                             RoundedRectangle(cornerRadius: 6)
@@ -142,7 +142,7 @@ struct ContactFrequencySettingsView: View {
                     viewModel.toggleUnifiedFrequency(isChecked)
                 } label: {
                     Text("이전")
-                        .font(.body.bold())
+                        .modifier(Font.Pretendard.b1BoldStyle())
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .background(Color.white)
@@ -172,7 +172,7 @@ struct ContactFrequencySettingsView: View {
                 }
                 label: {
                     Text("완료")
-                        .font(.body.bold())
+                        .modifier(Font.Pretendard.b1BoldStyle())
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
@@ -227,12 +227,12 @@ struct FrequencyRow: View {
             }
             
             Text(person.name)
-                .font(.Pretendard.b2Medium())
+                .modifier(Font.Pretendard.b2MediumStyle())
             Spacer()
             Button(action: { if !isUnified { onSelect() } }
             ) {
                 Text(person.frequency?.rawValue ?? "주기 선택")
-                    .font(.Pretendard.b2Medium())
+                    .modifier(Font.Pretendard.b2MediumStyle())
                 Image(systemName: "chevron.down")
             }
             .foregroundStyle(Color.gray01)
