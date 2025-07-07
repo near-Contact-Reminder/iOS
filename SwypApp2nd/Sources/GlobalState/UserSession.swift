@@ -257,61 +257,51 @@ class UserSession: ObservableObject {
                         }
                     case .failure(let error):
                         print("🔴 [UserSession] 사용자 정보 조회 실패: \(error)")
-                        self.logout()
+                        // accessToken 만료라면 refreshToken으로 재발급 시도
+                        if let refreshToken = TokenManager.shared.get(for: .server, isRefresh: true) {
+                            print("🟡 [UserSession] accessToken 만료 → refreshToken으로 재발급 시도")
+                            BackEndAuthService.shared.refreshAccessToken(refreshToken: refreshToken) { result in
+                                switch result {
+                                case .success(let newAccessToken):
+                                    print("🟢 [UserSession] 서버 accessToken 재발급 성공")
+                                    TokenManager.shared.save(token: newAccessToken, for: .server)
+                                    // 재시도
+                                    self.tryAutoLogin()
+                                case .failure(let error):
+                                    print("🔴 [UserSession] 서버 토큰 재발급 실패: \(error.localizedDescription)")
+                                    self.logout()
+                                }
+                            }
+                        } else {
+                            self.logout()
+                        }
                     }
                 }
                 
                 return
             }
 
-            // 서버 refreshToken 존재 여부 확인
-            guard let refreshToken = TokenManager.shared.get(for: .server, isRefresh: true) else {
-                print("🔴 [UserSession] 서버 refreshToken 없음 → 로그인 필요")
-                self.logout()
-                return
-            }
-
-            print("🟡 [UserSession] 서버 accessToken 없음 → refreshToken으로 재발급 시도")
-
-            // 서버 토큰 재발급 요청
-            BackEndAuthService.shared
-                .refreshAccessToken(refreshToken: refreshToken) { result in
-                    DispatchQueue.main.async {
-                        switch result {
-                        case .success(let newAccessToken):
-                            print("🟢 [UserSession] 서버 accessToken 재발급 성공")
-                            TokenManager.shared
-                                .save(token: newAccessToken, for: .server)
-                            
-                            BackEndAuthService.shared.fetchMemberInfo(accessToken: newAccessToken) { result in
-                                switch result {
-                                case .success(let info):
-                                    self.getUserCheckRate(accessToken: newAccessToken) { checkRate in
-                                        let user = User(
-                                            id: info.memberId,
-                                            name: info.nickname,
-                                            friends: [],
-                                            checkRate: checkRate,
-                                            loginType: .kakao,
-                                            serverAccessToken: newAccessToken,
-                                            serverRefreshToken: refreshToken
-                                        )
-                                        self.updateUser(user)
-                                    }
-                                case .failure(let error):
-                                    print(
-                                        "🔴 [UserSession] 사용자 정보 조회 실패: \(error)"
-                                    )
-                                    self.logout()
-                                }
-                            }
-                            
-                        case .failure(let error):
-                            print("🔴 [UserSession] 서버 토큰 재발급 실패: \(error.localizedDescription)")
-                            self.logout()
-                        }
+            // 서버 accessToken이 없는 경우 - Kakao accessToken으로 서버 로그인
+            if let kakaoAccessToken = TokenManager.shared.get(for: .kakao) {
+                print("🟡 [UserSession] 서버 accessToken 없음 → loginWithKakao() 재시도")
+                BackEndAuthService.shared.loginWithKakao(accessToken: kakaoAccessToken) { result in
+                    switch result {
+                    case .success(let tokenResponse):
+                        TokenManager.shared.save(token: tokenResponse.accessToken, for: .server)
+                        TokenManager.shared.save(token: tokenResponse.refreshTokenInfo.token,
+                                                 for: .server,
+                                                 isRefresh: true)
+                        // 새 토큰으로 다시 자동 로그인 절차 진행
+                        self.tryAutoLogin()
+                    case .failure(let error):
+                        print("🔴 [UserSession] 서버 로그인 실패: \(error.localizedDescription)")
+                        self.logout()
                     }
                 }
+            } else {
+                self.logout()
+            }
+            
         }
     }
     
@@ -430,100 +420,52 @@ class UserSession: ObservableObject {
                     
                 case .failure(let error):
                     print("🔴 [UserSession] 사용자 정보 조회 실패: \(error)")
-                    self.logout()
+                    // accessToken 만료라면 refreshToken으로 재발급 시도
+                    if let refreshToken = TokenManager.shared.get(for: .server, isRefresh: true) {
+                        print("🟡 [UserSession] accessToken 만료 → refreshToken으로 재발급 시도")
+                        BackEndAuthService.shared.refreshAccessToken(refreshToken: refreshToken) { result in
+                            switch result {
+                            case .success(let newAccessToken):
+                                print("🟢 [UserSession] 서버 accessToken 재발급 성공")
+                                TokenManager.shared.save(token: newAccessToken, for: .server)
+                                // 재시도
+                                self.tryAutoLogin()
+                            case .failure(let error):
+                                print("🔴 [UserSession] 서버 토큰 재발급 실패: \(error.localizedDescription)")
+                                self.logout()
+                            }
+                        }
+                    } else {
+                        self.logout()
+                    }
                 }
             }
             
             return
         }
-
-        // 서버 refreshToken 확인
-        guard let refreshToken = TokenManager.shared.get(for: .server, isRefresh: true) else {
-            print("🔴 [UserSession] 서버 refreshToken 없음 → 로그인 필요")
-            self.logout()
-            return
-        }
-
-        print("🟡 [UserSession] 서버 accessToken 없음 → refreshToken으로 재발급 시도")
-        // 서버 토큰 재발급
-        BackEndAuthService.shared.refreshAccessToken(refreshToken: refreshToken) { result in
-            DispatchQueue.main.async {
+        // 서버 accessToken이 없는 경우 - Apple 재로그인 후 서버 로그인
+        print("🟡 [UserSession] 서버 accessToken 없음 → Apple 재로그인 시도")
+        SnsAuthService.shared.tryAutoReLoginApple(presentationAnchor: window) { userId, identityToken, authorizationCode in
+            guard let userId = userId,
+                  let identityToken = identityToken,
+                  let authorizationCode = authorizationCode else {
+                self.logout()
+                return
+            }
+            BackEndAuthService.shared.loginWithApple(userId: userId,
+                                                     identityToken: identityToken,
+                                                     authorizationCode: authorizationCode) { result in
                 switch result {
-                case .success(let newAccessToken):
-                    print("🟢 [UserSession] 서버 accessToken 재발급 성공")
-                    TokenManager.shared.save(token: newAccessToken, for: .server)
-                    BackEndAuthService.shared
-                        .fetchMemberInfo(
-                            accessToken: newAccessToken
-                        ) { result in
-                            switch result {
-                            case .success(let info):
-                                
-                                self.getUserCheckRate(accessToken: newAccessToken) { checkRate in
-                                    let user = User(
-                                        id: info.memberId,
-                                        name: info.nickname,
-                                        friends: [],
-                                        checkRate: checkRate,
-                                        loginType: .apple,
-                                        serverAccessToken: newAccessToken,
-                                        serverRefreshToken: refreshToken
-                                    )
-                                    self.updateUser(user)
-                                }
-                                
-                            case .failure(let error):
-                                print("🔴 [UserSession] 사용자 정보 조회 실패: \(error)")
-                                self.logout()
-                            }
-                        }
+                case .success(let tokenResponse):
+                    TokenManager.shared.save(token: tokenResponse.accessToken, for: .server)
+                    TokenManager.shared.save(token: tokenResponse.refreshTokenInfo.token,
+                                             for: .server,
+                                             isRefresh: true)
+                    // 새 토큰으로 다시 자동 로그인 절차 진행
+                    self.tryAutoLogin()
                 case .failure(let error):
-                    print("🔴 [UserSession] 서버 토큰 재발급 실패: \(error.localizedDescription)")
-                    // 1. SNS 자동 재로그인 시도 (Apple)
-                    SnsAuthService.shared.tryAutoReLoginApple(presentationAnchor: window) { userId, identityToken, authorizationCode in
-                        guard let userId = userId,
-                              let identityToken = identityToken,
-                              let authorizationCode = authorizationCode else {
-                            self.logout()
-                            return
-                        }
-                        // 2. 서버에 소셜 로그인 요청
-                        BackEndAuthService.shared.loginWithApple(
-                            userId: userId,
-                            identityToken: identityToken,
-                            authorizationCode: authorizationCode
-                        ) { result in
-                            switch result {
-                            case .success(let tokenResponse):
-                                // 3. 서버 토큰 저장 및 세션 갱신
-                                TokenManager.shared.save(token: tokenResponse.accessToken, for: .server)
-                                TokenManager.shared.save(token: tokenResponse.refreshTokenInfo.token, for: .server, isRefresh: true)
-                                
-                                BackEndAuthService.shared.fetchMemberInfo(accessToken: tokenResponse.accessToken) { result in
-                                    switch result {
-                                    case .success(let info):
-                                        self.getUserCheckRate(accessToken: tokenResponse.accessToken) { checkRate in
-                                            let user = User(
-                                                id: info.memberId,
-                                                name: info.nickname,
-                                                friends: [],
-                                                checkRate: checkRate,
-                                                loginType: .apple,
-                                                serverAccessToken: tokenResponse.accessToken,
-                                                serverRefreshToken: tokenResponse.refreshTokenInfo.token
-                                            )
-                                            self.updateUser(user)
-                                        }
-                                    case .failure(let error):
-                                        print("🔴 [UserSession] 사용자 정보 조회 실패: \(error)")
-                                        self.logout()
-                                    }
-                                }
-                            case .failure:
-                                self.logout()
-                            }
-                        }
-                    }
+                    print("🔴 [UserSession] 서버 로그인 실패: \(error.localizedDescription)")
+                    self.logout()
                 }
             }
         }
