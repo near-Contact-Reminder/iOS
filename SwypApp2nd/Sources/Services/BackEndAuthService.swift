@@ -180,11 +180,16 @@ final class BackEndAuthService {
     static let shared = BackEndAuthService()
 
     private let baseURL: String = {
+    #if DEBUG
         if let host = Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String {
             return "https://\(host)"
-        } else {
-            return ""
         }
+    #else
+        if let host = Bundle.main.infoDictionary?["RELEASE_BASE_URL"] as? String {
+            return "https://\(host)"
+        }
+    #endif
+        return ""
     }()
     
     /// 백엔드: fetch User Data
