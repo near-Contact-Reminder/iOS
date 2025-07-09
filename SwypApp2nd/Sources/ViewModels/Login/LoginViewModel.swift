@@ -55,7 +55,7 @@ class LoginViewModel: ObservableObject {
                             .fetchMemberInfo(accessToken: tokenResponse.accessToken) { result in
                                 switch result {
                                 case .success(let userInfo):
-                                    print("🟢 자동 로그인 성공: \(userInfo.nickname)")
+                                    print("🟢 [LoginViewModel] 카카오 로그인 성공: \(userInfo.nickname)")
                                     self.getUserCheckRate(accessToken: tokenResponse.accessToken) { checkRate in
                                         let user = User(
                                             id: userInfo.memberId,
@@ -69,7 +69,8 @@ class LoginViewModel: ObservableObject {
                                         self.updateUserSession(with: user)
                                     }
                                 case .failure(let error):
-                                    print("🔴 자동 로그인 실패: \(error)")
+                                    print("🔴 [LoginViewModel] 카카오 로그인 실패: \(error)")
+                                    TokenManager.shared.clear(type: .server)
                                 }
                             }
                     case .failure(let error):
@@ -124,7 +125,7 @@ class LoginViewModel: ObservableObject {
                                 .fetchMemberInfo(accessToken: tokenResponse.accessToken) { result in
                                     switch result {
                                     case .success(let userInfo):
-                                        print("🟢 자동 로그인 성공: \(userInfo.nickname)")
+                                        print("🟢 [LoginViewModel] 애플 로그인 성공: \(userInfo.nickname)")
                                         self.getUserCheckRate(accessToken: tokenResponse.accessToken) { checkRate in
                                             let user = User(
                                                 id: userInfo.memberId,
@@ -138,7 +139,8 @@ class LoginViewModel: ObservableObject {
                                             self.updateUserSession(with: user)
                                         }
                                     case .failure(let error):
-                                        print("🔴 자동 로그인 실패: \(error)")
+                                        print("🔴 [LoginViewModel] 애플 로그인 실패: \(error)")
+                                        TokenManager.shared.clear(type: .server)
                                     }
                                 }
                         case .failure(let error):
