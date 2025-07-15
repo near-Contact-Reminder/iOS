@@ -151,6 +151,7 @@ struct GreetingSection: View {
                 + Text(message2)
                     .font(Font.Pretendard.h1Medium()))
                 .foregroundColor(.white)
+                .modifier(Font.Pretendard.h1MediumStyle())
             }
         }
         .padding(.horizontal, 24)
