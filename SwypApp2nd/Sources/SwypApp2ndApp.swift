@@ -6,8 +6,10 @@ struct SwypApp2ndApp: App {
     
     init() {
         FirebaseApp.configure()
-#if !DEBUG
-        AnalyticsManager.shared.setEntryChannel("direct")
+#if DEBUG
+        Analytics.setAnalyticsCollectionEnabled(false)
+#else
+        Analytics.setAnalyticsCollectionEnabled(true)
 #endif
     }
 

@@ -146,12 +146,12 @@ struct GreetingSection: View {
                 .modifier(Font.Pretendard.h1MediumStyle())
                 .foregroundColor(.white)
             HStack(spacing: 0) {
-                Text(message1)
-                    .modifier(Font.Pretendard.h1BoldStyle())
-                    .foregroundColor(.white)
-                Text(message2)
-                    .modifier(Font.Pretendard.h1MediumStyle())
-                    .foregroundColor(.white)
+                (Text(message1)
+                    .font(Font.Pretendard.h1Bold())
+                + Text(message2)
+                    .font(Font.Pretendard.h1Medium()))
+                .foregroundColor(.white)
+                .modifier(Font.Pretendard.h1MediumStyle())
             }
         }
         .padding(.horizontal, 24)
