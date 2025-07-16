@@ -83,8 +83,8 @@ let project = Project(
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
-                "MARKETING_VERSION": "1.0.2",
-                "CURRENT_PROJECT_VERSION": "13",
+                "MARKETING_VERSION": "1.0.3",
+                "CURRENT_PROJECT_VERSION": "14",
                 "OTHER_LDFLAGS": "$(inherited) -ObjC"
             ]),
             coreDataModels: [
