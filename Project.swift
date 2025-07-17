@@ -56,6 +56,7 @@ let project = Project(
                     "NSContactsUsageDescription": "내 사람들을 등록하려면 연락처 접근 권한이 필요합니다.\n선택한 연락처만 사용되며, 저장되지 않은 정보는 수집되지 않습니다.",
                     "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
                     "DEV_BASE_URL": "$(DEV_BASE_URL)",
+                    "RELEASE_BASE_URL": "$(RELEASE_BASE_URL)",
                     "SERVICE_AGREED_TERMS_URL": "$(SERVICE_AGREED_TERMS_URL)",
                     "PERSONAL_INFO_TERMS_URL": "$(PERSONAL_INFO_TERMS_URL)",
                     "PRIVACY_POLICY_TERMS_URL": "$(PRIVACY_POLICY_TERMS_URL)"
@@ -83,8 +84,8 @@ let project = Project(
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
-                "MARKETING_VERSION": "1.0.3",
-                "CURRENT_PROJECT_VERSION": "14",
+                "MARKETING_VERSION": "1.0.4",
+                "CURRENT_PROJECT_VERSION": "16",
                 "OTHER_LDFLAGS": "$(inherited) -ObjC"
             ]),
             coreDataModels: [
