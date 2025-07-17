@@ -59,6 +59,7 @@ let project = Project(
                     ],
                     "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
                     "DEV_BASE_URL": "$(DEV_BASE_URL)",
+                    "RELEASE_BASE_URL": "$(RELEASE_BASE_URL)",
                     "SERVICE_AGREED_TERMS_URL": "$(SERVICE_AGREED_TERMS_URL)",
                     "PERSONAL_INFO_TERMS_URL": "$(PERSONAL_INFO_TERMS_URL)",
                     "PRIVACY_POLICY_TERMS_URL": "$(PRIVACY_POLICY_TERMS_URL)"
@@ -87,8 +88,8 @@ let project = Project(
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
-                "MARKETING_VERSION": "1.0.3",
-                "CURRENT_PROJECT_VERSION": "14",
+                "MARKETING_VERSION": "1.0.4",
+                "CURRENT_PROJECT_VERSION": "16",
                 "OTHER_LDFLAGS": "$(inherited) -ObjC"
             ])
         ),

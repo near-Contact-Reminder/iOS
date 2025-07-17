@@ -144,16 +144,17 @@ struct GreetingSection: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("\(userName)님,")
                 .modifier(Font.Pretendard.h1MediumStyle())
-                .foregroundColor(.white)
-            HStack(spacing: 0) {
-                (Text(message1)
-                    .font(Font.Pretendard.h1Bold())
-                + Text(message2)
-                    .font(Font.Pretendard.h1Medium()))
-                .foregroundColor(.white)
-                .modifier(Font.Pretendard.h1MediumStyle())
-            }
+                
+            (Text(message1)
+                .font(Font.Pretendard.h1Bold())
+                .tracking(-0.25)
+             + Text(message2)
+                .font(Font.Pretendard.h1Medium())
+                .tracking(-0.25))
+            .multilineTextAlignment(.leading)
+            
         }
+        .foregroundColor(.white)
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
