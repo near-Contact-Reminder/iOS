@@ -5,6 +5,7 @@ import Firebase
 struct SwypApp2ndApp: App {
     
     init() {
+        SirenManager.shared.configureSirenAllCritical() // 버전 확인
         FirebaseApp.configure()
 #if DEBUG
         Analytics.setAnalyticsCollectionEnabled(false)
