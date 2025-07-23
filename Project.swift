@@ -54,6 +54,9 @@ let project = Project(
                     "CFBundleShortVersionString": "$(MARKETING_VERSION)",
                     "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
                     "NSContactsUsageDescription": "내 사람들을 등록하려면 연락처 접근 권한이 필요합니다.\n선택한 연락처만 사용되며, 저장되지 않은 정보는 수집되지 않습니다.",
+                    "UIBackgroundModes": [
+                        "remote-notification"
+                    ],
                     "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
                     "DEV_BASE_URL": "$(DEV_BASE_URL)",
                     "SERVICE_AGREED_TERMS_URL": "$(SERVICE_AGREED_TERMS_URL)",
@@ -78,6 +81,7 @@ let project = Project(
                 .external(name: "KakaoSDKUser"),
                 .external(name: "KakaoSDKTalk"),
                 .external(name: "KakaoSDKFriend"),
+                .external(name: "FirebaseMessaging"),
                 .external(name: "FirebaseAnalytics")
                 
             ],

@@ -1,6 +1,16 @@
 import Alamofire
 import Foundation
 
+// MARK: - FCM 알림 요청 모델
+struct FCMReminderRequest: Encodable {
+    let friendId: String
+    let reminderId: String
+    let type: String
+    let scheduledDate: Date
+    let title: String
+    let body: String
+}
+
 // MARK: - 서버 토큰 관리
 struct TokenResponse: Decodable {
     let accessToken: String
@@ -787,8 +797,53 @@ final class BackEndAuthService {
                 }
             }
     }
-        
-        
+
+    /// 백엔드: FCM 토큰 등록
+    func registerFCMToken(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let url = "\(baseURL)/messaging/register"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+
+        let requestData = ["fcmToken": token]
+
+        AF.request(url, method: .post, parameters: requestData,encoding: JSONEncoding.default, headers: headers)
+        .validate(statusCode: 200..<300)
+        .response { response in
+            switch response.result {
+            case .success:
+                print("🟢 [BackEndAuthService] FCM 토큰 등록 성공")
+                completion(.success(()))
+            case .failure(let error):
+                print("🔴 [BackEndAuthService] FCM 토큰 등록 실패: \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }
+    }
+
+
+    /// 백엔드: FCM 토큰 해제
+    func unregisterFCMToken(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let url = "\(baseURL)/messaging/unregister"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let parameters: [String: Any] = [
+            "fcmToken": token
+        ]
+
+        AF.request(url, method: .delete, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+            .validate()
+            .response { response in
+                switch response.result {
+                case .success:
+                    completion(.success(()))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+    }
 }
 
 

@@ -3,7 +3,7 @@ import Firebase
 
 @main
 struct SwypApp2ndApp: App {
-    
+
     init() {
         FirebaseApp.configure()
 #if !DEBUG
