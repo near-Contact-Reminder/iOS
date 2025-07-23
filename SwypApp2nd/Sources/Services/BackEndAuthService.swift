@@ -535,7 +535,7 @@ final class BackEndAuthService {
                    let jsonString = String(data: data, encoding: .utf8) {
                     print("🟡 [fetchFriendList] Raw response JSON:\n\(jsonString)")
                 }
-                
+
                 switch response.result {
                 case .success(let list):
                     print("🟢 [BackEndAuthService] 친구 리스트 조회 성공 \(list.map { $0.name })")
@@ -683,7 +683,7 @@ final class BackEndAuthService {
                     print(
                         "🟢 [BackEndAuthService] 친구별 챙김 로그 리스트 조회 성공 - \(checkInRecords)"
                     )
-                    
+
                     completion(.success(checkInRecords))
 
                 case .failure(let error):
@@ -793,10 +793,9 @@ final class BackEndAuthService {
             }
         }
     }
-        
+
     /// 유저의 전체 챙김률
     func getUserCheckRate(accessToken: String, completion: @escaping (Int) -> Void) {
-            
         BackEndAuthService.shared
             .getUserCheckRate(accessToken: accessToken) { result in
                 switch result {
@@ -886,6 +885,54 @@ final class BackEndAuthService {
             }
         }
     }
+
+    /// 백엔드: FCM 토큰 등록
+    func registerFCMToken(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let url = "\(baseURL)/messaging/register"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+
+        let requestData = ["fcmToken": token]
+
+        AF.request(url, method: .post, parameters: requestData,encoding: JSONEncoding.default, headers: headers)
+        .validate(statusCode: 200..<300)
+        .response { response in
+            switch response.result {
+            case .success:
+                print("🟢 [BackEndAuthService] FCM 토큰 등록 성공")
+                completion(.success(()))
+            case .failure(let error):
+                print("🔴 [BackEndAuthService] FCM 토큰 등록 실패: \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }
+    }
+
+    /// 백엔드: FCM 토큰 해제
+    func unregisterFCMToken(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let url = "\(baseURL)/messaging/unregister"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let parameters: [String: Any] = [
+            "fcmToken": token
+        ]
+
+        AF.request(url, method: .delete, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+            .validate()
+            .response { response in
+                switch response.result {
+                case .success:
+                    completion(.success(()))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+    }
+
+
 }
 
 

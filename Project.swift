@@ -57,6 +57,9 @@ let project = Project(
                     "UIBackgroundModes": [
                         "remote-notification"
                     ],
+                    "UIBackgroundModes": [
+                        "remote-notification"
+                    ],
                     "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
                     "DEV_BASE_URL": "$(DEV_BASE_URL)",
                     "RELEASE_BASE_URL": "$(RELEASE_BASE_URL)",
@@ -84,8 +87,8 @@ let project = Project(
                 .external(name: "KakaoSDKFriend"),
                 .external(name: "FirebaseMessaging"),
                 .external(name: "FirebaseAnalytics"),
-                .external(name: "Siren")
-
+                .external(name: "Siren"),
+                .external(name: "FirebaseMessaging"),
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",

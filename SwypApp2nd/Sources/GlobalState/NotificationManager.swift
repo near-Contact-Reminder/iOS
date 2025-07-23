@@ -2,6 +2,8 @@ import Foundation
 import SwiftUI
 import FirebaseMessaging
 import UserNotifications
+import FirebaseMessaging
+import UserNotifications
 
 // NotificationManager → FCM 토큰, 알림 권한, FCM 메시지 처리
 class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate, MessagingDelegate {
