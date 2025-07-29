@@ -17,9 +17,9 @@ enum RegisterFriendsAlert: Identifiable {
         switch self {
         case .limitExceeded:
             return "limitExceeded"
-        case .phoneSelectionExceeded: 
+        case .phoneSelectionExceeded:
             return "phoneSelectionExceeded"
-        case .permissionDenied:       
+        case .permissionDenied:
             return "permissionDenied"
         }
     }
@@ -75,7 +75,7 @@ class RegisterFriendsViewModel: ObservableObject {
     
     func handleSelectedContacts(_ contacts: [CNContact]) {
         let converted: [Friend] = contacts.compactMap {
-            let name = $0.familyName + $0.givenName
+            let name = $0.familyName + " " + $0.givenName
             let image = $0.thumbnailImageData.flatMap { UIImage(data: $0) }
             let birthDay = $0.birthday?.date
             let anniversaryDateComponents = $0.dates.first?.value as? DateComponents
