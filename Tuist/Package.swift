@@ -23,5 +23,6 @@ let package = Package(
         ),
         .package(url: "https://github.com/kakao/kakao-ios-sdk", exact: "2.24.0"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.12.0"),
+        .package(url: "https://github.com/ArtSabintsev/Siren.git", from: "5.5.0"),
     ]
 )

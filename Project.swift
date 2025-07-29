@@ -79,7 +79,8 @@ let project = Project(
                 .external(name: "KakaoSDKUser"),
                 .external(name: "KakaoSDKTalk"),
                 .external(name: "KakaoSDKFriend"),
-                .external(name: "FirebaseAnalytics")
+                .external(name: "FirebaseAnalytics"),
+                .external(name: "Siren")
                 
             ],
             settings: .settings(base: [
