@@ -2,9 +2,7 @@ import SwiftUI
 
 struct RegisterFriendView: View {
     @ObservedObject var viewModel: RegisterFriendsViewModel
-    
     @State private var showContactPicker = false
-    @State private var showPermissionAlert = false
 
     let proceed: () -> Void
     let skip: () -> Void
@@ -13,14 +11,6 @@ struct RegisterFriendView: View {
         VStack(spacing: 12) {
             if !viewModel.phoneContacts.isEmpty {
                 ForEach(viewModel.phoneContacts) { contact in
-                    ContactRow(contact: contact) {
-                        viewModel.removeContact(contact)
-                    }
-                }
-            }
-
-            if !viewModel.kakaoContacts.isEmpty {
-                ForEach(viewModel.kakaoContacts) { contact in
                     ContactRow(contact: contact) {
                         viewModel.removeContact(contact)
                     }
@@ -78,7 +68,7 @@ struct RegisterFriendView: View {
                                     if granted {
                                         showContactPicker = true
                                     } else {
-                                        showPermissionAlert = true
+                                        viewModel.activeAlert = .permissionDenied
                                     }
                                 }
                                 AnalyticsManager.shared.contactImportLogAnalytics()
@@ -133,26 +123,32 @@ struct RegisterFriendView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 20)
         }
-        .alert(item: $viewModel.alertItem) { item in
-            Alert(
-                title: Text("⚠️ 제한 안내"),
-                message: Text(item.message),
-                dismissButton: .default(Text("확인"))
-            )
-        }
-        .alert(isPresented: $showPermissionAlert) {
-            Alert(
-                title: Text("연락처 권한이 꺼져 있어요"),
-                message: Text("소중한 사람을 불러오기 위해\n설정에서 연락처 접근을 켜주세요."),
-                primaryButton: .default(Text("설정으로 이동")) {
-                    if let url = URL(
-                        string: UIApplication.openSettingsURLString
-                    ) {
-                        UIApplication.shared.open(url)
-                    }
-                },
-                secondaryButton: .cancel(Text("취소"))
-            )
+        .alert(item: $viewModel.activeAlert) { alert in
+            switch alert {
+            case .limitExceeded(let total):
+                return Alert(
+                    title: Text("⚠️ 제한 안내"),
+                    message: Text("최대 10명까지만 등록할 수 있어요.\n(현재 \(total)명)"),
+                    dismissButton: .default(Text("확인"))
+                )
+            case .phoneSelectionExceeded:
+                return Alert(
+                    title: Text("⚠️ 제한 안내"),
+                    message: Text("연락처는 최대 10명까지만 선택할 수 있어요."),
+                    dismissButton: .default(Text("확인"))
+                )
+            case .permissionDenied:
+                return Alert(
+                    title: Text("연락처 권한이 꺼져 있어요"),
+                    message: Text("소중한 사람을 불러오기 위해\n설정에서 연락처 접근을 켜주세요."),
+                    primaryButton: .default(Text("설정으로 이동")) {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    },
+                    secondaryButton: .cancel(Text("취소"))
+                )
+            }
         }
         .onAppear {
             AnalyticsManager.shared.trackRegisterFriendsViewLogAnalytics()
