@@ -6,6 +6,7 @@ struct ContactFrequencySettingsView: View {
 
     @State private var selectedPerson: Friend?
     @State private var showFrequencyPicker: Bool = false
+    @State private var pickerSelectedFrequency: CheckInFrequency? = nil
     
     let back: () -> Void
     let complete: ([Friend]) -> Void
@@ -51,10 +52,13 @@ struct ContactFrequencySettingsView: View {
             // 한 번에 설정
             HStack {
                 Spacer()
-                
                 Button(action: {
-                    viewModel.toggleUnifiedFrequency(!viewModel.isUnified)
-                    self.isChecked.toggle()
+                    let newValue = !viewModel.isUnified
+                    viewModel.toggleUnifiedFrequency(newValue)
+                    isChecked = newValue
+                    if newValue {
+                        pickerSelectedFrequency = viewModel.unifiedFrequency
+                    }
                 }) {
                     HStack(spacing: 12) {
                         Text("한번에 설정")
@@ -71,23 +75,25 @@ struct ContactFrequencySettingsView: View {
                                     isChecked ? Color.blue01 : Color.gray03
                                 )
                                 .cornerRadius(6)
-                        
                             Image("icon_check_white")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 14, height: 14)
-                            
                         }
                     }
-                    
                 }
-//                .buttonStyle(.plain)
                 .padding(.horizontal, 20)
             }
             
             // 공통 주기 설정 드롭다운
             if viewModel.isUnified {
                 Button(action: {
+                    if viewModel.unifiedFrequency == nil {
+                        viewModel.applyUnifiedFrequency(.weekly)
+                        pickerSelectedFrequency = .weekly
+                    } else {
+                        pickerSelectedFrequency = viewModel.unifiedFrequency
+                    }
                     showFrequencyPicker = true
                 }) {
                     HStack {
@@ -98,9 +104,7 @@ struct ContactFrequencySettingsView: View {
                         .foregroundColor(
                             viewModel.unifiedFrequency == nil ? .gray02 : .black
                         )
-
                         Spacer()
-
                         Image(systemName: "chevron.down")
                             .foregroundColor(.gray02)
                     }
@@ -126,6 +130,7 @@ struct ContactFrequencySettingsView: View {
                             isUnified: viewModel.isUnified
                         ) {
                             selectedPerson = person
+                            pickerSelectedFrequency = person.frequency
                             showFrequencyPicker = true
                             AnalyticsManager.shared.setCareFrequencyLogAnalytics()
                         }
@@ -139,7 +144,7 @@ struct ContactFrequencySettingsView: View {
                 Button{
                     back()
                     isChecked = false
-                    viewModel.toggleUnifiedFrequency(isChecked)
+                    viewModel.toggleUnifiedFrequency(false)
                 } label: {
                     Text("이전")
                         .modifier(Font.Pretendard.b1BoldStyle())
@@ -157,15 +162,14 @@ struct ContactFrequencySettingsView: View {
                 }
 
                 Button{
-                    // 카카오는 이미지 저장 후 BackEnd 서버에 전송 (스펙 아웃)
-//                    viewModel.downloadKakaoImageData { friendsWithImages in
-//                    }
-                    
                     DispatchQueue.main.async {
                         viewModel.uploadAllFriendsToServer(viewModel.people) {
                             UserSession.shared.user?.friends = viewModel.people
                             AnalyticsManager.shared.setProfileCountBucket(viewModel.people.count)
                             AnalyticsManager.shared.completeButtonLogAnalytics()
+                            self.isChecked = false // 완료 시 체크박스 비활성화
+                            self.showFrequencyPicker = false
+                            viewModel.toggleUnifiedFrequency(false) // ViewModel 상태도 비활성화
                             complete(viewModel.people)
                         }
                     }
@@ -186,9 +190,11 @@ struct ContactFrequencySettingsView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 20)
         }
-        .sheet(isPresented: $showFrequencyPicker) {
+        .sheet(isPresented: $showFrequencyPicker, onDismiss: {
+            pickerSelectedFrequency = nil
+        }) {
             FrequencyPickerView(
-                selected: viewModel.isUnified ? viewModel.unifiedFrequency : selectedPerson?.frequency,
+                selected: pickerSelectedFrequency,
                 onSelect: { freq in
                     if viewModel.isUnified {
                         viewModel.applyUnifiedFrequency(freq)
@@ -203,6 +209,7 @@ struct ContactFrequencySettingsView: View {
             .presentationCornerRadius(20)
         }
         .onAppear {
+            isChecked = viewModel.isUnified
             AnalyticsManager.shared.trackContactFrequencySettingsViewLogAnalytics()
         }
     }
@@ -248,34 +255,26 @@ struct FrequencyPickerView: View {
     let onSelect: (CheckInFrequency) -> Void
 
     var body: some View {
-        
         VStack(alignment: .leading) {
-
             Text("주기 설정")
                 .font(.headline)
                 .padding(.top, 16)
                 .padding(.leading, 16)
-            
             if let selected = tempSelected {
                 let today = Date()
                 let nextDate = today.nextCheckInDate(for: selected)
                 let nextDateDayOfTheWeek = today.nextCheckInDateDayOfTheWeek(for: selected)
-                
                 HStack {
                     Text("\(selected.rawValue) ")
                         .font(.body)
                         .foregroundColor(.gray02)
-
                     Text(nextDateDayOfTheWeek)
                         .font(.body)
                         .foregroundColor(.blue01)
-
                     Spacer()
-                    
                     Divider()
                         .foregroundColor(.gray02)
                         .frame(height: 20)
-                    
                     Text("다음 주기: \(nextDate)")
                         .font(.caption)
                         .foregroundColor(.gray02)
@@ -286,8 +285,6 @@ struct FrequencyPickerView: View {
                 .padding(.horizontal)
                 .padding(.top, 8)
             }
-            
-     
             VStack(spacing: 0) {
                 ForEach(CheckInFrequency.allCases.dropFirst()) { frequency in
                     Button(action: {
@@ -312,8 +309,6 @@ struct FrequencyPickerView: View {
             }
             .listStyle(.inset)
             .background(Color.white)
-            
-            // 하단 버튼
             HStack(spacing: 12) {
                 Button(action: {
                     dismiss()
@@ -332,12 +327,12 @@ struct FrequencyPickerView: View {
                                 )
                         )
                 }
-
                 Button(action: {
                     if let selected = tempSelected {
                         onSelect(selected)
+                    } else if let selected = selected {
+                        onSelect(selected)
                     }
-                    dismiss()
                 }) {
                     Text("완료")
                         .font(.body.bold())
@@ -352,6 +347,9 @@ struct FrequencyPickerView: View {
         }
         .background(Color.white)
         .cornerRadius(20)
+        .onAppear {
+            tempSelected = selected
+        }
     }
 }
 
