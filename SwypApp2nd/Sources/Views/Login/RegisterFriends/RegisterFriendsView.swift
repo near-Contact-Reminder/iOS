@@ -6,7 +6,7 @@ struct RegisterFriendView: View {
 
     let proceed: () -> Void
     let skip: () -> Void
-    
+
     private var contactListSection: some View {
         VStack(spacing: 12) {
             if !viewModel.phoneContacts.isEmpty {
@@ -20,15 +20,15 @@ struct RegisterFriendView: View {
         .padding(.horizontal, 20)
     }
 
-    
+
     var body: some View {
         Spacer()
             .frame(height: 12)
-        
+
         VStack(alignment: .leading, spacing: 24) {
             // 헤더 텍스트
             VStack(alignment: .leading, spacing: 12) {
-                
+
                 HStack {
                     Text("챙길 사람 불러오기")
                         .modifier(Font.Pretendard.b1BoldStyle())
@@ -38,7 +38,7 @@ struct RegisterFriendView: View {
                         .modifier(Font.Pretendard.captionBoldStyle())
                         .foregroundColor(.gray02)
                 }
-                
+
                 Spacer()
                     .frame( height: 20)
 
@@ -79,7 +79,7 @@ struct RegisterFriendView: View {
                                 viewModel.handleSelectedContacts(contacts)
                             }
                         }
-                        
+
                         if !viewModel.phoneContacts.isEmpty {
                             ForEach(viewModel.phoneContacts) { contact in
                                 ContactRow(contact: contact) {
@@ -89,8 +89,9 @@ struct RegisterFriendView: View {
                             }
                         }
                     }
+
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 24)
             }
             Spacer()
 
