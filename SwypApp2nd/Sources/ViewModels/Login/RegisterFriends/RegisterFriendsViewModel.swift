@@ -17,9 +17,9 @@ enum RegisterFriendsAlert: Identifiable {
         switch self {
         case .limitExceeded:
             return "limitExceeded"
-        case .phoneSelectionExceeded: 
+        case .phoneSelectionExceeded:
             return "phoneSelectionExceeded"
-        case .permissionDenied:       
+        case .permissionDenied:
             return "permissionDenied"
         }
     }
