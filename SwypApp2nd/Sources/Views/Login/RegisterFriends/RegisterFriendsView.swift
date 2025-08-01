@@ -99,29 +99,8 @@ struct RegisterFriendView: View {
                             }
                         }
                     }
-                    
-                    // 카카오톡 스펙 아웃
-//                    VStack(spacing: 12) {
-//                        CardButton(
-//                            icon: Image("img_32_kakao_square"),
-//                            title: "카카오톡에서 불러오기 (최대 5명)",
-//                            hasContacts: !viewModel.kakaoContacts.isEmpty,
-//                            action: {
-//                                viewModel.fetchContactsFromKakao()
-//                            }
-//                        )
-//                        
-//                        if !viewModel.kakaoContacts.isEmpty {
-//                            ForEach(viewModel.kakaoContacts) { contact in
-//                                ContactRow(contact: contact) {
-//                                    viewModel.removeContact(contact)
-//                                }
-//                                
-//                            }
-//                        }
-//                    }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
             }
             Spacer()
 
@@ -225,18 +204,9 @@ struct ContactRow: View {
     let contact: Friend
     let onDelete: () -> Void
 
-    var iconImage: Image {
-        switch contact.source {
-        case .phone:
-            return Image("img_32_contact_square")
-        case .kakao:
-            return Image("img_32_kakao_square")
-        }
-    }
-
     var body: some View {
         HStack(spacing: 12) {
-            iconImage
+            Image(.img24Contact)
                 .resizable()
                 .frame(width: 24, height: 24)
 
@@ -252,8 +222,6 @@ struct ContactRow: View {
             }
         }
         .padding()
-//        .padding(.vertical, 8)
-//        .padding(.horizontal, 24)
         .background(Color.bg02)
         .cornerRadius(12)
     }

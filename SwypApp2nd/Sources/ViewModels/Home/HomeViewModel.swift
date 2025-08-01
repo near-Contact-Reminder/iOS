@@ -41,7 +41,7 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    // PresignedURL 사용 이미지 데이터 다운
+    /// PresignedURL 사용 이미지 데이터 다운
     func downloadImage(from url: URL, completion: @escaping (UIImage?) -> Void) {
         URLSession.shared.dataTask(with: url) { data, response, error in
             
@@ -63,7 +63,7 @@ class HomeViewModel: ObservableObject {
         }.resume()
     }
     
-    // 이번달 챙길 사람 목록 가져오기
+    /// 이번달 챙길 사람 목록 가져오기
     func loadMonthlyFriends() {
         guard let token = UserSession.shared.user?.serverAccessToken else { return }
         
@@ -87,6 +87,7 @@ class HomeViewModel: ObservableObject {
         }
     }
     
+    /// 친구 목록 조회
     func loadFriendList() {
         guard let token = UserSession.shared.user?.serverAccessToken else { return }
         
@@ -101,6 +102,7 @@ class HomeViewModel: ObservableObject {
                         imageURL: $0.imageUrl,
                         source: source,
                         lastContactAt: $0.lastContactAt?.toDateWithDot(),
+                        checkRate: $0.checkRate,
                         position: $0.position,
                         fileName: $0.fileName
                     )
@@ -130,7 +132,7 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    // 친구 순서 변경
+    /// 친구 순서 변경
     func patchFriendOrder(targetID: String, newPosition: Int) {
         guard let token = UserSession.shared.user?.serverAccessToken else { return }
         
@@ -142,6 +144,13 @@ class HomeViewModel: ObservableObject {
                 print("🔴 [HomeViewModel] 친구 순서 변경 실패 - \(error.localizedDescription)")
             }
             
+        }
+    }
+
+    func getUserCheckRate() {
+        guard let token = UserSession.shared.user?.serverAccessToken else { return }
+        BackEndAuthService.shared.getUserCheckRate(accessToken: token) { checkRate in
+            UserSession.shared.user?.checkRate = checkRate
         }
     }
 }
