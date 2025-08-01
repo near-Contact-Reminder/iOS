@@ -216,15 +216,9 @@ struct FrequencyRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if person.source == .kakao {
-                Image("img_32_kakao_square")
-                    .resizable()
-                    .frame(width: 32, height: 32)
-            } else {
-                Image("img_32_contact_square")
-                    .resizable()
-                    .frame(width: 32, height: 32)
-            }
+            Image(.img24Contact)
+                .resizable()
+                .frame(width: 24, height: 24)
             
             Text(person.name)
                 .modifier(Font.Pretendard.b2MediumStyle())
