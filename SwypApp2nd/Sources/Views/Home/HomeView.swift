@@ -56,6 +56,7 @@ public struct HomeView: View {
         .onAppear {
             homeViewModel.loadFriendList()
             homeViewModel.loadMonthlyFriends()
+            homeViewModel.getUserCheckRate()
 
             AnalyticsManager.shared.trackHomeViewLogAnalytics()
 

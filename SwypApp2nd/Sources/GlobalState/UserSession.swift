@@ -218,7 +218,7 @@ class UserSession: ObservableObject {
                                     ) { result in
                                         switch result {
                                         case .success(let info):
-                                            self.getUserCheckRate(
+                                            BackEndAuthService.shared.getUserCheckRate(
                                                 accessToken: tokenResponse.accessToken
                                             ) { checkRate in
                                                 let user = User(
@@ -277,7 +277,7 @@ class UserSession: ObservableObject {
                                                         ) { result in
                                                             switch result {
                                                             case .success(let info):
-                                                                self.getUserCheckRate(
+                                                                BackEndAuthService.shared.getUserCheckRate(
                                                                     accessToken: tokenResponse.accessToken
                                                                 ) { checkRate in
                                                                     let user = User(
@@ -319,8 +319,8 @@ class UserSession: ObservableObject {
                         print(
                             "🟢 [UserSession] fetchMemberInfo 성공 - 닉네임: \(info.nickname)"
                         )
-
-                        self.getUserCheckRate(accessToken: accessToken) { checkRate in
+                        
+                        BackEndAuthService.shared.getUserCheckRate(accessToken: accessToken) { checkRate in
                             let user = User(
                                 id: info.memberId,
                                 name: info.nickname,
@@ -441,7 +441,7 @@ class UserSession: ObservableObject {
                                     ) { result in
                                         switch result {
                                         case .success(let info):
-                                            self.getUserCheckRate(
+                                            BackEndAuthService.shared.getUserCheckRate(
                                                 accessToken: tokenResponse.accessToken
                                             ) { checkRate in
                                                 let user = User(
@@ -481,8 +481,8 @@ class UserSession: ObservableObject {
                     print(
                         "🟢 [UserSession] fetchMemberInfo 성공 - 닉네임: \(info.nickname)"
                     )
-
-                    self.getUserCheckRate(accessToken: accessToken) { checkRate in
+                    
+                    BackEndAuthService.shared.getUserCheckRate(accessToken: accessToken) { checkRate in
                         let user = User(
                             id: info.memberId,
                             name: info.nickname,
@@ -599,21 +599,5 @@ class UserSession: ObservableObject {
         }
     }
 
-    // 유저의 챙김률
-    func getUserCheckRate(accessToken: String, completion: @escaping (Int) -> Void) {
-
-        BackEndAuthService.shared
-            .getUserCheckRate(accessToken: accessToken) { result in
-                switch result {
-                case .success(let success):
-                    print(
-                        "🟢 [UserSession] getUserCheckRate 성공 챙김률: \(success.checkRate)"
-                    )
-                    completion(success.checkRate)
-                case .failure(let error):
-                    print("🔴 [UserSession] getUserCheckRate 실패: \(error)")
-                    completion(0)
-                }
-            }
-    }
+    
 }
