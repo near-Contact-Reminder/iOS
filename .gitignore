@@ -135,3 +135,6 @@ Tuist/Config/Config.xcconfig
 
 # Firebase
 Tuist/GoogleService-Info.plist
+
+# vscode mcp server
+.vscode/*
