@@ -12,6 +12,50 @@ class UserSession: ObservableObject {
     /// 앱 흐름
     @Published var appStep: AppStep = .splash
     
+    /// 마이그레이션 상태 확인 및 실행
+    private func checkMigrationStatus() {
+        // accessToken 체크
+        guard let accessToken = TokenManager.shared.get(for: .server) else {
+            print("🔴 [UserSession] 마이그레이션 실패 - 서버 액세스 토큰이 없음")
+            return
+        }
+
+        // 이미 마이그레이션 완료되었는지 확인
+        if UserDefaults.standard.object(forKey: "isMigrated") == nil {
+            print("🟢 [UserSession] 마이그레이션 불필요 - 신규 유저")
+            UserDefaults.standard.set(true, forKey: "isMigrated")
+            return
+        }
+
+        let migrationStatus = UserDefaults.standard.object(forKey: "isMigrated") as? Bool
+        if migrationStatus == false {
+            // 기존 친구 목록 가져오기
+            if let friends = self.user?.friends, !friends.isEmpty {
+                print("🟡 [UserSession] 기존 친구 \(friends.count)명 마이그레이션 시작")
+                
+                // friend/init API 호출로 마이그레이션 실행
+                BackEndAuthService.shared.sendInitialFriends(friends: friends, accessToken: accessToken) { result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .success(let friendsWithURLs):
+                            print("🟢 [UserSession] 마이그레이션 성공: \(friendsWithURLs.count)명")
+                            UserDefaults.standard.set(true, forKey: "isMigrated")
+                            CoreDataStack.shared.clearAllData()
+                            
+                        case .failure(let error):
+                            print("🔴 [UserSession] 마이그레이션 실패: \(error)")
+                            UserDefaults.standard.set(false, forKey: "isMigrated")
+                        }
+                    }
+                }
+            } else {
+                print("🟡 [UserSession] 기존 친구가 없음 - 마이그레이션 불필요")
+                UserDefaults.standard.set(true, forKey: "isMigrated")
+            }
+        } else {
+            print("🟢 [UserSession] 이미 마이그레이션 완료됨")
+        }
+    }
 
     /// 카카오 로그아웃
     func kakaoLogout(completion: @escaping (Bool) -> Void) {
@@ -60,13 +104,24 @@ class UserSession: ObservableObject {
                 self.appStep = agreed ? .home : .terms
                 print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
             }
+
+            // 로그인 완료 후 마이그레이션 실행
+            print("🟡 [UserSession] updateUser - 0.5초 후 마이그레이션 실행 예정")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                print("🟢 [UserSession] 마이그레이션 실행 시작")
+                self.checkMigrationStatus()
+            }
         }
     }
 
     /// 로그아웃 처리
     func logout() {
-        // TODO: pending notifications는 삭제가 아니라 일시 정지 해야 함
-        NotificationManager.shared.clearNotifications()
+        // FCM 알림 일시정지
+        NotificationManager.shared.pauseNotifications()
+        
+        // FCM 토큰 관련 정리
+        UserDefaults.standard.removeObject(forKey: "LastRegisteredFCMToken")
+        
         DispatchQueue.main.async {
             TokenManager.shared.clear(type: .server)  // 토큰 삭제
             self.user = nil
@@ -92,6 +147,7 @@ class UserSession: ObservableObject {
             }
             print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
         }
+        
     }
     
     /// 카카오 토큰 검사

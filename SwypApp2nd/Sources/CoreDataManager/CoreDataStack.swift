@@ -16,8 +16,25 @@ class CoreDataStack {
     var context: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
-    
-        
+
+    func clearAllData() {
+        let entities = ["PersonEntity", "ReminderEntity"]
+
+        for entityName in entities {
+            let request: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: entityName)
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
+            do {
+                try context.execute(deleteRequest)
+                print("🟢 [CoreDataStack] \(entityName) 삭제 완료")
+            } catch {
+                print("🔴 [CoreDataStack] \(entityName) 삭제 실패: \(error)")
+            }
+        }
+
+        try? context.save()
+        print("🟢 [CoreDataStack] 모든 Core Data 삭제 완료")
+    }
+
     func saveContext() {
         let context = persistentContainer.viewContext
         if context.hasChanges {

@@ -1,16 +1,6 @@
 import Alamofire
 import Foundation
 
-// MARK: - FCM 알림 요청 모델
-struct FCMReminderRequest: Encodable {
-    let friendId: String
-    let reminderId: String
-    let type: String
-    let scheduledDate: Date
-    let title: String
-    let body: String
-}
-
 // MARK: - 서버 토큰 관리
 struct TokenResponse: Decodable {
     let accessToken: String
@@ -806,7 +796,10 @@ final class BackEndAuthService {
             "Content-Type": "application/json"
         ]
 
-        let requestData = ["fcmToken": token]
+        let requestData = [
+            "token": token,
+            "osType": "IOS"
+        ]
 
         AF.request(url, method: .post, parameters: requestData,encoding: JSONEncoding.default, headers: headers)
         .validate(statusCode: 200..<300)
@@ -840,6 +833,30 @@ final class BackEndAuthService {
                 case .success:
                     completion(.success(()))
                 case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+    }
+    
+    /// 백엔드: 마이그레이션 상태 확인
+    func checkMigrationStatus(accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let url = "\(baseURL)/isMigrated"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        print("🟡 [BackEndAuthService] 마이그레이션 상태 확인 요청")
+        print("🟡 [BackEndAuthService] URL: \(url)")
+        
+        AF.request(url, method: .get, headers: headers)
+            .validate(statusCode: 200..<300)
+            .response { response in
+                switch response.result {
+                case .success:
+                    print("🟢 [BackEndAuthService] 마이그레이션 상태 확인 성공")
+                    completion(.success(()))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 마이그레이션 상태 확인 실패: \(error.localizedDescription)")
                     completion(.failure(error))
                 }
             }
