@@ -68,6 +68,7 @@ class RegisterFriendsViewModel: ObservableObject {
 
         case .limited:
             completion(true)
+            
         @unknown default:
             completion(false)
         }
