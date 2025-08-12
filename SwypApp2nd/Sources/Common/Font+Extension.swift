@@ -35,53 +35,99 @@ extension Font {
         }
 
         // ViewModifier 반환
-        static func h1BoldStyle() -> PretendardTextStyle { .init(font: h1Bold(), lineHeight: 34, letterSpacing: -0.25) }
-        static func h1MediumStyle() -> PretendardTextStyle { .init(font: h1Medium(), lineHeight: 34, letterSpacing: -0.25) }
-        static func h1RegularStyle() -> PretendardTextStyle { .init(font: h1Regular(), lineHeight: 34, letterSpacing: -0.25) }
-        static func h2BoldStyle() -> PretendardTextStyle { .init(font: h2Bold(), lineHeight: 24, letterSpacing: -0.25) }
-        static func b1BoldStyle() -> PretendardTextStyle { .init(font: b1Bold(), lineHeight: 22, letterSpacing: -0.25) }
-        static func b1MediumStyle() -> PretendardTextStyle { .init(font: b1Medium(), lineHeight: 22, letterSpacing: -0.25) }
-        static func b2BoldStyle() -> PretendardTextStyle { .init(font: b2Bold(), lineHeight: 20, letterSpacing: -0.25) }
-        static func b2MediumStyle() -> PretendardTextStyle { .init(font: b2Medium(), lineHeight: 20, letterSpacing: -0.25) }
-        static func captionBoldStyle() -> PretendardTextStyle { .init(font: captionBold(), lineHeight: 18, letterSpacing: -0.25) }
-        static func captionMediumStyle() -> PretendardTextStyle { .init(font: captionMedium(), lineHeight: 18, letterSpacing: -0.25) }
+        static func h1BoldStyle() -> PretendardTextStyle { 
+            .init(font: h1Bold(), fontSize: 24, designLineHeight: 34, letterSpacing: -0.25) 
+        }
+        static func h1MediumStyle() -> PretendardTextStyle { 
+            .init(font: h1Medium(), fontSize: 24, designLineHeight: 34, letterSpacing: -0.25) 
+        }
+        static func h1RegularStyle() -> PretendardTextStyle { 
+            .init(font: h1Regular(), fontSize: 24, designLineHeight: 34, letterSpacing: -0.25) 
+        }
+        static func h2BoldStyle() -> PretendardTextStyle { 
+            .init(font: h2Bold(), fontSize: 18, designLineHeight: 24, letterSpacing: -0.25) 
+        }
+        static func b1BoldStyle() -> PretendardTextStyle { 
+            .init(font: b1Bold(), fontSize: 16, designLineHeight: 22, letterSpacing: -0.25) 
+        }
+        static func b1MediumStyle() -> PretendardTextStyle { 
+            .init(font: b1Medium(), fontSize: 16, designLineHeight: 22, letterSpacing: -0.25) 
+        }
+        static func b2BoldStyle() -> PretendardTextStyle { 
+            .init(font: b2Bold(), fontSize: 14, designLineHeight: 20, letterSpacing: -0.25) 
+        }
+        static func b2MediumStyle() -> PretendardTextStyle { 
+            .init(font: b2Medium(), fontSize: 14, designLineHeight: 20, letterSpacing: -0.25) 
+        }
+        static func captionBoldStyle() -> PretendardTextStyle { 
+            .init(font: captionBold(), fontSize: 12, designLineHeight: 18, letterSpacing: -0.25) 
+        }
+        static func captionMediumStyle() -> PretendardTextStyle { 
+            .init(font: captionMedium(), fontSize: 12, designLineHeight: 18, letterSpacing: -0.25) 
+        }
     }
 }
 
 // PretendardTextStyle ViewModifier
 struct PretendardTextStyle: ViewModifier {
     let font: Font
-    let lineHeight: CGFloat
+    let fontSize: CGFloat
+    let designLineHeight: CGFloat
     let letterSpacing: CGFloat
 
     func body(content: Content) -> some View {
         content
             .font(font)
-            .lineSpacing(lineHeight - fontSize(from: font))
+            .lineSpacing(calculateLineSpacing())
             .tracking(letterSpacing)
     }
-
-    // Pretendard 폰트 크기 추출 (Font.custom 사용 시)
-    private func fontSize(from font: Font) -> CGFloat {
-        // Pretendard-XX, size: YY
-        let mirror = Mirror(reflecting: font)
-        for child in mirror.children {
-            if let provider = child.value as? CTFontProvider,
-               let size = provider.fontSize {
-                return size
+    
+    /// lineSpacing 계산
+    private func calculateLineSpacing() -> CGFloat {
+        if let uiFont = getUIFont() {
+            let actualLineHeight = uiFont.lineHeight
+            let additionalSpacing = designLineHeight - actualLineHeight
+            return max(0, additionalSpacing)
+        }
+        
+        // 폰트별 경험적 계수 사용
+        let coefficient = getLineHeightCoefficient()
+        let estimatedDefaultLineHeight = fontSize * coefficient
+        let additionalSpacing = designLineHeight - estimatedDefaultLineHeight
+        
+        return max(0, additionalSpacing)
+    }
+    
+    // UIFont 인스턴스 가져오기
+    private func getUIFont() -> UIFont? {
+        // Pretendard 폰트의 실제 이름 매핑
+        let fontNames = [
+            "Pretendard-Bold": "PretendardBold",
+            "Pretendard-Medium": "PretendardMedium", 
+            "Pretendard-Regular": "PretendardRegular"
+        ]
+        
+        // font에서 폰트 이름 추출/ 매핑
+        for (searchName, realName) in fontNames {
+            if String(describing: font).contains(searchName) {
+                return UIFont(name: realName, size: fontSize)
             }
         }
-        // 기본값
-        return 16
+        
+        return UIFont.systemFont(ofSize: fontSize)
     }
-}
-
-// CTFontProvider 프로토콜
-private protocol CTFontProvider {
-    var fontSize: CGFloat? { get }
-}
-extension CTFontProvider {
-    var fontSize: CGFloat? { nil }
+    
+    // 폰트 크기별 line height 계수
+    private func getLineHeightCoefficient() -> CGFloat {
+        switch fontSize {
+        case 24: return 1.25 // H1
+        case 18: return 1.22 // H2
+        case 16: return 1.19 // B1
+        case 14: return 1.21 // B2
+        case 12: return 1.17 // Caption
+        default: return 1.2 // 기본값
+        }
+    }
 }
 
 // MARK: - Example

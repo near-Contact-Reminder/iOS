@@ -47,10 +47,16 @@ struct RegisterFriendView: View {
 
                 Text("가까워지고 싶은 사람\n10명까지 선택해주세요")
                     .modifier(Font.Pretendard.h1BoldStyle())
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text("먼저, 더 가까워지고 싶은\n소중한 사람만 선택해주세요.")
                     .modifier(Font.Pretendard.b1MediumStyle())
                     .foregroundColor(.gray02)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 20)
 
