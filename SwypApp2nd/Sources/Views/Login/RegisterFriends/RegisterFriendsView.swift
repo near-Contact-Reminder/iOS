@@ -89,9 +89,8 @@ struct RegisterFriendView: View {
                             }
                         }
                     }
-                    
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
             }
             Spacer()
 
@@ -201,18 +200,9 @@ struct ContactRow: View {
     let contact: Friend
     let onDelete: () -> Void
 
-    var iconImage: Image {
-        switch contact.source {
-        case .phone:
-            return Image("img_32_contact_square")
-        case .kakao:
-            return Image("img_32_kakao_square")
-        }
-    }
-
     var body: some View {
         HStack(spacing: 12) {
-            iconImage
+            Image(.img24Contact)
                 .resizable()
                 .frame(width: 24, height: 24)
 
@@ -228,8 +218,6 @@ struct ContactRow: View {
             }
         }
         .padding()
-//        .padding(.vertical, 8)
-//        .padding(.horizontal, 24)
         .background(Color.bg02)
         .cornerRadius(12)
     }

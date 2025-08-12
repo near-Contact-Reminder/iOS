@@ -43,6 +43,7 @@ struct FriendListResponse: Codable, Identifiable {
     let source: String?
     let fileName: String?
     let lastContactAt: String?
+    let checkRate: Int?
     
     var id: String { friendId }
 }
@@ -501,9 +502,16 @@ final class BackEndAuthService {
         AF.request(url, method: .get, headers: headers)
             .validate(statusCode: 200..<300)
             .responseDecodable(of: [FriendListResponse].self) { response in
+
+                if let data = response.data,
+                   let jsonString = String(data: data, encoding: .utf8) {
+                    print("🟡 [fetchFriendList] Raw response JSON:\n\(jsonString)")
+                }
+                
                 switch response.result {
                 case .success(let list):
                     print("🟢 [BackEndAuthService] 친구 리스트 조회 성공 \(list.map { $0.name })")
+                    print("🟢 [BackEndAuthService] 친구 리스트 챙김률 조회 성공 \(list.map { $0.checkRate })")
                     completion(.success(list))
                 case .failure(let error):
                     print("🔴 [BackEndAuthService] 친구 리스트 조회 실패: \(error.localizedDescription)")
@@ -648,20 +656,6 @@ final class BackEndAuthService {
                         "🟢 [BackEndAuthService] 친구별 챙김 로그 리스트 조회 성공 - \(checkInRecords)"
                     )
                     
-                    do {
-                        let encoder = JSONEncoder()
-                        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                        let jsonData = try encoder.encode(checkInRecords)
-                        if let jsonString = String(
-                            data: jsonData,
-                            encoding: .utf8
-                        ) {
-                            print("🟡 [getFriendRecords] 서버 응답 JSON:\n\(jsonString)")
-                        }
-                    } catch {
-                        print("🔴 [getFriendRecords] JSON 인코딩 실패: \(error)")
-                    }
-                    
                     completion(.success(checkInRecords))
                     
                 case .failure(let error):
@@ -700,7 +694,7 @@ final class BackEndAuthService {
             "Authorization": "Bearer \(accessToken)"
         ]
         
-        print("🟡 [BackEndAuthService] 이번달 친구 조회 요청 URL: \(url)")
+        print("🟡 [BackEndAuthService] 이번달 친구 조회 요청")
         
         AF.request(url, method: .get, headers: headers)
             .validate()
@@ -712,23 +706,7 @@ final class BackEndAuthService {
                     print(
                         "🟢 [BackEndAuthService] 이번달 친구 조회 성공 - \(monthlyFriends.map { $0.name })"
                     )
-                    do {
-                        let encoder = JSONEncoder()
-                        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                        let jsonData = try encoder.encode(monthlyFriends)
-                        if let jsonString = String(
-                            data: jsonData,
-                            encoding: .utf8
-                        ) {
-                            print(
-                                "🟡 [getMonthlyFriends] 서버 응답 JSON:\n\(jsonString)"
-                            )
-                        }
-                    } catch {
-                        print(
-                            "🔴 [getMonthlyFriends] 서버 응답 JSON 인코딩 실패: \(error)"
-                        )
-                    }
+                    
                     completion(.success(monthlyFriends))
                 case .failure(let error):
                     completion(.failure(error))
@@ -788,7 +766,24 @@ final class BackEndAuthService {
             }
     }
         
-        
+    /// 유저의 전체 챙김률
+    func getUserCheckRate(accessToken: String, completion: @escaping (Int) -> Void) {
+            
+        BackEndAuthService.shared
+            .getUserCheckRate(accessToken: accessToken) { result in
+                switch result {
+                case .success(let success):
+                    print(
+                        "🟢 [UserSession] getUserCheckRate 성공 챙김률: \(success.checkRate)"
+                    )
+                    UserSession.shared.user?.checkRate = success.checkRate
+                    completion(success.checkRate)
+                case .failure(let error):
+                    print("🔴 [UserSession] getUserCheckRate 실패: \(error)")
+                    completion(0)
+                }
+            }
+    }
 }
 
 
