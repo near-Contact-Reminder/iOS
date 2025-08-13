@@ -684,6 +684,20 @@ final class BackEndAuthService {
                         "🟢 [BackEndAuthService] 친구별 챙김 로그 리스트 조회 성공 - \(checkInRecords)"
                     )
 
+                    do {
+                        let encoder = JSONEncoder()
+                        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                        let jsonData = try encoder.encode(checkInRecords)
+                        if let jsonString = String(
+                            data: jsonData,
+                            encoding: .utf8
+                        ) {
+                            print("🟡 [getFriendRecords] 서버 응답 JSON:\n\(jsonString)")
+                        }
+                    } catch {
+                        print("🔴 [getFriendRecords] JSON 인코딩 실패: \(error)")
+                    }
+
                     completion(.success(checkInRecords))
 
                 case .failure(let error):
@@ -890,16 +904,15 @@ final class BackEndAuthService {
     func registerFCMToken(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
         let url = "\(baseURL)/messaging/register"
         let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)",
-            "Content-Type": "application/json"
+            "Authorization": "Bearer \(accessToken)"
         ]
 
-        let requestData = [
+        let parameters = [
             "token": token,
             "osType": "IOS"
         ]
 
-        AF.request(url, method: .post, parameters: requestData,encoding: JSONEncoding.default, headers: headers)
+        AF.request(url, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
         .validate(statusCode: 200..<300)
         .response { response in
             switch response.result {
@@ -907,8 +920,8 @@ final class BackEndAuthService {
                 print("🟢 [BackEndAuthService] FCM 토큰 등록 성공")
                 completion(.success(()))
             case .failure(let error):
-                print("🔴 [BackEndAuthService] FCM 토큰 등록 실패: \(error.localizedDescription)")
-                completion(.failure(error))
+            print("🔴 [BackEndAuthService] FCM 토큰 등록 실패: \(error.localizedDescription)")
+            completion(.failure(error))
             }
         }
     }
@@ -919,44 +932,44 @@ final class BackEndAuthService {
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-        let parameters: [String: Any] = [
+        let parameters = [
             "fcmToken": token
         ]
 
         AF.request(url, method: .delete, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
-            .validate()
-            .response { response in
-                switch response.result {
-                case .success:
-                    completion(.success(()))
-                case .failure(let error):
-                    completion(.failure(error))
-                }
+        .validate(statusCode: 200..<300)
+        .response { response in
+            switch response.result {
+            case .success:
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
             }
+        }
     }
-    
+
     /// 백엔드: 마이그레이션 상태 확인
-    func checkMigrationStatus(accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let url = "\(baseURL)/isMigrated"
+    func checkMigrationStatus(accessToken: String, completion: @escaping (Result<MigrationStatusResponse, Error>) -> Void) {
+        let url = "\(baseURL)/member/reminder/migration-status"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-        
+
         print("🟡 [BackEndAuthService] 마이그레이션 상태 확인 요청")
         print("🟡 [BackEndAuthService] URL: \(url)")
-        
+
         AF.request(url, method: .get, headers: headers)
-            .validate(statusCode: 200..<300)
-            .response { response in
-                switch response.result {
-                case .success:
-                    print("🟢 [BackEndAuthService] 마이그레이션 상태 확인 성공")
-                    completion(.success(()))
-                case .failure(let error):
-                    print("🔴 [BackEndAuthService] 마이그레이션 상태 확인 실패: \(error.localizedDescription)")
-                    completion(.failure(error))
-                }
+        .validate(statusCode: 200..<300)
+        .responseDecodable(of: MigrationStatusResponse.self) { response in
+            switch response.result {
+            case .success(let migrationStatus):
+                print("🟢 [BackEndAuthService] 마이그레이션 상태 확인 성공 - isMigrated: \(migrationStatus.isMigrated)")
+                completion(.success(migrationStatus))
+            case .failure(let error):
+                print("🔴 [BackEndAuthService] 마이그레이션 상태 확인 실패: \(error.localizedDescription)")
+                completion(.failure(error))
             }
+        }
     }
 }
 
