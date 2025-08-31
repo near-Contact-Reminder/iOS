@@ -522,7 +522,7 @@ private struct ConfirmButton: View {
     }
 }
 
-private struct CareToastView: View {
+struct CareToastView: View {
     var body: some View {
         VStack(spacing: 12) {
             Image("img_100_character_success")
@@ -544,51 +544,3 @@ private struct CareToastView: View {
         .transition(.scale.combined(with: .opacity))
     }
 }
-
-struct ProfileDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            previewForDevice("iPhone 12 mini")
-            previewForDevice("iPhone 12")
-            previewForDevice("iPhone 13 mini")
-            previewForDevice("iPhone 16")
-            previewForDevice("iPhone 16 Pro")
-            previewForDevice("iPhone 16 Pro Max")
-        }
-    }
-
-    static func previewForDevice(_ deviceName: String) -> some View {
-        let friend = Friend(
-            id: UUID(),
-            name: "정종원",
-            image: nil,
-            imageURL: nil,
-            source: .kakao,
-            frequency: .monthly,
-            phoneNumber: "010-1234-5678",
-            relationship: "FRIEND",
-            birthDay: Date(),
-            anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
-            memo: "작년에 생일에 키링 선물함 🎁",
-            nextContactAt: Date().addingTimeInterval(86400 * 30),
-            lastContactAt: Date().addingTimeInterval(-86400 * 10),
-            checkRate: 75,
-            position: 0,
-            fileName: ".jpg"
-        )
-
-        let viewModel = ProfileDetailViewModel(people: friend)
-        let notificationViewModel = NotificationViewModel()
-
-        return NavigationStack {
-            ProfileDetailView(
-                viewModel: viewModel,
-                notificationViewModel: notificationViewModel,
-                path: .constant([])
-            )
-        }
-        .previewDevice(PreviewDevice(rawValue: deviceName))
-        .previewDisplayName(deviceName)
-    }
-}
-

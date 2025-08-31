@@ -36,3 +36,9 @@ public struct EachFriendCheckedCell: View {
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 8)
     }
 }
+
+struct EachFriendCheckedCell_Preview: PreviewProvider {
+    static var previews: some View {
+        EachFriendCheckedCell()
+    }
+}
