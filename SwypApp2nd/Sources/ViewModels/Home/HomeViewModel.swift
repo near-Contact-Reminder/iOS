@@ -65,21 +65,28 @@ class HomeViewModel: ObservableObject {
     
     /// 이번달 챙길 사람 목록 가져오기
     func loadMonthlyFriends() {
-        guard let token = UserSession.shared.user?.serverAccessToken else { return }
+        guard let token = UserSession.shared.user?.serverAccessToken else { 
+            print("🔴 [HomeViewModel] accessToken 없음")
+            return 
+        }
+        
+        print("🟡 [HomeViewModel] loadMonthlyFriends 시작")
         
         BackEndAuthService.shared.getMonthlyFriends(accessToken: token) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let monthlyFriendDTOs):
+                    print("🟢 [HomeViewModel] 이번달 친구 목록 로드 성공: \(monthlyFriendDTOs.count)개")
                     self.thisMonthFriends = monthlyFriendDTOs.map { dto in
-                        FriendMonthlyResponse(
+                        print("🟡 [HomeViewModel] DTO: \(dto.name) - \(dto.type)")
+                        return FriendMonthlyResponse(
                             friendId: dto.friendId,
-                                name: dto.name,
-                                type: dto.type.uppercased(),
-                                nextContactAt: dto.nextContactAt
-                            )
-                        
+                            name: dto.name,
+                            type: dto.type.uppercased(),
+                            nextContactAt: dto.nextContactAt
+                        )
                     }
+                    print("🟢 [HomeViewModel] thisMonthFriends 설정 완료: \(self.thisMonthFriends.count)개")
                 case .failure(let error):
                     print("🔴 [HomeViewModel] 이번달 친구 목록 로드 실패: \(error)")
                 }

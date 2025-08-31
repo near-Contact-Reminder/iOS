@@ -38,7 +38,7 @@ public struct HomeView: View {
                                             checkRate: userSession.user?.checkRate ?? 0)
 
                             // 이번달 챙길 사람
-                            ThisMonthSection(peoples: homeViewModel.thisMonthFriends)
+                            ThisMonthSection(peoples: homeViewModel.thisMonthFriends, path: $path)
                         }
 
                         // 내 사람들
@@ -164,6 +164,7 @@ struct GreetingSection: View {
 // MARK: - 이번달 챙길 사람
 struct ThisMonthSection: View {
     var peoples: [FriendMonthlyResponse]
+    @Binding var path: [AppRoute]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -172,19 +173,21 @@ struct ThisMonthSection: View {
                     .modifier(Font.Pretendard.b1BoldStyle())
                     .foregroundColor(.white)
                 Spacer()
-                // TODO: - 2차때..
-//                if !peoples.isEmpty {
-//                    Button {
-//
-//                    } label: {
-//                        HStack {
-//                            Text("전체보기")
-//                                .font(Font.Pretendard.b2Medium())
-//                                .foregroundColor(.gray03)
-//                            Image("icon_12_arrow_right")
-//                        }
-//                    }
-//                }
+                
+                if !peoples.isEmpty {
+                    Button {
+                        path.append(.friendMonthly)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text("전체보기")
+                                .modifier(Font.Pretendard.b2MediumStyle())
+                                .foregroundColor(Color.gray04)
+                            Image("icon_12_arrow_right")
+                                .renderingMode(.template)
+                                .foregroundColor(Color.gray04)
+                        }
+                    }
+                }
             }
             .padding(.horizontal, 24)
 

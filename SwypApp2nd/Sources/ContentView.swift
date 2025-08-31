@@ -18,6 +18,7 @@ enum AppRoute: Hashable {
     case inbox
     case my
     case personDetail(Friend)
+    case friendMonthly
 }
 
 public struct ContentView: View {
@@ -29,6 +30,7 @@ public struct ContentView: View {
     @StateObject private var registerFriendsViewModel = RegisterFriendsViewModel()
     @StateObject private var contactFrequencyViewModel = ContactFrequencySettingsViewModel()
     @StateObject private var myViewModel = MyViewModel()
+    @StateObject private var friendMonthlyViewModel = FriendMonthlyViewModel()
     
     @State private var path: [AppRoute] = []
     
@@ -96,6 +98,8 @@ public struct ContentView: View {
                             case .personDetail(let friend):
                                 let profileDetailViewModel = ProfileDetailViewModel(people: friend)
                                 ProfileDetailView(viewModel: profileDetailViewModel, notificationViewModel: notificationViewModel, path: $path)
+                            case .friendMonthly:
+                                FriendMonthlyView(viewModel: friendMonthlyViewModel, path: $path, peoples: homeViewModel.thisMonthFriends)
                             }
                         }
                 }
