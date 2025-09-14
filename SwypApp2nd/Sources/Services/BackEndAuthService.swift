@@ -385,6 +385,27 @@ final class BackEndAuthService {
             }
     }
 
+    func startMigration( accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+        let url = "\(baseURL)/alarm/migration" // TODO Sep 1 앤드포인트가 없는데 왜 success가 뜨지
+
+        AF.request(url, method: .post, headers: headers)
+        .validate(statusCode: 200..<300)
+        .response { response in
+            switch response.result {
+            case .success:
+                print("🟢 [startMigration] 마이그레이션 성공")
+                completion(.success(()))
+            case .failure(let error):
+                print("🔴 [startMigration] 마이그레이션 실패: \(error)")
+                completion(.failure(error))
+            }
+        }
+    }
+
     func startMigration(
      accessToken: String,
      completion: @escaping (Result<Void, Error>) -> Void
@@ -900,8 +921,82 @@ final class BackEndAuthService {
         }
     }
 
+
     /// 백엔드: FCM 토큰 등록
-    func registerFCMToken(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    func registerFCMTokenToServer(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let url = "\(baseURL)/messaging/register"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+
+        let parameters = [
+            "token": token,
+            "osType": "IOS"
+        ]
+
+        AF.request(url, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+        .validate(statusCode: 200..<300)
+        .response { response in
+            switch response.result {
+            case .success:
+                print("🟢 [BackEndAuthService] FCM 토큰 등록 성공")
+                completion(.success(()))
+            case .failure(let error):
+            print("🔴 [BackEndAuthService] FCM 토큰 등록 실패: \(error.localizedDescription)")
+            completion(.failure(error))
+            }
+        }
+    }
+
+
+    /// 백엔드: FCM 토큰 해제
+    func unregisterFCMToken(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let url = "\(baseURL)/messaging/unregister"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let parameters = [
+            "fcmToken": token
+        ]
+
+        AF.request(url, method: .delete, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+        .validate(statusCode: 200..<300)
+        .response { response in
+            switch response.result {
+            case .success:
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    /// 백엔드: 마이그레이션 상태 확인
+    func checkMigrationStatus(accessToken: String, completion: @escaping (Result<MigrationStatusResponse, Error>) -> Void) {
+        let url = "\(baseURL)/member/reminder/migration-status"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+
+        print("🟡 [BackEndAuthService] 마이그레이션 상태 확인 요청")
+        print("🟡 [BackEndAuthService] URL: \(url)")
+
+        AF.request(url, method: .get, headers: headers)
+        .validate(statusCode: 200..<300)
+        .responseDecodable(of: MigrationStatusResponse.self) { response in
+            switch response.result {
+            case .success(let migrationStatus):
+                print("🟢 [BackEndAuthService] 마이그레이션 상태 확인 성공 - isMigrated: \(migrationStatus.isMigrated)")
+                completion(.success(migrationStatus))
+            case .failure(let error):
+                print("🔴 [BackEndAuthService] 마이그레이션 상태 확인 실패: \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }
+    }
+
+    /// 백엔드: FCM 토큰 등록
+    func registerFCMTokenToServer(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
         let url = "\(baseURL)/messaging/register"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"

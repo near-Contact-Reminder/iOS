@@ -7,7 +7,7 @@ struct ContactFrequencySettingsView: View {
     @State private var selectedPerson: Friend?
     @State private var showFrequencyPicker: Bool = false
     @State private var pickerSelectedFrequency: CheckInFrequency? = nil
-    
+
     let back: () -> Void
     let complete: ([Friend]) -> Void
     @State var isChecked: Bool = false
