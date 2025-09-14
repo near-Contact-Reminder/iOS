@@ -1,7 +1,0 @@
-import CoreData
-
-class PersonRepository {
-    
-  
-
-}

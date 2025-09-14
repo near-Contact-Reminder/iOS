@@ -15,7 +15,7 @@ enum AppStep {
 
 // TODO: - AppRoute
 enum AppRoute: Hashable {
-    case inbox
+   case inbox
     case my
     case personDetail(Friend)
 }
@@ -25,20 +25,20 @@ public struct ContentView: View {
     @StateObject private var loginViewModel = LoginViewModel()
     @StateObject private var homeViewModel = HomeViewModel()
     @StateObject private var termsViewModel = TermsViewModel()
-    @StateObject private var notificationViewModel = NotificationViewModel()
+    @StateObject private var inboxViewModel = InboxViewModel()
     @StateObject private var registerFriendsViewModel = RegisterFriendsViewModel()
     @StateObject private var contactFrequencyViewModel = ContactFrequencySettingsViewModel()
     @StateObject private var myViewModel = MyViewModel()
-    
+
     @State private var path: [AppRoute] = []
-    
+
     public init() {
         // Kakao SDK 초기화
         KakaoSDK.initSDK(appKey: Bundle.main.infoDictionary?["KAKAO_APP_KEY"] as? String ?? "")
     }
 
     public var body: some View {
-        Group {
+        VStack {
             switch userSession.appStep {
             case .splash:
                 SplashView()
@@ -55,7 +55,7 @@ public struct ContentView: View {
                 }
             case .login, .terms:
                 LoginView(loginViewModel: loginViewModel)
-                
+
             case .registerFriends:
                 RegisterFriendView(viewModel: registerFriendsViewModel, proceed: {
                     contactFrequencyViewModel.setPeople(from: registerFriendsViewModel.selectedContacts) // 선택된 연락처 전달
@@ -66,36 +66,35 @@ public struct ContentView: View {
                     userSession.appStep = .home
                     AnalyticsManager.shared.skipButtonLogAnalytics()
                 })
-                
+
             case .setFrequency:
-                ContactFrequencySettingsView(viewModel: contactFrequencyViewModel, notificationViewModel: notificationViewModel, back: {
+                ContactFrequencySettingsView(viewModel: contactFrequencyViewModel, inboxViewModel: inboxViewModel, back: {
                     userSession.appStep = .registerFriends
                     AnalyticsManager.shared.previousButtonLogAnalytics()
                 }, complete: { updatedPeoples in
                     DispatchQueue.main.async {
                         print("🟢 [ContactFrequencySettingsView] 전달받은 people: \(updatedPeoples.map { $0.name })")
                         registerFriendsViewModel.selectedContacts.removeAll()
-                        notificationViewModel.scheduleNotifications(people: contactFrequencyViewModel.people)
                         contactFrequencyViewModel.people.removeAll()
                         homeViewModel.loadFriendList()
                         homeViewModel.loadMonthlyFriends()
                         userSession.appStep = .home
                     }
                 })
-                
+
             case .home:
                 NavigationStack(path: $path) {
-                    HomeView(homeViewModel: homeViewModel, notificationViewModel: notificationViewModel, path: $path)
+                    HomeView(homeViewModel: homeViewModel, inboxViewModel: inboxViewModel, path: $path)
                         .transition(.move(edge: .leading))
                         .navigationDestination(for: AppRoute.self) { route in
                             switch route {
                             case .inbox:
-                                NotificationInboxView(path: $path, notificationViewModel: notificationViewModel)
+                                InboxView(path: $path, inboxViewModel: inboxViewModel)
                             case .my:
                                 MyProfileView(path: $path)
                             case .personDetail(let friend):
                                 let profileDetailViewModel = ProfileDetailViewModel(people: friend)
-                                ProfileDetailView(viewModel: profileDetailViewModel, notificationViewModel: notificationViewModel, path: $path)
+                                ProfileDetailView(viewModel: profileDetailViewModel, inboxViewModel: inboxViewModel, path: $path)
                             }
                         }
                 }
@@ -122,6 +121,18 @@ public struct ContentView: View {
         }
         .animation(.easeInOut(duration: 0.4), value: userSession.appStep)
         .environmentObject(userSession)
+       .onReceive(inboxViewModel.$navigateToPerson.compactMap { $0 }) { friend in
+           if userSession.appStep != .home {
+               userSession.appStep = .home
+               DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                   path.removeAll()
+                   path.append(.personDetail(friend))
+               }
+           } else {
+               path.removeAll()
+               path.append(.personDetail(friend))
+           }
+       }
     }
 }
 

@@ -8,19 +8,23 @@ class LoginViewModel: ObservableObject {
 
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-       
+
     private var cancellables = Set<AnyCancellable>()
 
     // 로그인 후 UserSession 업데이트
     private func updateUserSession(with user: User) {
             print("🟢 [LoginViewModel] updateUserSession 호출됨")
+
+            // 로그인 완료 후 FCM 알림 재개 및 토큰 등록
+            NotificationManager.shared.resumeNotifications()
+
             UserSession.shared.updateUser(user)
     }
-       
+
     // MARK: - 카카오 로그인 흐름
     func loginWithKakao() {
         AnalyticsManager.shared.kakaoLoginLogAnalytics()
-        
+
         isLoading = true
         SnsAuthService.shared.loginWithKakao { oauthToken in
             guard let token = oauthToken else {
@@ -40,7 +44,7 @@ class LoginViewModel: ObservableObject {
                     self.isLoading = false
                     switch result {
                     case .success(let tokenResponse):
-                        
+
                         // 서버 토큰 저장
                         TokenManager.shared
                             .save(token: tokenResponse.accessToken, for: .server)
@@ -50,7 +54,7 @@ class LoginViewModel: ObservableObject {
                                 for: .server,
                                 isRefresh: true
                             )
-                        
+
                         BackEndAuthService.shared
                             .fetchMemberInfo(accessToken: tokenResponse.accessToken) { result in
                                 switch result {
@@ -108,7 +112,7 @@ class LoginViewModel: ObservableObject {
                         self.isLoading = false
                         switch result {
                         case .success(let tokenResponse):
-                            
+
                             TokenManager.shared
                                 .save(
                                     token: tokenResponse.accessToken,
@@ -120,7 +124,7 @@ class LoginViewModel: ObservableObject {
                                     for: .server,
                                     isRefresh: true
                                 )
-                            
+
                             BackEndAuthService.shared
                                 .fetchMemberInfo(accessToken: tokenResponse.accessToken) { result in
                                     switch result {
@@ -149,10 +153,10 @@ class LoginViewModel: ObservableObject {
                     }
             }
     }
-    
+
     // 유저의 챙김률
     func getUserCheckRate(accessToken: String, completion: @escaping (Int) -> Void) {
-            
+
         BackEndAuthService.shared
             .getUserCheckRate(accessToken: accessToken) { result in
                 switch result {

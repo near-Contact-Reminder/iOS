@@ -79,21 +79,16 @@ let project = Project(
                 .external(name: "KakaoSDKUser"),
                 .external(name: "KakaoSDKTalk"),
                 .external(name: "KakaoSDKFriend"),
+                .external(name: "FirebaseMessaging"),
                 .external(name: "FirebaseAnalytics"),
                 .external(name: "Siren")
-                
             ],
             settings: .settings(base: [
                 "RUN_EXECUTABLE_PATH": "$(BUILT_PRODUCTS_DIR)/SwypApp2nd.app",
                 "MARKETING_VERSION": "1.0.4",
                 "CURRENT_PROJECT_VERSION": "16",
                 "OTHER_LDFLAGS": "$(inherited) -ObjC"
-            ]),
-            coreDataModels: [
-                .coreDataModel(
-                    "SwypApp2nd/Sources/ViewModels/Notification/NotificationContainer.xcdatamodeld"
-                ),
-            ]
+            ])
         ),
         .target(
             name: "SwypApp2ndTests",

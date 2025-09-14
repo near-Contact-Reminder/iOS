@@ -3,7 +3,7 @@ import SwiftUI
 public struct HomeView: View {
 
     @ObservedObject var homeViewModel: HomeViewModel
-    @ObservedObject var notificationViewModel: NotificationViewModel
+    @ObservedObject var inboxViewModel: InboxViewModel
 
     @State private var showInbox = false
     @Binding var path:[AppRoute]
@@ -23,15 +23,15 @@ public struct HomeView: View {
                     VStack {
                         VStack(spacing: 32) {
                             // 네비게이션 바
-                            CustomNavigationBar(
-                                showBadge: notificationViewModel.showBadge,
-                                onTapMy: { DispatchQueue.main.async { path.append(.my) }
-                                    AnalyticsManager.shared.myProfileLogAnalytics()
-                                },
-                                onTapBell: { DispatchQueue.main.async { path.append(.inbox) }
-                                    AnalyticsManager.shared.notificationLogAnalytics()
-                                }
-                            )
+                           CustomNavigationBar(
+                               showBadge: inboxViewModel.showBadge,
+                               onTapMy: { DispatchQueue.main.async { path.append(.my) }
+                                   AnalyticsManager.shared.myProfileLogAnalytics()
+                               },
+                               onTapBell: { DispatchQueue.main.async { path.append(.inbox) }
+                                   AnalyticsManager.shared.notificationLogAnalytics()
+                               }
+                           )
 
                             // 인사 레이블
                             GreetingSection(userName: userSession.user?.name ?? "사용자",
@@ -61,10 +61,10 @@ public struct HomeView: View {
             AnalyticsManager.shared.trackHomeViewLogAnalytics()
 
         }
-        .onReceive(notificationViewModel.$navigateToPerson.compactMap { $0 }) { friend in
-            path.removeAll()
-            path.append(.personDetail(friend))
-        }
+       .onReceive(inboxViewModel.$navigateToPerson.compactMap { $0 }) { friend in
+           path.removeAll()
+           path.append(.personDetail(friend))
+       }
     }
 }
 
@@ -636,7 +636,6 @@ struct PersonCircleView: View {
                         .frame(width: 8, height: 8)
                 }
             }
-            
         }
     }
 }
