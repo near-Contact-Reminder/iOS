@@ -43,7 +43,7 @@ struct FriendListResponse: Codable, Identifiable {
     let source: String?
     let fileName: String?
     let lastContactAt: String?
-    
+
     var id: String { friendId }
 }
 
@@ -63,13 +63,13 @@ struct FriendDetail {
     let anniversaryList: [AnniversaryModel]?
     let memo: String?
     let phone: String?
-    
+
     struct AnniversaryList {
         let id : String
         let title: String
         let date: String
     }
-    
+
     struct ContactFrequency {
         let contactWeek : String
         let dayOfWeek : String
@@ -86,7 +86,7 @@ struct FriendDetailResponse: Codable {
     let anniversaryList: [FriendDetailResponse.AnniversaryResponse]?
     let memo: String?
     let phone: String?
-    
+
     struct ContactFrequency: Codable {
         let contactWeek: String
         let dayOfWeek: String
@@ -109,7 +109,7 @@ struct CheckInRecord: Identifiable, Codable {
         case isChecked
         case createdAt
     }
-    
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         isChecked = try c.decode(Bool.self, forKey: .isChecked)
@@ -383,6 +383,30 @@ final class BackEndAuthService {
                 }
             }
     }
+
+    func startMigration(
+     accessToken: String,
+     completion: @escaping (Result<Void, Error>) -> Void
+ ) {
+     let headers: HTTPHeaders = [
+         "Authorization": "Bearer \(accessToken)",
+         "Content-Type": "application/json"
+     ]
+     let url = "\(baseURL)/alarm/migration" // TODO Sep 1 앤드포인트가 없는데 왜 success가 뜨지
+
+     AF.request(url, method: .post, headers: headers)
+     .validate(statusCode: 200..<300)
+     .response { response in
+         switch response.result {
+         case .success:
+             print("🟢 [startMigration] 마이그레이션 성공")
+             completion(.success(()))
+         case .failure(let error):
+             print("🔴 [startMigration] 마이그레이션 실패: \(error)")
+             completion(.failure(error))
+         }
+     }
+ }
 
     /// 백엔드: 연락처에서 가져온 친구 목록 서버에 전달
     func sendInitialFriends(
@@ -793,7 +817,7 @@ final class BackEndAuthService {
     }
 
     /// 백엔드: FCM 토큰 등록
-    func registerFCMToken(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    func registerFCMTokenToServer(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
         let url = "\(baseURL)/messaging/register"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"

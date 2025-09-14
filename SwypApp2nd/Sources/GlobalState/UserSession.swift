@@ -5,55 +5,78 @@ import Foundation
 
 class UserSession: ObservableObject {
     static let shared = UserSession()
-    
+
     /// 사용자 객체
     @Published var user: User?
-    
     /// 앱 흐름
     @Published var appStep: AppStep = .splash
-    
     /// 마이그레이션 상태 확인 및 실행
-    private func checkMigrationStatus() {
-        // accessToken 체크
-        guard let accessToken = TokenManager.shared.get(for: .server) else {
-            print("🔴 [UserSession] 마이그레이션 실패 - 서버 액세스 토큰이 없음")
-            return
-        }
+    private func checkIfMigrated() {
 
-        // 이미 마이그레이션 완료되었는지 확인
+        // 1. 신규 유저인지 로컬 상태 먼저 확인 -- 마이그레이션 불필요
         if UserDefaults.standard.object(forKey: "isMigrated") == nil {
             print("🟢 [UserSession] 마이그레이션 불필요 - 신규 유저")
             UserDefaults.standard.set(true, forKey: "isMigrated")
             return
         }
 
-        let migrationStatus = UserDefaults.standard.object(forKey: "isMigrated") as? Bool
-        if migrationStatus == false {
-            // 기존 친구 목록 가져오기
-            if let friends = self.user?.friends, !friends.isEmpty {
-                print("🟡 [UserSession] 기존 친구 \(friends.count)명 마이그레이션 시작")
-                
-                // friend/init API 호출로 마이그레이션 실행
-                BackEndAuthService.shared.sendInitialFriends(friends: friends, accessToken: accessToken) { result in
-                    DispatchQueue.main.async {
-                        switch result {
-                        case .success(let friendsWithURLs):
-                            print("🟢 [UserSession] 마이그레이션 성공: \(friendsWithURLs.count)명")
-                            UserDefaults.standard.set(true, forKey: "isMigrated")
-                            CoreDataStack.shared.clearAllData()
-                            
-                        case .failure(let error):
-                            print("🔴 [UserSession] 마이그레이션 실패: \(error)")
-                            UserDefaults.standard.set(false, forKey: "isMigrated")
-                        }
+        // 2. 이미 마이그레이션 완료되었는지 확인 : 신규유저 가드 위해 추가함
+        if UserDefaults.standard.object(forKey: "isMigrated") as? Bool == true {
+            print("🟢 [UserSession] 마이그레이션 완료됨")
+            return
+        }
+
+        // 3. 서버 통신 위해 액세스 토큰 확인
+        guard let accessToken = TokenManager.shared.get(for: .server) else {
+            print("🔴 [UserSession] 마이그레이션 실패 - 서버 액세스 토큰이 없음")
+            return
+        }
+
+        // 4. 서버에서 마이그레이션
+        checkServerMigrationStatus(accessToken: accessToken)
+
+    }
+
+    /// 서버에서 마이그레이션 상태 확인
+    private func checkServerMigrationStatus(accessToken: String) {
+        BackEndAuthService.shared.checkMigrationStatus(accessToken: accessToken) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let migrationStatus):
+                    if migrationStatus.isMigrated {
+                        print("🟢 [UserSession] 서버에서 마이그레이션 완료됨")
+                        UserDefaults.standard.set(true, forKey: "isMigrated")
+                    } else {
+                        print("🟢 [UserSession] 서버에서 마이그레이션 필요함")
+                        self?.executeMigration(accessToken: accessToken)
+                    }
+                case .failure(let error):
+                    print("🔴 [UserSession] 서버 마이그레이션 상태 확인 실패: \(error)")
+                    // 서버 확인 실패 시 로컬 상태가 false라면 마이그레이션 시도
+                    if UserDefaults.standard.object(forKey: "isMigrated") as? Bool == false {
+                        self?.executeMigration(accessToken: accessToken)
                     }
                 }
-            } else {
-                print("🟡 [UserSession] 기존 친구가 없음 - 마이그레이션 불필요")
-                UserDefaults.standard.set(true, forKey: "isMigrated")
             }
-        } else {
-            print("🟢 [UserSession] 이미 마이그레이션 완료됨")
+        }
+    }
+
+    /// 마이그레이션 실행
+    private func executeMigration(accessToken: String) {
+        print("🟡 [UserSession] 마이그레이션 실행 시작")
+
+        BackEndAuthService.shared.startMigration(accessToken: accessToken) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    print("🟢 [UserSession] 마이그레이션 성공")
+                    UserDefaults.standard.set(true, forKey: "isMigrated")
+                    // CoreDataStack.shared.clearAllData()
+                case .failure(let error):
+                    print("🔴 [UserSession] 마이그레이션 실패: \(error)")
+                    UserDefaults.standard.set(false, forKey: "isMigrated")
+                }
+            }
         }
     }
 
@@ -65,27 +88,27 @@ class UserSession: ObservableObject {
                 completion(false)
                 return
             }
-            
+
             TokenManager.shared.clear(type: .kakao)
             self.logout() // 서버에서도 클리어
             completion(true)
         }
     }
-    
+
     // 애플 로그아웃
     func appleLogout(completion: @escaping (Bool) -> Void) {
-        
+
         TokenManager.shared.clear(type: .apple)
         self.logout() // 서버에서도 클리어
     }
-    
+
     /// 로그인 상태 업데이트
     func updateUser(_ user: User) {
         DispatchQueue.main.async {
             print("🟢 [UserSession] updateUser 호출 - loginType 확인: \(user.loginType)")
 
             self.user = user
-            
+
             // 로그인 타입에 따른 약관 동의 확인
             switch user.loginType {
             case .kakao:
@@ -109,7 +132,7 @@ class UserSession: ObservableObject {
             print("🟡 [UserSession] updateUser - 0.5초 후 마이그레이션 실행 예정")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 print("🟢 [UserSession] 마이그레이션 실행 시작")
-                self.checkMigrationStatus()
+                self.checkIfMigrated()
             }
         }
     }
@@ -118,10 +141,9 @@ class UserSession: ObservableObject {
     func logout() {
         // FCM 알림 일시정지
         NotificationManager.shared.pauseNotifications()
-        
         // FCM 토큰 관련 정리
         UserDefaults.standard.removeObject(forKey: "LastRegisteredFCMToken")
-        
+
         DispatchQueue.main.async {
             TokenManager.shared.clear(type: .server)  // 토큰 삭제
             self.user = nil
@@ -129,7 +151,7 @@ class UserSession: ObservableObject {
             print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
         }
     }
-    
+
     /// 자동 로그인
     func tryAutoLogin() {
         if let _ = TokenManager.shared.get(for: .kakao) {
@@ -147,9 +169,9 @@ class UserSession: ObservableObject {
             }
             print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
         }
-        
+
     }
-    
+
     /// 카카오 토큰 검사
     func tryKakaoAutoLogin() {
         print("🟡 [UserSession] 카카오 로그인 시도")
@@ -290,14 +312,14 @@ class UserSession: ObservableObject {
             // 서버 accessToken 존재 여부 확인
             if let accessToken = TokenManager.shared.get(for: .server) {
                 print("🟢 [UserSession] 서버 accessToken 존재 → 로그인 유지")
-                
+
                 BackEndAuthService.shared.fetchMemberInfo(accessToken: accessToken) { result in
                     switch result {
                     case .success(let info):
                         print(
                             "🟢 [UserSession] fetchMemberInfo 성공 - 닉네임: \(info.nickname)"
                         )
-                        
+
                         self.getUserCheckRate(accessToken: accessToken) { checkRate in
                             let user = User(
                                 id: info.memberId,
@@ -333,7 +355,7 @@ class UserSession: ObservableObject {
                         }
                     }
                 }
-                
+
                 return
             }
 
@@ -357,14 +379,14 @@ class UserSession: ObservableObject {
             } else {
                 self.logout()
             }
-            
+
         }
     }
-    
+
     /// 애플 토큰 검사
     func tryAppleAutoLogin() {
         print("🟡 [UserSession] 애플 로그인 시도")
-            
+
         // UIWindow를 presentationAnchor로 획득
         guard let window = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
@@ -374,7 +396,7 @@ class UserSession: ObservableObject {
             self.logout()
             return
         }
-            
+
         // 저장된 identityToken(애플 토큰) 확인
         guard TokenManager.shared.get(for: .apple) != nil else {
             // 토큰이 없으면 자동 재로그인 시도
@@ -388,7 +410,7 @@ class UserSession: ObservableObject {
                     guard let userId = userId,
                           let identityToken = identityToken,
                           let authorizationCode = authorizationCode else {
-                        print("🔴 [UserSession] 애플 자동 재로그인 실패")
+                        print("�� [UserSession] 애플 자동 재로그인 실패")
                         self.logout()
                         return
                     }
@@ -452,14 +474,14 @@ class UserSession: ObservableObject {
         // 서버 accessToken 확인
         if let accessToken = TokenManager.shared.get(for: .server) {
             print("🟢 [UserSession] 서버 accessToken 존재 → 로그인 유지")
-            
+
             BackEndAuthService.shared.fetchMemberInfo(accessToken: accessToken) { result in
                 switch result {
                 case .success(let info):
                     print(
                         "🟢 [UserSession] fetchMemberInfo 성공 - 닉네임: \(info.nickname)"
                     )
-                    
+
                     self.getUserCheckRate(accessToken: accessToken) { checkRate in
                         let user = User(
                             id: info.memberId,
@@ -473,7 +495,7 @@ class UserSession: ObservableObject {
                         )
                         self.updateUser(user)
                     }
-                    
+
                 case .failure(let error):
                     print("🔴 [UserSession] 사용자 정보 조회 실패: \(error)")
                     // accessToken 만료라면 refreshToken으로 재발급 시도
@@ -496,7 +518,7 @@ class UserSession: ObservableObject {
                     }
                 }
             }
-            
+
             return
         }
         // 서버 accessToken이 없는 경우 - Apple 재로그인 후 서버 로그인
@@ -526,7 +548,7 @@ class UserSession: ObservableObject {
             }
         }
     }
-    
+
     func withdraw(loginType: LoginType, selectedReason: String, customReason: String, completion: @escaping (Bool) -> Void) {
         guard let accessToken = TokenManager.shared.get(for: .server) else {
             print("🔴 [UserSession] accessToken 없음")
@@ -552,18 +574,18 @@ class UserSession: ObservableObject {
                         }
                     }
                     TokenManager.shared.clear(type: .kakao)
-                    
+
                 } else if loginType == .apple {
                     TokenManager.shared.clear(type: .apple)
                 }
-                
+
 
                 // 2. 약관 동의 기록 삭제
                 UserDefaults.standard.removeObject(forKey: "didAgreeToKakaoTerms")
                 UserDefaults.standard.removeObject(forKey: "didAgreeToAppleTerms")
-                
+
                 //3. 예약된 / delivered된 알림들 삭제
-                NotificationManager.shared.clearNotifications()
+               NotificationManager.shared.unregisterFCMToken()
 
                 // 3. 유저 세션 초기화
                 self.logout()
@@ -579,7 +601,7 @@ class UserSession: ObservableObject {
 
     // 유저의 챙김률
     func getUserCheckRate(accessToken: String, completion: @escaping (Int) -> Void) {
-            
+
         BackEndAuthService.shared
             .getUserCheckRate(accessToken: accessToken) { result in
                 switch result {

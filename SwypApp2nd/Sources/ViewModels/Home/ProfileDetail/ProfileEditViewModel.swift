@@ -1,29 +1,20 @@
 import SwiftUI
 import UserNotifications
-import CoreData
 
 class ProfileEditViewModel: ObservableObject {
     @Published var person: Friend
-    
-//    private let personRepo = PersonRepository()
-    private let reminderRepo = ReminderRepository()
-    
-    @Published var people: [PersonEntity] = []
-//    @Published var reminders: [ReminderEntity] = []
-    
-    init(person: Friend, people: [PersonEntity] = []) {
+
+    init(person: Friend) {
         self.person = person
-        self.people = people
     }
-    
+
     // 친구 상세 정보 업데이트 메소드
     func updateFriendDetail(friendId: UUID, completion: @escaping () -> Void) {
-        
+
         guard let token = UserSession.shared.user?.serverAccessToken else { return }
 
         let dto = FriendUpdateRequestDTO(
             name: person.name,
-//            relation: person.mappedRelation(from: person.relationship),
             relation: person.relationship,
             contactFrequency: {
                 guard let freq = person.frequency,
@@ -42,7 +33,7 @@ class ProfileEditViewModel: ObservableObject {
             memo: person.memo,
             phone: person.phoneNumber
         )
-        
+
         BackEndAuthService.shared.updateFriend(friendId: friendId, request: dto, accessToken: token) { result in
             switch result {
             case .success:

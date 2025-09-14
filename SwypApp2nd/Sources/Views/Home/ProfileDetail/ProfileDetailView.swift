@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ProfileDetailView: View {
     @ObservedObject var viewModel: ProfileDetailViewModel
-    @ObservedObject var notificationViewModel: NotificationViewModel
+    @ObservedObject var inboxViewModel: InboxViewModel
     @Binding var path: [AppRoute]
     @State private var selectedTab: Tab = .profile
     @State private var showActionSheet = false
@@ -21,13 +21,13 @@ struct ProfileDetailView: View {
         toastTask = task
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.3, execute: task)
     }
-    
+
     enum Tab {
         case profile, records
     }
 
     var body: some View {
-        
+
         ZStack {
             if showToast {
                 CareToastView()
@@ -50,7 +50,7 @@ struct ProfileDetailView: View {
                         .frame(height: 1)
                         .offset(x: 0, y: 15)
                 }
-                
+
                 ZStack {
                     ProfileInfoSection(people: viewModel.people)
                         .padding(.top, -16)
@@ -76,7 +76,7 @@ struct ProfileDetailView: View {
         .onAppear {
             viewModel.fetchFriendDetail(friendId: viewModel.people.id)
             viewModel.fetchFriendRecords(friendId: viewModel.people.id)
-            
+
             AnalyticsManager.shared.trackProfileDetailViewLogAnalytics()
         }
         .toolbar {
@@ -115,10 +115,6 @@ struct ProfileDetailView: View {
                     }
                     Button("삭제", role: .destructive) {
                         viewModel.deleteFriend(friendId: viewModel.people.id) {
-//                            print("삭제 버튼 클릭 됨")
-//                            print("❌ 리마인드 삭제")
-                            notificationViewModel.deleteRemindersEternally(person: viewModel.people)
-//                            print("❌ 리마인드 삭제")
                             DispatchQueue.main.async {
                                 path.removeAll()
                             }
@@ -190,13 +186,13 @@ struct HistorySection: View {
                                             RoundedRectangle(cornerRadius: 44, style: .continuous)
                                                 .stroke(Color.gray03, lineWidth: 1)
                                         )
-                                    
+
                                     VStack(spacing: 4) {
                                         Image("img_100_character_success")
                                             .resizable()
                                             .scaledToFit()
                                             .frame(width: 40, height: 40)
-                                                                           
+
                                         Text("\(totalRecordCount - index)번째 챙김")
                                             .modifier(Font.Pretendard.b2MediumStyle())
                                             .foregroundColor(.blue01)
@@ -206,7 +202,7 @@ struct HistorySection: View {
                                     .modifier(Font.Pretendard.b2MediumStyle())
                                     .foregroundColor(.gray01)
                             }
-                            
+
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -220,7 +216,7 @@ private struct ProfileHeader: View {
     let people: Friend
     let checkInRecords: [CheckInRecord]
     let onDelete: () -> Void
-    
+
     var emojiImageName: String {
         guard let rate = people.checkRate else {
             return "icon_visual_24_emoji_0"
@@ -245,19 +241,19 @@ private struct ProfileHeader: View {
                         .resizable()
                         .frame(width: 80, height: 80)
                 }
-                
+
                 Image(emojiImageName)
                     .frame(width: 24, height: 24)
                     .offset(x: 0, y: -5)
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                
+
                 Text(people.name)
                     .frame(height: 22)
                     .modifier(Font.Pretendard.h2BoldStyle())
                     .multilineTextAlignment(.center)
-                
+
                 //MM월dd일 더 가까워졌어요
                 if let latestRecordDate = checkInRecords.sorted(by: { $0.createdAt > $1.createdAt }).first?.createdAt {
                     Text("\(latestRecordDate.formattedYYYYMMDDMoreCloser())")
@@ -270,11 +266,11 @@ private struct ProfileHeader: View {
                 }
             }
         }
-        
+
     }
 }
 private struct ActionButtonRow: View {
-    
+
     var people: Friend
     // TODO: - showMessageAlert, selectedPhone, selectedMessage, selectedMessageComment 추후 삭제
     @State private var showMessageAlert = false
@@ -282,7 +278,7 @@ private struct ActionButtonRow: View {
     @State private var selectedPhone: String?
     @State private var selectedMessage: String?
     @State private var selectedMessageComment: String?
-    
+
     let messagePairs: [(message: String, comment: String)] = [
         (
             "💌  요즘 날씨가 왔다 갔다 하는데 감기 안 걸렸지?",
@@ -297,7 +293,7 @@ private struct ActionButtonRow: View {
             "💡 Tip : 상대의 취향을 기억해주는 메시지는 특별한 애정을 전달하는 효과가 있어요."
         )
     ]
-    
+
     var body: some View {
         HStack(spacing: 16) {
             if let phone = people.phoneNumber {
@@ -322,7 +318,7 @@ private struct ActionButtonRow: View {
 //                    if let url = URL(string: "sms:\(phone)"), UIApplication.shared.canOpenURL(url) {
 //                        UIApplication.shared.open(url)
 //                    }
-                    
+
                     let selected = messagePairs.randomElement()!
                     selectedPhone = phone
                     selectedMessage = selected.message
@@ -336,7 +332,7 @@ private struct ActionButtonRow: View {
             }
         }
         .alert("추천 메시지로 연락해보세요.", isPresented: $showMessageAlert) {
-            
+
             Button("문자하기", role: .none) {
                 if let phone = selectedPhone, let message = selectedMessage {
                     if let url = URL(
@@ -418,7 +414,7 @@ private struct TabButton: View {
             Text(title)
                 .modifier(Font.Pretendard.b2MediumStyle())
                 .foregroundColor(isSelected ? .black : .gray02)
-            
+
             Rectangle()
                 .fill(isSelected ? Color.blue01 : Color.clear)
                 .frame(height: 3)
@@ -439,7 +435,7 @@ private struct ProfileInfoSection: View {
             MemoRow(label: "메모", value: people.memo ?? "-")
         }
     }
-    
+
     private func displayLabel(for rawValue: String?) -> String? {
         switch rawValue {
         case "FRIEND": return "친구"
@@ -475,16 +471,16 @@ private struct MemoRow: View {
     var label: String
     var value: String
     var initialValue: String = "꼭 기억해야 할 내용을 기록해보세요.\n예) 날생선 X, 작년 생일에 키링 선물함 등"
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 4) {
             Text(label)
                 .modifier(Font.Pretendard.b2MediumStyle())
                 .foregroundColor(.gray01)
                 .frame(width: 60, alignment: .leading)
-            
+
             Spacer()
-            
+
             Text(value == "-" ? initialValue : value)
                 .modifier(Font.Pretendard.b2MediumStyle())
                 .foregroundColor(value == "-" ? Color.gray02 : Color.black)
@@ -578,12 +574,12 @@ struct ProfileDetailView_Previews: PreviewProvider {
         )
 
         let viewModel = ProfileDetailViewModel(people: friend)
-        let notificationViewModel = NotificationViewModel()
+        let inboxViewModel = InboxViewModel()
 
         return NavigationStack {
             ProfileDetailView(
                 viewModel: viewModel,
-                notificationViewModel: notificationViewModel,
+                inboxViewModel: inboxViewModel,
                 path: .constant([])
             )
         }

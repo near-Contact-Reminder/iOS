@@ -2,12 +2,12 @@ import SwiftUI
 
 struct ProfileEditView: View {
     @ObservedObject var profileEditViewModel: ProfileEditViewModel
-    @StateObject var notificationViewModel = NotificationViewModel()
+    @StateObject var inboxViewModel = InboxViewModel()
     @FocusState private var isMemoFocused: Bool
-    
+
     let contactFrequencies = ["매일", "매주", "2주", "매달", "매분기", "6개월", "매년"]
     let onComplete: () -> Void
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -69,7 +69,7 @@ struct ProfileEditView: View {
 
 struct NameSection: View {
     @Binding var name: String
-    
+
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             HStack(spacing: 0) {
@@ -99,11 +99,11 @@ struct NameSection: View {
         }.padding(.top, 56)
     }
 }
-    
+
 struct RelationshipSection: View {
     @Binding var relationship: String?
     let options = ["친구", "가족", "지인"]
-    
+
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             Text("관계")
@@ -115,7 +115,7 @@ struct RelationshipSection: View {
                     HStack(spacing: 16)  {
                         Image(systemName: "largecircle.fill.circle")
                             .foregroundColor(displayLabel(for: relationship) == option ? Color.blue01 : Color.gray03)
-                        
+
                         Text(option)
                             .modifier(Font.Pretendard.b2MediumStyle())
                             .foregroundColor(.black)
@@ -130,7 +130,7 @@ struct RelationshipSection: View {
             }
             .padding(.vertical,12)
     }
-    
+
     private func displayLabel(for rawValue: String?) -> String? {
         switch rawValue {
         case "FRIEND": return "친구"
@@ -385,14 +385,14 @@ struct WheelDatePicker: View {
     let limitToPast: Bool
     @Binding var date: Date?
     @State private var isPickerVisible = false
-        
+
     var body: some View {
         VStack(alignment: .leading) {
             if !title.isEmpty {
                 Text(title)
                     .modifier(Font.Pretendard.b1MediumStyle())
             }
-                
+
             Button {
                 isPickerVisible.toggle()
             } label: {
@@ -401,7 +401,7 @@ struct WheelDatePicker: View {
                         .foregroundColor(date != nil ? .primary : .gray)
                 }
             }
-                
+
             if isPickerVisible {
                 DatePicker(
                     "",
@@ -417,7 +417,7 @@ struct WheelDatePicker: View {
             }
         }
     }
-        
+
     private var dateRange: ClosedRange<Date> {
         let maxDate = Calendar.current.date(
             byAdding: .day,
@@ -426,7 +426,7 @@ struct WheelDatePicker: View {
         )!
         return limitToPast ? Date.distantPast...maxDate : Date.distantPast...Date.distantFuture
     }
-        
+
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")

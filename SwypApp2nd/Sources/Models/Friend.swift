@@ -1,6 +1,5 @@
 import Foundation
 import UIKit
-import CoreData
 import Contacts
 
 struct Friend: Identifiable, Equatable, Hashable, Codable {
@@ -21,7 +20,7 @@ struct Friend: Identifiable, Equatable, Hashable, Codable {
     var checkRate: Int? // 챙김률
     var position: Int? // 내사람들 리스트 순서
     var fileName: String? // 서버에서 받은 (friend.id).jpg
-    
+
     enum CodingKeys: String, CodingKey {
         case id, name, imageURL, source, frequency, remindCategory,
              relationship, birthDay, anniversary, memo,
@@ -42,15 +41,15 @@ enum CheckInFrequency: String, CaseIterable, Identifiable, Codable {
     case biweekly = "2주"
     case monthly = "매달"
     case semiAnnually = "6개월"
-    
+
     var id: String { rawValue }
-    
+
     init?(from dto: FriendDetailResponse.ContactFrequency?) {
         guard let dto = dto else {
             self = .none
             return
         }
-        
+
         switch dto.contactWeek {
         case "EVERY_DAY": self = .daily
         case "EVERY_WEEK": self = .weekly
@@ -83,9 +82,9 @@ extension Friend {
             print("🔴 필수 값 누락: frequency=\(String(describing: frequency)), nextContactAt=\(String(describing: nextContactAt)), source=\(source)")
             return nil
         }
-        
+
         print("🟢 toInitRequestDTO 변환 시작 for: \(name)")
-        
+
         let dayOfWeek = nextDate.dayOfWeekString()
 
         // 이미지 업로드 정보가 필요한 경우에만 포함
@@ -93,11 +92,11 @@ extension Friend {
             guard let image = image,
                   let imageData = image.jpegData(compressionQuality: 0.4)
             else { return nil }
-            
+
             let fileNameToUse = fileName ?? "\(id.uuidString).jpg"
-            
+
             print("🟢 업로드된 이미지 파일 이름: \(fileNameToUse)")
-            
+
             return ImageUploadRequestDTO(
                 fileName: fileNameToUse,
                 contentType: "image/jpeg",
@@ -120,11 +119,11 @@ extension Friend {
             // TODO: - 기념일 Array로 변경시 추후 수정 필요
             return AnniversaryDTO(title: title, date: formatted)
         }()
-        
+
         let birthDayString = birthDay?.formattedYYYYMMDD()
         let relationship = relationship ?? "ACQUAINTANCE" // TODO FORCED
 
-        
+
         print("""
         🧩 \(name)의 InitDTO 생성 요약
         - phone: \(phoneNumber ?? "없음")
@@ -134,7 +133,7 @@ extension Friend {
         - relation(mapped): \(mappedRelation(from: relationship))
         - anniversary: \(anniversaryDTO?.title ?? "없음") / \(anniversaryDTO?.date ?? "없음")
         """)
-        
+
         return FriendInitDTO(
             name: name,
             source: sourceString,
@@ -150,10 +149,10 @@ extension Friend {
             phone: phoneNumber
         )
     }
-    
+
     func mappedRelation(from label: String?) -> String {
         guard let label = label else { return "ACQUAINTANCE" }
-        
+
         switch label {
         case CNLabelContactRelationFriend:
             return "FRIEND"

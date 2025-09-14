@@ -2,11 +2,11 @@ import SwiftUI
 
 struct ContactFrequencySettingsView: View {
     @ObservedObject var viewModel: ContactFrequencySettingsViewModel
-    @ObservedObject var notificationViewModel: NotificationViewModel
+    @ObservedObject var inboxViewModel: InboxViewModel
 
     @State private var selectedPerson: Friend?
     @State private var showFrequencyPicker: Bool = false
-    
+
     let back: () -> Void
     let complete: ([Friend]) -> Void
     @State var isChecked: Bool = false
@@ -14,21 +14,21 @@ struct ContactFrequencySettingsView: View {
     var body: some View {
         Spacer()
             .frame(height: 12)
-        
+
         VStack(alignment: .leading, spacing: 24) {
             // 헤더 텍스트
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("챙김 주기 설정하기")
                         .modifier(Font.Pretendard.b1BoldStyle())
-                    
+
                     Spacer()
-                    
+
                     Text("2 / 2")
                         .modifier(Font.Pretendard.captionBoldStyle())
                         .foregroundColor(.gray02)
                 }
-                
+
                 Spacer()
                     .frame( height: 20)
 
@@ -44,14 +44,14 @@ struct ContactFrequencySettingsView: View {
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                     .foregroundColor(.gray02)
-                
+
             }
             .padding(.horizontal, 20)
 
             // 한 번에 설정
             HStack {
                 Spacer()
-                
+
                 Button(action: {
                     viewModel.toggleUnifiedFrequency(!viewModel.isUnified)
                     self.isChecked.toggle()
@@ -71,20 +71,20 @@ struct ContactFrequencySettingsView: View {
                                     isChecked ? Color.blue01 : Color.gray03
                                 )
                                 .cornerRadius(6)
-                        
+
                             Image("icon_check_white")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 14, height: 14)
-                            
+
                         }
                     }
-                    
+
                 }
 //                .buttonStyle(.plain)
                 .padding(.horizontal, 20)
             }
-            
+
             // 공통 주기 설정 드롭다운
             if viewModel.isUnified {
                 Button(action: {
@@ -160,7 +160,7 @@ struct ContactFrequencySettingsView: View {
                     // 카카오는 이미지 저장 후 BackEnd 서버에 전송 (스펙 아웃)
 //                    viewModel.downloadKakaoImageData { friendsWithImages in
 //                    }
-                    
+
                     DispatchQueue.main.async {
                         viewModel.uploadAllFriendsToServer(viewModel.people) {
                             UserSession.shared.user?.friends = viewModel.people
@@ -225,7 +225,7 @@ struct FrequencyRow: View {
                     .resizable()
                     .frame(width: 32, height: 32)
             }
-            
+
             Text(person.name)
                 .modifier(Font.Pretendard.b2MediumStyle())
             Spacer()
@@ -236,7 +236,7 @@ struct FrequencyRow: View {
                 Image(systemName: "chevron.down")
             }
             .foregroundStyle(Color.gray01)
-            
+
         }
         .padding()
         .padding(.horizontal, 4)
@@ -249,24 +249,24 @@ struct FrequencyRow: View {
 struct FrequencyPickerView: View {
     @Environment(\.dismiss) var dismiss
     @State private var tempSelected: CheckInFrequency? = .weekly
-    
+
     let selected: CheckInFrequency?
     let onSelect: (CheckInFrequency) -> Void
 
     var body: some View {
-        
+
         VStack(alignment: .leading) {
 
             Text("주기 설정")
                 .font(.headline)
                 .padding(.top, 16)
                 .padding(.leading, 16)
-            
+
             if let selected = tempSelected {
                 let today = Date()
                 let nextDate = today.nextCheckInDate(for: selected)
                 let nextDateDayOfTheWeek = today.nextCheckInDateDayOfTheWeek(for: selected)
-                
+
                 HStack {
                     Text("\(selected.rawValue) ")
                         .font(.body)
@@ -277,11 +277,11 @@ struct FrequencyPickerView: View {
                         .foregroundColor(.blue01)
 
                     Spacer()
-                    
+
                     Divider()
                         .foregroundColor(.gray02)
                         .frame(height: 20)
-                    
+
                     Text("다음 주기: \(nextDate)")
                         .font(.caption)
                         .foregroundColor(.gray02)
@@ -292,8 +292,8 @@ struct FrequencyPickerView: View {
                 .padding(.horizontal)
                 .padding(.top, 8)
             }
-            
-     
+
+
             VStack(spacing: 0) {
                 ForEach(CheckInFrequency.allCases.dropFirst()) { frequency in
                     Button(action: {
@@ -318,7 +318,7 @@ struct FrequencyPickerView: View {
             }
             .listStyle(.inset)
             .background(Color.white)
-            
+
             // 하단 버튼
             HStack(spacing: 12) {
                 Button(action: {
@@ -364,9 +364,9 @@ struct FrequencyPickerView: View {
 #Preview {
     ContactFrequencySettingsView(
         viewModel: ContactFrequencySettingsViewModel(),
-        notificationViewModel: NotificationViewModel(),
+        inboxViewModel: InboxViewModel(),
         back: {}) { _ in
-            
+
         }
 }
 
