@@ -1,45 +1,22 @@
 import Foundation
-import CoreData
 import SwiftUI
-<<<<<<< HEAD
-=======
-import FirebaseMessaging
 import UserNotifications
+import FirebaseMessaging
 
 // NotificationManager → FCM 토큰, 알림 권한, FCM 메시지 처리
 class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate, MessagingDelegate {
->>>>>>> 70b8ca9 (local to fcm 로직 초기 구현 완료 (coredata 전체 삭제 ver))
 
-class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
-    
     static let shared = NotificationManager()
     let center = UNUserNotificationCenter.current()
-<<<<<<< HEAD
-    private let reminderRepo = ReminderRepository()
-    @ObservedObject var notificationViewModel: NotificationViewModel
-    
-    init(viewModel: NotificationViewModel = NotificationViewModel()) {
-        self.notificationViewModel = viewModel
-=======
     @Published var navigateToPerson: Friend?
     let inboxViewModel: InboxViewModel = InboxViewModel()
     private let fcmTokenKey = "FCMToken"
 
     override init() {
->>>>>>> 70b8ca9 (local to fcm 로직 초기 구현 완료 (coredata 전체 삭제 ver))
         super.init()
         center.delegate = self
+        Messaging.messaging().delegate = self
     }
-<<<<<<< HEAD
-    
-    /// 최초 1회 권한 요청
-    func requestPermissionIfNeeded() {
-        let key = "didRequestNotificationPermission"
-        
-        // 이미 권한 요청 완료
-        guard !UserDefaults.standard.bool(forKey: key) else { return }
-        
-=======
 
     /// FCM 토큰을 UserDefaults에 저장
     func setFCMToken(_ token: String) {
@@ -114,9 +91,9 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         inboxViewModel.clearAllNotifications()
 
         // 1. 서버에서 FCM 토큰 삭제
-        if let accessToken = TokenManager.shared.get(for: .server), 
+        if let accessToken = TokenManager.shared.get(for: .server),
            let token = getFCMToken() {
-            BackEndAuthService.shared.unregisterFCMToken(
+            BackEndAuthService.shared.unregisterFCMTokenToServer(
                 token: token,
                 accessToken: accessToken
             ) { result in
@@ -181,20 +158,20 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             return
         }
 
->>>>>>> 70b8ca9 (local to fcm 로직 초기 구현 완료 (coredata 전체 삭제 ver))
         // 최초 한 번만 실행
         center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            if error == nil {
-                DispatchQueue.main.async {
-                    UserDefaults.standard.set(true, forKey: key)
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(true, forKey: key)
+                if granted {
+                    print("✅ 알림 권한 승인됨")
+                    // 권한이 승인된 후 FCM 토큰 가져오기
+                    self.refreshFCMToken()
+                } else {
+                    print("❌ 알림 권한 거부됨")
                 }
             }
         }
     }
-<<<<<<< HEAD
-    
-    /// 푸시 받을 때 처리
-=======
 
     /// APNS 토큰을 받았을 때 호출
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -207,38 +184,24 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     }
 
     /// 앱이 포그라운드 상태에서 푸시를 받을 때 처리
->>>>>>> 70b8ca9 (local to fcm 로직 초기 구현 완료 (coredata 전체 삭제 ver))
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-    
+
         let userInfo = notification.request.content.userInfo
+        print("📱 포그라운드에서 푸시 수신: \(userInfo)")
 
-<<<<<<< HEAD
-        if let reminderIdString = userInfo["reminderID"] as? String,
-          let reminderId = UUID(uuidString: reminderIdString) {
-           notificationViewModel.isTriggered(reminderId: reminderId)
-       }
-
-=======
         // FCM 메시지 처리
         generateLocalNotification(userInfo: userInfo)
->>>>>>> 70b8ca9 (local to fcm 로직 초기 구현 완료 (coredata 전체 삭제 ver))
         completionHandler([.list, .banner, .sound, .badge])
     }
-    
+
     /// 사용자가 푸시를 클릭했을 때 처리
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         print("🔔 유저가 알림을 클릭함")
         let userInfo = response.notification.request.content.userInfo
-<<<<<<< HEAD
-        let identifier = response.notification.request.identifier
-        
-        // auto login check -> app step 쌓는 과정
-        notificationViewModel.navigateFromNotification(userInfo: userInfo)  // CoreData 저장
-=======
         // auto login check -> app step 쌓는 과정
          guard let friendId = userInfo["friendId"] as? UUID else {
             print("🔴 [NotificationManager] friendId 파싱 실패")
@@ -246,14 +209,10 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         }
         navigateFromNotification(friendId: friendId)
 #if !DEBUG
->>>>>>> 70b8ca9 (local to fcm 로직 초기 구현 완료 (coredata 전체 삭제 ver))
         AnalyticsManager.shared.setEntryChannel("push")
+#endif
         completionHandler()
     }
-<<<<<<< HEAD
-    
-    /// 현재 권한 상태 확인
-=======
 
     /// FCM 알림 데이터 처리
     private func generateLocalNotification(userInfo: [AnyHashable: Any]) {
@@ -261,14 +220,13 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
 
         // 1. friendId 파싱 (String → UUID)
         guard let friendIdString = userInfo["friendId"] as? String,
-            let friendId = UUID(uuidString: friendIdString) else {
+              let friendId = UUID(uuidString: friendIdString) else {
             print("🔴 [NotificationManager] FCM payload에서 friendId 파싱 실패")
             return
         }
 
         // 2. body 파싱
         let body = userInfo["body"] as? String ?? "새로운 알림이 있습니다"
-
         let notificationDate = userInfo["date"] as? Date ?? Date()
 
         // 3. LocalNotificationModel 생성
@@ -278,11 +236,10 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             date: notificationDate,
             isRead: false
         )
-            inboxViewModel.addNotification(notification)
-        }
+        inboxViewModel.addNotification(notification)
+    }
 
     // MARK: - 현재 권한 상태 확인
->>>>>>> 70b8ca9 (local to fcm 로직 초기 구현 완료 (coredata 전체 삭제 ver))
     func checkAuthorizationStatus(completion: @escaping (UNAuthorizationStatus) -> Void) {
         center.getNotificationSettings { settings in
             DispatchQueue.main.async {
@@ -290,20 +247,37 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             }
         }
     }
-    
+
     /// 알림 비활성화
     func disableNotifications() {
-        center.removeAllPendingNotificationRequests()
-        UserDefaults.standard.set(true, forKey: "didManuallyDisableNotification")
-        print("🚫 알림 비활성화됨")
+        // 서버에 FCM 토큰 해제 요청
+        guard let token = getFCMToken(),
+              let accessToken = TokenManager.shared.get(for: .server) else {
+            print("⚠️ FCM 토큰 또는 서버 토큰이 없음 (unregister 생략)")
+            return
+        }
+
+        BackEndAuthService.shared.unregisterFCMTokenToServer(token: token, accessToken: accessToken) { result in
+            switch result {
+            case .success:
+                print("✅ 서버에 FCM 토큰 해제 성공")
+                // 로컬 FCM 토큰 삭제
+                Messaging.messaging().deleteToken { error in
+                    if let error = error {
+                        print("❌ FCM 토큰 삭제 실패: \(error)")
+                    } else {
+                        print("✅ FCM 토큰 삭제 성공")
+                    }
+                }
+                // 로컬 저장된 토큰도 삭제
+                UserDefaults.standard.removeObject(forKey: self.fcmTokenKey)
+                UserDefaults.standard.set(true, forKey: "didManuallyDisableNotification")
+                print("🚫 FCM 알림 비활성화됨")
+            case .failure(let error):
+                print("❌ 서버에 FCM 토큰 해제 실패: \(error)")
+            }
+        }
     }
-<<<<<<< HEAD
-    
-    
-    func clearNotifications() {
-        center.removeAllPendingNotificationRequests()
-        center.removeAllDeliveredNotifications()
-=======
 
     /// 알림 일시정지
     func pauseNotifications() {
@@ -328,7 +302,5 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
 
     private func navigateFromNotification(friendId: UUID) {
         inboxViewModel.navigateToFriend(friendId: friendId)
->>>>>>> 70b8ca9 (local to fcm 로직 초기 구현 완료 (coredata 전체 삭제 ver))
     }
 }
-    

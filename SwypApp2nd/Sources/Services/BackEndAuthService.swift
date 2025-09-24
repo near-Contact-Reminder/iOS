@@ -175,31 +175,35 @@ struct FriendCheckRateRespose: Codable {
     var checkRate: Int
 }
 
+// MARK: - 마이그레이션 상태 응답
+struct MigrationStatusResponse: Codable {
+    let isMigrated: Bool
+}
 
 // MARK: - 서버 통신 로직
 final class BackEndAuthService {
     static let shared = BackEndAuthService()
-
+    
     private let baseURL: String = {
-    #if DEBUG
+#if DEBUG
         if let host = Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String {
             return "https://\(host)"
         }
-    #else
+#else
         if let host = Bundle.main.infoDictionary?["RELEASE_BASE_URL"] as? String {
             return "https://\(host)"
         }
-    #endif
+#endif
         return ""
     }()
-    
+
     /// 백엔드: fetch User Data
     func fetchMemberInfo(accessToken: String, completion: @escaping (Result<MemberMeInfoResponse, Error>) -> Void) {
         let url = "\(baseURL)/member/me"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-            
+
         AF.request(url, method: .get, headers: headers)
             .validate(statusCode: 200..<300)
             .responseDecodable(of: MemberMeInfoResponse.self) { response in
@@ -297,14 +301,14 @@ final class BackEndAuthService {
             "Authorization": "Bearer \(accessToken)",
             "Content-Type": "application/json"
         ]
-        
+
         let body = PresignedURLRequest(
             fileName: fileName,
             contentType: contentType,
             fileSize: fileSize,
             category: category
         )
-        
+
         AF.request(baseURL,
                    method: .post,
                    parameters: body,
@@ -322,7 +326,7 @@ final class BackEndAuthService {
             }
         }
     }
-    
+
     /// 백엔드: PresignedURL 사용 이미지 업로드
     func uploadImageWithPresignedURL(
         imageData: Data,
@@ -350,7 +354,7 @@ final class BackEndAuthService {
             }
         }
     }
-    
+
     /// 백엔드: Presigned Download URL 발급 받기
     func fetchPresignedDownloadURL(
         fileName: String,
@@ -381,27 +385,6 @@ final class BackEndAuthService {
             }
     }
 
-    func startMigration(accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)",
-            "Content-Type": "application/json"
-        ]
-        let url = "\(baseURL)/alarm/migration" // TODO Sep 1 앤드포인트가 없는데 왜 success가 뜨지
-
-        AF.request(url, method: .post, headers: headers)
-        .validate(statusCode: 200..<300)
-        .response { response in
-            switch response.result {
-            case .success:
-                print("🟢 [startMigration] 마이그레이션 성공")
-                completion(.success(()))
-            case .failure(let error):
-                print("🔴 [startMigration] 마이그레이션 실패: \(error)")
-                completion(.failure(error))
-            }
-        }
-    }
-
     /// 백엔드: 연락처에서 가져온 친구 목록 서버에 전달
     func sendInitialFriends(
         friends: [Friend],
@@ -412,11 +395,11 @@ final class BackEndAuthService {
             "Authorization": "Bearer \(accessToken)",
             "Content-Type": "application/json"
         ]
-            
+
         let payload = FriendInitRequestDTO(
             friendList: friends.compactMap { $0.toInitRequestDTO()
             })
-        
+
         do {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -427,9 +410,9 @@ final class BackEndAuthService {
         } catch {
             print("🔴 [sendInitialFriends] 요청 JSON 인코딩 실패: \(error)")
         }
-            
+
         let url = "\(baseURL)/friend/init"
-            
+
         AF.request(
             url,
             method: .post,
@@ -442,7 +425,7 @@ final class BackEndAuthService {
             switch response.result {
             case .success(let result):
                 print("🟢 [sendInitialFriends] 친구 등록 성공! \(result.friendList.count)명")
-                
+
                 do {
                     let encoder = JSONEncoder()
                     encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -456,7 +439,7 @@ final class BackEndAuthService {
                 } catch {
                     print("🔴 [sendInitialFriends] JSON 인코딩 실패: \(error)")
                 }
-                
+
                 completion(.success(result.friendList))
             case .failure(let error):
                 print("🔴 [sendInitialFriends] 친구 등록 실패: \(error)")
@@ -465,34 +448,13 @@ final class BackEndAuthService {
         }
     }
 
-    // 백엔드: 리마인더 전송
-    func sendReminder(friendId: UUID, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let url = "\(baseURL)/friend/reminder/\(friendId.uuidString)"
-        let headers : HTTPHeaders = ["Authorization":  "Bearer \(accessToken)"]
-//        let params: Parameters = [ "friend-id": friendId.uuidString]
-
-        AF.request(url, method: .post, headers: headers)
-            .validate(statusCode: 200..<300)
-            .response { response in
-                switch response.result {
-                case .success:
-                    print("🟢 [BackEndAuthService] 리마인더 전송 성공")
-                    completion(.success(()))
-                case .failure(let error):
-                    print("🔴 [BackEndAuthService] 리마인더 전송 실패: \(error.localizedDescription)")
-                    completion(.failure(error))
-            }
-        }
-    }
-    
     func withdraw(accessToken: String, selectedReason: String, customReason:String, completion: @escaping (Result<Void, Error>) -> Void) {
-        
         let url = "\(baseURL)/member/withdraw"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
         let body = WithdrawRequest(reasonType: selectedReason, customReason: customReason)
-       
+
         AF.request(
             url,
             method: .delete,
@@ -512,7 +474,7 @@ final class BackEndAuthService {
                 }
             }
     }
-    
+
     /// 백엔드: 챙길 친구 리스트 조회
     func fetchFriendList(accessToken: String, completion: @escaping (Result<[FriendListResponse], Error>) -> Void) {
         let url = "\(baseURL)/friend/list"
@@ -523,12 +485,10 @@ final class BackEndAuthService {
         AF.request(url, method: .get, headers: headers)
             .validate(statusCode: 200..<300)
             .responseDecodable(of: [FriendListResponse].self) { response in
-
                 if let data = response.data,
                    let jsonString = String(data: data, encoding: .utf8) {
                     print("🟡 [fetchFriendList] Raw response JSON:\n\(jsonString)")
                 }
-                
                 switch response.result {
                 case .success(let list):
                     print("🟢 [BackEndAuthService] 친구 리스트 조회 성공 \(list.map { $0.name })")
@@ -540,16 +500,14 @@ final class BackEndAuthService {
                 }
             }
     }
-    
+
     /// 백엔드: 친구별 상세정보 조회
     func getFriendDetail(friendId: UUID, accessToken: String, completion: @escaping (Result<FriendDetail, Error>) -> Void) {
         print("🟡 [BackEndAuthService] 친구 상세정보 조회 요청됨 - friendId: \(friendId)")
-        
         let url = "\(baseURL)/friend/\(friendId.uuidString)"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-        
         AF.request(url, method: .get, headers: headers)
             .validate(statusCode: 200..<300)
             .responseDecodable(of: FriendDetailResponse.self) { response in
@@ -558,7 +516,6 @@ final class BackEndAuthService {
                     print(
                         "🟢 [BackEndAuthService] 친구별 상세정보 조회 성공 - \(detail.name)"
                     )
-                    
                     do {
                         let encoder = JSONEncoder()
                         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -572,7 +529,6 @@ final class BackEndAuthService {
                     } catch {
                         print("🔴 [getFriendDetail] JSON 인코딩 실패: \(error)")
                     }
-                        
                     let friendDetail = FriendDetail(
                         friendId: detail.friendId,
                         imageUrl: detail.imageUrl,
@@ -594,16 +550,14 @@ final class BackEndAuthService {
                 }
             }
     }
-    
+
     /// 백엔드:친구 삭제
     func deletFriend(friendId: UUID, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
         print("🟡 [BackEndAuthService] 친구 삭제 요청됨 - friendId: \(friendId)")
-        
         let url = "\(baseURL)/friend/\(friendId.uuidString)"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-        
         AF.request(url, method: .delete, headers: headers)
             .validate(statusCode: 200..<300)
             .response{ response in
@@ -617,16 +571,14 @@ final class BackEndAuthService {
                 }
             }
     }
-    
+
     /// 백엔드: 친구 상세 정보 업데이트
     func updateFriend(friendId: UUID, request: FriendUpdateRequestDTO, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
         print("🟡 [BackEndAuthService] 친구 상세 정보 업데이트 - friendId: \(friendId)")
-        
         let url = "\(baseURL)/friend/\(friendId.uuidString)"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-        
         do {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -637,7 +589,6 @@ final class BackEndAuthService {
         } catch {
             print("🔴 [updateFriend] 요청 JSON 인코딩 실패: \(error)")
         }
-        
         AF.request(
                 url,
                 method: .put,
@@ -657,17 +608,14 @@ final class BackEndAuthService {
                 }
             }
     }
-    
+
     /// 백엔드: 친구별 챙김 로그 리스트
     func getFriendRecords(friendId: UUID, accessToken: String, completion: @escaping (Result<[CheckInRecord], Error>) -> Void) {
-        
         print("🟡 [BackEndAuthService] 친구 친구별 챙김 로그 리스트 조회 요청됨 - friendId: \(friendId)")
-        
         let url = "\(baseURL)/friend/record/\(friendId.uuidString)"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-        
         AF.request(url, method: .get, headers: headers)
             .validate(statusCode: 200..<300)
             .responseDecodable(of: [CheckInRecord].self) { response in
@@ -676,9 +624,7 @@ final class BackEndAuthService {
                     print(
                         "🟢 [BackEndAuthService] 친구별 챙김 로그 리스트 조회 성공 - \(checkInRecords)"
                     )
-                    
                     completion(.success(checkInRecords))
-                    
                 case .failure(let error):
                     print(
                         "🔴 [BackEndAuthService] 친구별 챙김 로그 리스트 조회 실패: \(error.localizedDescription)"
@@ -687,15 +633,13 @@ final class BackEndAuthService {
                 }
             }
     }
-    
+
     /// 백엔드: 챙기기 버튼 클릭
     func postFriendCheck(friendId: UUID, accessToken: String, completion: @escaping (Result<String, Error>) -> Void) {
         let url = "\(baseURL)/friend/record/\(friendId.uuidString)"
-            
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-            
         AF.request(url, method: .post, headers: headers)
             .validate()
             .responseDecodable(of: RecordButtonResponse.self) { response in
@@ -707,16 +651,14 @@ final class BackEndAuthService {
                 }
             }
     }
-    
+
     /// 백엔드: 이번달 챙길 친구 조회
     func getMonthlyFriends(accessToken: String, completion: @escaping (Result<[FriendMonthlyResponse], Error>) -> Void) {
         let url = "\(baseURL)/friend/monthly"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-        
         print("🟡 [BackEndAuthService] 이번달 친구 조회 요청")
-        
         AF.request(url, method: .get, headers: headers)
             .validate()
             .responseDecodable(
@@ -727,23 +669,20 @@ final class BackEndAuthService {
                     print(
                         "🟢 [BackEndAuthService] 이번달 친구 조회 성공 - \(monthlyFriends.map { $0.name })"
                     )
-                    
                     completion(.success(monthlyFriends))
                 case .failure(let error):
                     completion(.failure(error))
                 }
             }
     }
-    
+
     /// 백엔드: 친구 순서 변경
     func patchFriendOrder(accessToken: String, id: String, newPosition: Int, completion: @escaping (Result<Void, Error>) -> Void) {
         let url = "\(baseURL)/friend/list/\(id)"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-        
         let requestData = FriendOrderUpdateRequestDTO(newPosition: newPosition)
-        
         AF.request(
             url,
             method: .patch,
@@ -762,17 +701,14 @@ final class BackEndAuthService {
                 completion(.failure(error))
             }
         }
-        
     }
-    
-    
+
     /// 백엔드: (챙김 기록 기반) 체크율
     func getUserCheckRate(accessToken: String, completion: @escaping (Result<FriendCheckRateRespose, Error>) -> Void) {
         let url = "\(baseURL)/member/check-rate"
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-        
         AF.request(url, method: .get, headers: headers)
             .validate(statusCode: 200..<300)
             .responseDecodable(of: FriendCheckRateRespose.self) { response in
@@ -789,7 +725,6 @@ final class BackEndAuthService {
 
     /// 유저의 전체 챙김률
     func getUserCheckRate(accessToken: String, completion: @escaping (Int) -> Void) {
-
         BackEndAuthService.shared
             .getUserCheckRate(accessToken: accessToken) { result in
                 switch result {
@@ -812,12 +747,10 @@ final class BackEndAuthService {
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
-
         let parameters = [
             "token": token,
             "osType": "IOS"
         ]
-
         AF.request(url, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
         .validate(statusCode: 200..<300)
         .response { response in
@@ -832,4 +765,67 @@ final class BackEndAuthService {
     }
 }
 
+    /// 백엔드: FCM 토큰 해제
+    func unregisterFCMTokenToServer(token: String, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let url = "\(baseURL)/messaging/unregister"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let parameters = [
+            "fcmToken": token
+        ]
+        AF.request(url, method: .delete, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+            .validate(statusCode: 200..<300)
+            .response { response in
+                switch response.result {
+                case .success:
+                    completion(.success(()))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+    }
 
+    func startMigration(accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+        let url = "\(baseURL)/alarm/migration" // TODO Sep 1 앤드포인트가 없는데 왜 success가 뜨지
+
+        AF.request(url, method: .post, headers: headers)
+        .validate(statusCode: 200..<300)
+        .response { response in
+            switch response.result {
+            case .success:
+                print("🟢 [startMigration] 마이그레이션 성공")
+                completion(.success(()))
+            case .failure(let error):
+                print("🔴 [startMigration] 마이그레이션 실패: \(error)")
+                completion(.failure(error))
+            }
+        }
+    }
+
+    /// 백엔드: 마이그레이션 상태 확인
+    func checkMigrationStatus(accessToken: String, completion: @escaping (Result<MigrationStatusResponse, Error>) -> Void) {
+        let url = "\(baseURL)/member/reminder/migration-status"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        print("🟡 [BackEndAuthService] 마이그레이션 상태 확인 요청")
+        print("🟡 [BackEndAuthService] URL: \(url)")
+        AF.request(url, method: .get, headers: headers)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: MigrationStatusResponse.self) { response in
+                switch response.result {
+                case .success(let migrationStatus):
+                    print("🟢 [BackEndAuthService] 마이그레이션 상태 확인 성공 - isMigrated: \(migrationStatus.isMigrated)")
+                    completion(.success(migrationStatus))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 마이그레이션 상태 확인 실패: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+    }
+}

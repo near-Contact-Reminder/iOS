@@ -10,7 +10,6 @@ class UserSession: ObservableObject {
     @Published var user: User?
     /// 앱 흐름
     @Published var appStep: AppStep = .splash
-
     /// 마이그레이션 상태 확인 및 실행
     private func checkIfMigrated() {
 
@@ -144,6 +143,7 @@ class UserSession: ObservableObject {
         NotificationManager.shared.pauseNotifications()
         // FCM 토큰 관련 정리
         UserDefaults.standard.removeObject(forKey: "LastRegisteredFCMToken")
+
         DispatchQueue.main.async {
             TokenManager.shared.clear(type: .server)  // 토큰 삭제
             self.user = nil
@@ -319,7 +319,7 @@ class UserSession: ObservableObject {
                             "🟢 [UserSession] fetchMemberInfo 성공 - 닉네임: \(info.nickname)"
                         )
 
-                        self.getUserCheckRate(accessToken: accessToken) { checkRate in
+                        BackEndAuthService.shared.getUserCheckRate(accessToken: accessToken) { checkRate in
                             let user = User(
                                 id: info.memberId,
                                 name: info.nickname,
@@ -481,7 +481,7 @@ class UserSession: ObservableObject {
                         "🟢 [UserSession] fetchMemberInfo 성공 - 닉네임: \(info.nickname)"
                     )
 
-                    self.getUserCheckRate(accessToken: accessToken) { checkRate in
+                    BackEndAuthService.shared.getUserCheckRate(accessToken: accessToken) { checkRate in
                         let user = User(
                             id: info.memberId,
                             name: info.nickname,
@@ -596,23 +596,5 @@ class UserSession: ObservableObject {
                 completion(false)
             }
         }
-    }
-
-    // 유저의 챙김률
-    func getUserCheckRate(accessToken: String, completion: @escaping (Int) -> Void) {
-
-        BackEndAuthService.shared
-            .getUserCheckRate(accessToken: accessToken) { result in
-                switch result {
-                case .success(let success):
-                    print(
-                        "🟢 [UserSession] getUserCheckRate 성공 챙김률: \(success.checkRate)"
-                    )
-                    completion(success.checkRate)
-                case .failure(let error):
-                    print("🔴 [UserSession] getUserCheckRate 실패: \(error)")
-                    completion(0)
-                }
-            }
     }
 }
