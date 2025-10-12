@@ -158,11 +158,12 @@ struct FriendUpdateRequestAnniversaryDTO: Codable {
 }
 
 // MARK: - 이번달 챙길 친구
-struct FriendMonthlyResponse: Codable {
+struct FriendMonthlyResponse: Codable, Equatable {
     var friendId: String
     var name: String
     var type: String
     var nextContactAt: String
+    var lastContactAt: String? // 서버데이터X 직접 적용
 }
 
 // MARK: - 친구 순서 변경

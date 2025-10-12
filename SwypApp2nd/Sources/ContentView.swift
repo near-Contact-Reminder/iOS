@@ -99,7 +99,7 @@ public struct ContentView: View {
                                 let profileDetailViewModel = ProfileDetailViewModel(people: friend)
                                 ProfileDetailView(viewModel: profileDetailViewModel, notificationViewModel: notificationViewModel, path: $path)
                             case .friendMonthly:
-                                FriendMonthlyView(viewModel: friendMonthlyViewModel, path: $path, peoples: homeViewModel.thisMonthFriends)
+                                FriendMonthlyView(viewModel: friendMonthlyViewModel, path: $path, peoples: $homeViewModel.thisMonthFriends)
                             }
                         }
                 }
