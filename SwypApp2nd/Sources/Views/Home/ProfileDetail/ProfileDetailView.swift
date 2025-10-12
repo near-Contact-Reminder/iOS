@@ -34,21 +34,21 @@ struct ProfileDetailView: View {
                     .transition(.scale.combined(with: .opacity))
                     .zIndex(1)
             }
-            VStack(alignment: .leading, spacing: 28) {
+            VStack(alignment: .leading, spacing: 24) {
                 ProfileHeader(people: viewModel.people, checkInRecords: viewModel.checkInRecords, onDelete: {
                     viewModel.deleteFriend(friendId: viewModel.people.id) {
                         DispatchQueue.main.async {
                             path.removeAll()
                         }
                     }
-                }).padding(.top, 26)
+                }).padding(.top, 24)
                 ActionButtonRow(people: viewModel.people)
                 ZStack {
                     ProfileTabBar(selected: $selectedTab)
                     Rectangle()
                         .fill(Color.gray03)
                         .frame(height: 1)
-                        .offset(x: 0, y: 15)
+                        .offset(x: 0, y: 14)
                 }
                 
                 ZStack {
@@ -85,13 +85,12 @@ struct ProfileDetailView: View {
                     path.removeLast()
                 }) {
                     HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
+                        Image.Icon.backBlack
                         Text("프로필 상세")
                     }
                     .foregroundColor(.black)
                     .font(Font.Pretendard.b1Bold())
                 }
-                .padding(.leading, 12)
             }
             
             
@@ -99,13 +98,8 @@ struct ProfileDetailView: View {
                 Button(action: {
                     showActionSheet = true
                 }) {
-                    Image(systemName: "ellipsis")
-                        .resizable()
-                        .font(Font.Pretendard.b1Medium())
-                        .rotationEffect(.degrees(90))
-                        .foregroundColor(.black)
+                    Image.Icon.menu
                 }
-                .padding(.trailing, 12)
             }
             
         }

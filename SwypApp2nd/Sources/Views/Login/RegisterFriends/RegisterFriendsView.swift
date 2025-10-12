@@ -46,14 +46,14 @@ struct RegisterFriendView: View {
                     .frame(height: 80)
 
                 Text("가까워지고 싶은 사람\n10명까지 선택해주세요")
-                    .modifier(Font.Pretendard.h1BoldStyle())
+                    .modifier(Font.Pretendard.h1MediumStyle())
                     .multilineTextAlignment(.leading)
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text("먼저, 더 가까워지고 싶은\n소중한 사람만 선택해주세요.")
                     .modifier(Font.Pretendard.b1MediumStyle())
-                    .foregroundColor(.gray02)
+                    .foregroundColor(.gray01)
                     .multilineTextAlignment(.leading)
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
@@ -80,6 +80,7 @@ struct RegisterFriendView: View {
                                 AnalyticsManager.shared.contactImportLogAnalytics()
                             }
                         )
+                        .padding(.top, 4)
                         .sheet(isPresented: $showContactPicker) {
                             ContactPickerView { contacts in
                                 viewModel.handleSelectedContacts(contacts)
@@ -96,7 +97,7 @@ struct RegisterFriendView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 16)
             }
             Spacer()
 
@@ -107,7 +108,7 @@ struct RegisterFriendView: View {
                         .modifier(Font.Pretendard.b1BoldStyle())
                         .frame(maxWidth: .infinity)
                         .foregroundColor(.black)
-                        .frame(height: 52)
+                        .frame(height: 56)
                         .background(Color.white)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
@@ -120,13 +121,13 @@ struct RegisterFriendView: View {
                         .modifier(Font.Pretendard.b1BoldStyle())
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 52)
+                        .frame(height: 56)
                         .background(viewModel.canProceed ? Color.blue01 : Color.gray02)
                         .cornerRadius(12)
                 }
                 .disabled(!viewModel.canProceed)
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 16)
             .padding(.bottom, 20)
         }
         .alert(item: $viewModel.activeAlert) { alert in
@@ -189,14 +190,14 @@ struct CardButton: View {
                         .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(.blue01)
                 } else {
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.gray02)
+                    Image("icon_24_next")
                 }
             }
             .padding()
             .background(Color.white)
             .cornerRadius(16)
-            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 8)
+            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 4)
+            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: -4)
         }
     }
 }

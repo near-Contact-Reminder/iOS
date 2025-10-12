@@ -76,6 +76,8 @@ struct WithdrawalHeaderView: View {
         
         Text("\(name)님, \n떠나는 이유를 알려주시면 \n큰 도움이 될 거예요.")
             .modifier(Font.Pretendard.h1MediumStyle())
+            .lineLimit(nil)
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 42)
 
         Text("소중한 의견을 받아 \n더 나은 서비스를 만들어갈게요.")

@@ -36,7 +36,8 @@ public struct EachFriendCheckedCell: View {
         .padding(.horizontal, 20)
         .background(Color.bg02)
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 8)
+        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 1)
+        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: -1)
     }
     
     // MARK: - Helpers

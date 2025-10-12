@@ -25,7 +25,6 @@ public struct FriendMonthlyView: View {
                             }
                             .background(Color.white)
                             .cornerRadius(16)
-                            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
                         }
                     } // 챙겨야 하는 섹션
                     
@@ -44,7 +43,6 @@ public struct FriendMonthlyView: View {
                             }
                             .background(Color.white)
                             .cornerRadius(16)
-                            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
                         }
                     } // 챙김 완료한 섹션
                 }
@@ -80,4 +78,28 @@ public struct FriendMonthlyView: View {
         }
     }
     
+}
+
+struct FriendMonthlyView_Previews: PreviewProvider {
+    static var previews: some View {
+        FriendMonthlyPreviewWrapper(peoples: samplePeoples)
+            .previewDisplayName("Friend Monthly")
+    }
+
+    private static let samplePeoples: [FriendMonthlyResponse] = [
+        FriendMonthlyResponse(friendId: "1", name: "김다정", type: "MESSAGE", nextContactAt: "2024-09-20"),
+        FriendMonthlyResponse(friendId: "2", name: "이민수", type: "BIRTHDAY", nextContactAt: "2024-09-25"),
+        FriendMonthlyResponse(friendId: "3", name: "박서준", type: "ANNIVERSARY", nextContactAt: "2024-10-02")
+    ]
+
+    private struct FriendMonthlyPreviewWrapper: View {
+        @State private var path: [AppRoute] = []
+        @StateObject private var viewModel = FriendMonthlyViewModel()
+
+        let peoples: [FriendMonthlyResponse]
+
+        var body: some View {
+            FriendMonthlyView(viewModel: viewModel, path: $path, peoples: peoples)
+        }
+    }
 }

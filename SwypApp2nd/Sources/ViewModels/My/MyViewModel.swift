@@ -11,8 +11,17 @@ class MyViewModel: ObservableObject {
     @Published var customReason: String = ""
     @Published var showConfirmAlert: Bool = false
     var isValidCustomReason: Bool {
-            selectedReason != "기타" || (customReason.count >= 1 && customReason.count <= 200)
+        // 아무것도 선택되지 않은 경우 false
+        if selectedReason.isEmpty {
+            return false
         }
+        // "기타" 이유 글자 검증
+        if selectedReason == "기타" {
+            return customReason.count >= 1 && customReason.count <= 200
+        }
+        
+        return true
+    }
     
     private var cancellables = Set<AnyCancellable>()
     

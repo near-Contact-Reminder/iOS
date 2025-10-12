@@ -379,14 +379,17 @@ struct MyPeopleSection: View {
                         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
 
                         // 페이지 인디케이터
-                        HStack(spacing: 6) {
-                            ForEach(0..<pages.count, id: \.self) { index in
-                                Circle()
-                                    .fill(currentPage == index ? Color.black : Color.gray.opacity(0.3))
-                                    .frame(width: 6, height: 6)
+                        
+                        if peoples.count > 5{
+                            HStack(spacing: 6) {
+                                ForEach(0..<pages.count, id: \.self) { index in
+                                    Circle()
+                                        .fill(currentPage == index ? Color.black : Color.gray.opacity(0.3))
+                                        .frame(width: 6, height: 6)
+                                }
                             }
+                            .padding(.bottom)
                         }
-                        .padding(.bottom)
                     }
                 }
             }
@@ -561,11 +564,11 @@ struct StarPositionLayout: View {
                         Image(systemName: "plus")
                             .font(.title)
                             .foregroundColor(Color.blue01)
-                            .frame(width: 80, height: 80)
+                            .frame(width: 64, height: 64)
                             .background(Color.bg01)
                             .clipShape(Circle())
                         Text("사람 추가")
-                            .modifier(Font.Pretendard.b2BoldStyle())
+                            .modifier(Font.Pretendard.b2MediumStyle())
                             .foregroundColor(.black)
                     }
                 }
@@ -614,13 +617,13 @@ struct PersonCircleView: View {
                             .resizable()
                     }
                 }
-                .frame(width: 80, height: 80)
+                .frame(width: 64, height: 64)
                 .clipShape(Circle())
                 .overlay(
                     Image(emojiImageName)
                         .resizable()
                         .frame(width: 26, height: 26)
-                        .offset(x: -5, y: -5),
+                        .offset(x: -3, y: -10),
                     alignment: .topTrailing
                 )
             }

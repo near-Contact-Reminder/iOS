@@ -60,7 +60,6 @@ struct MyProfileView: View {
                 }
             }
         }
-        .padding(.horizontal, 12)
         .navigationBarBackButtonHidden()
         .onAppear {
             AnalyticsManager.shared.trackMyProfileViewLogAnalytics()
@@ -77,7 +76,6 @@ struct MyProfileView: View {
                     .foregroundColor(.black)
                     .font(Font.Pretendard.b1Bold())
                 }
-                .padding(.leading, 12)
             }
         }
     }
@@ -124,13 +122,13 @@ struct AccountSettingSectionView: View {
                     Spacer()
                     let (loginName, imageName): (String, String) = {
                         switch loginType {
-                        case .kakao: return ("카카오", "img_32_kakao")
-                        case .apple: return ("애플", "img_32_apple")
+                        case .kakao: return ("Kakao", "img_32_kakao")
+                        case .apple: return ("Apple", "img_32_apple")
                         }
                     }()
                     HStack(spacing: 5) {
                         Text(loginName)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.black)
                         Image(imageName)
                     }
                 }
@@ -219,7 +217,7 @@ struct SimpleTermsView: View {
                 }
                 if index < terms.count - 1 {
                     Divider()
-                        .background(Color.gray02)
+                        .background(Color.gray03)
                 }
             }
         }
