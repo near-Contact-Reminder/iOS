@@ -6,6 +6,7 @@ struct ProfileDetailView: View {
     @Binding var path: [AppRoute]
     @State private var selectedTab: Tab = .profile
     @State private var showActionSheet = false
+    @State private var showDeleteConfirmation = false
     @State private var isEditing = false
     @State private var showToast = false
     @State private var toastTask: DispatchWorkItem?
@@ -104,22 +105,30 @@ struct ProfileDetailView: View {
             
         }
         .confirmationDialog("옵션", isPresented: $showActionSheet, titleVisibility: .visible) {
-                    Button("수정", role: .none) {
-                        isEditing = true
+            Button("수정", role: .none) {
+                isEditing = true
+            }
+            Button("삭제", role: .destructive) {
+                showDeleteConfirmation = true // 바로 삭제하지 않고 확인 alert 표시
+            }
+            Button("취소", role: .cancel) {}
+        }
+        // 삭제 확인 alert
+        .alert("정말 삭제하시겠어요?", isPresented: $showDeleteConfirmation) {
+            Button("삭제", role: .destructive) {
+                viewModel.deleteFriend(friendId: viewModel.people.id) {
+                    notificationViewModel
+                        .deleteRemindersEternally(person: viewModel.people)
+                            
+                    DispatchQueue.main.async {
+                        path.removeAll()
                     }
-                    Button("삭제", role: .destructive) {
-                        viewModel.deleteFriend(friendId: viewModel.people.id) {
-//                            print("삭제 버튼 클릭 됨")
-//                            print("❌ 리마인드 삭제")
-                            notificationViewModel.deleteRemindersEternally(person: viewModel.people)
-//                            print("❌ 리마인드 삭제")
-                            DispatchQueue.main.async {
-                                path.removeAll()
-                            }
-                        }
-                    }
-                    Button("취소", role: .cancel) {}
                 }
+            }
+            Button("취소", role: .cancel) {}
+        } message: {
+            Text("")
+        }
         .fullScreenCover(isPresented: $isEditing) {
             NavigationStack {
                 let profileEditViewModel = ProfileEditViewModel(person: viewModel.people)
@@ -258,7 +267,7 @@ private struct ProfileHeader: View {
                         .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(Color.blue01)
                 } else {
-                    Text("-")
+                    Text("")
                         .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(Color.blue01)
                 }
@@ -429,7 +438,19 @@ private struct ProfileInfoSection: View {
             InfoRow(label: "관계", value: displayLabel(for: people.relationship)  ?? "-")
             InfoRow(label: "연락 주기", value: people.frequency?.rawValue ?? "-")
             InfoRow(label: "생일", value: people.birthDay?.formattedYYYYMMDDWithDot() ?? "-")
-            InfoRow(label: "기념일", value: "\(people.anniversary?.title ?? "-") (\(people.anniversary?.Date?.formattedYYYYMMDDWithDot() ?? "-"))")
+            InfoRow(
+                label: "기념일",
+                value: {
+                    if let anniversary = people.anniversary,
+                       let title = anniversary.title,
+                       !title.isEmpty,
+                       let date = anniversary.Date {
+                        return "\(title) (\(date.formattedYYYYMMDDWithDot()))"
+                    } else {
+                        return "-"
+                    }
+                }()
+            )
             MemoRow(label: "메모", value: people.memo ?? "-")
         }
     }
@@ -479,9 +500,9 @@ private struct MemoRow: View {
             
             Spacer()
             
-            Text(value == "-" ? initialValue : value)
+            Text(value == "" ? initialValue : value)
                 .modifier(Font.Pretendard.b2MediumStyle())
-                .foregroundColor(value == "-" ? Color.gray02 : Color.black)
+                .foregroundColor(value == "" ? Color.gray02 : Color.black)
                 .multilineTextAlignment(.trailing)
                 .fixedSize(horizontal: false, vertical: true)
         }
