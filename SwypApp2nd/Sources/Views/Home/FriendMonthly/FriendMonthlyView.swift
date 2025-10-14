@@ -78,13 +78,12 @@ public struct FriendMonthlyView: View {
                     path.removeLast()
                 }) {
                     HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
+                        Image.Icon.backBlack
                         Text("이번달 챙길 사람")
                     }
                     .foregroundColor(.black)
                     .font(Font.Pretendard.b1Bold())
                 }
-                .padding(.leading, 12)
             }
         }
     }
