@@ -558,6 +558,75 @@ final class BackEndAuthService {
             }
     }
     
+    // MARK: - 약관
+    func fetchTermsList(completion: @escaping (Result<[TermResponse], Error>) -> Void) {
+        let url = "\(baseURL)/terms"
+        
+        AF.request(url, method: .get)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: [TermResponse].self) { response in
+                switch response.result {
+                case .success(let terms):
+                    print("🟢 [BackEndAuthService] 약관 목록 조회 성공 - \(terms.count)건")
+                    completion(.success(terms))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 약관 목록 조회 실패: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+    }
+    
+    func fetchMyTermsAgreements(accessToken: String, completion: @escaping (Result<MyTermsAgreementResponse, Error>) -> Void) {
+        let url = "\(baseURL)/terms/me"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        AF.request(url, method: .get, headers: headers)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: MyTermsAgreementResponse.self) { response in
+                switch response.result {
+                case .success(let agreements):
+                    print("🟢 [BackEndAuthService] 내 약관 동의 상태 조회 성공")
+                    completion(.success(agreements))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 내 약관 동의 상태 조회 실패: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+    }
+    
+    func submitTermsAgreements(
+        accessToken: String,
+        agreements: [TermAgreementRequest],
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        let url = "\(baseURL)/terms/me"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let body = TermsAgreementRequest(agreements: agreements)
+        
+        AF.request(
+            url,
+            method: .post,
+            parameters: body,
+            encoder: JSONParameterEncoder.default,
+            headers: headers
+        )
+        .validate(statusCode: 200..<300)
+        .response { response in
+            switch response.result {
+            case .success:
+                print("🟢 [BackEndAuthService] 약관 동의 전송 성공")
+                completion(.success(()))
+            case .failure(let error):
+                print("🔴 [BackEndAuthService] 약관 동의 전송 실패: \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }
+    }
+    
     /// 백엔드: 챙길 친구 리스트 조회
     func fetchFriendList(accessToken: String, completion: @escaping (Result<[FriendListResponse], Error>) -> Void) {
         let url = "\(baseURL)/friend/list"
@@ -851,5 +920,4 @@ final class BackEndAuthService {
             }
     }
 }
-
 

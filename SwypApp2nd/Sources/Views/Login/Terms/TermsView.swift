@@ -13,6 +13,7 @@ public struct TermsView: View {
     
     // 약관 상세를 보여주기 위한 상태 관리
     @State private var selectedAgreement: AgreementDetail?
+    @State private var alertMessage: String?
     
     let completion: () -> Void
 
@@ -24,106 +25,124 @@ public struct TermsView: View {
                 .padding(.leading, 24)
                 .padding(.top, 44)
 
-            LazyVStack(spacing: 12) {
-                AgreementRow(
-                    isChecked: .constant(viewModel.isAllAgreed),
-                    title: "약관 전체 동의",
-                    isBold: true,
-                    checkBoxTappedClosure: {
-                        viewModel.toggleAllAgreed()
-                    },
-                    onDetailTappedClosure: nil
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.gray03, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                
-                VStack(spacing: 0) {
-                    AgreementRow(
-                        isChecked: $viewModel.isServiceTermsAgreed,
-                        title: "[필수] 서비스 이용 약관",
-                        isBold: false,
-                        showDetail: true,
-                        detailURLString: viewModel.serviceAgreedTermsURL) {
-                            // checkbox closure
-                        } onDetailTappedClosure: { title, url in
-                            self.selectedAgreement = AgreementDetail(title: title, urlString: url)
+            Group {
+                if viewModel.isLoading && viewModel.terms.isEmpty {
+                    VStack {
+                        ProgressView("약관을 불러오는 중입니다...")
+                        Text("잠시만 기다려 주세요.")
+                            .modifier(Font.Pretendard.b1MediumStyle())
+                            .foregroundColor(Color.gray04)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
+                } else if viewModel.terms.isEmpty {
+                    VStack(spacing: 12) {
+                        Text("약관 정보를 불러오지 못했어요.")
+                            .modifier(Font.Pretendard.b1BoldStyle())
+                        Text("네트워크 상태를 확인한 뒤 다시 시도해 주세요.")
+                            .modifier(Font.Pretendard.b1MediumStyle())
+                            .foregroundColor(Color.gray04)
+                        Button(action: {
+                            viewModel.refresh()
+                        }) {
+                            Text("다시 시도")
+                                .modifier(Font.Pretendard.b2BoldStyle())
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                                .background(Color.blue01)
+                                .cornerRadius(8)
                         }
-                    
-                    Divider()
-                        .background(Color.gray03)
-                        .padding(.horizontal, 14)
-                    
-                    AgreementRow(
-                        isChecked: $viewModel.isPersonalInfoTermsAgreed,
-                        title: "[필수] 개인정보 수집 및 이용 동의서",
-                        isBold: false,
-                        showDetail: true,
-                        detailURLString: viewModel.personalInfoTermsURL) {
-                            // checkbox closure
-                        } onDetailTappedClosure: { title, url in
-                            self.selectedAgreement = AgreementDetail(title: title, urlString: url)
-                        }
-                    
-                    Divider()
-                        .background(Color.gray03)
-                        .padding(.horizontal, 14)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
+                } else {
+                    LazyVStack(spacing: 12) {
+                        AgreementRow(
+                            isChecked: Binding(
+                                get: { viewModel.isAllAgreed },
+                                set: { newValue in viewModel.updateAllAgreements(to: newValue) }
+                            ),
+                            title: "약관 전체 동의",
+                            isBold: true
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray03, lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                         
-                    
-                    AgreementRow(
-                        isChecked: $viewModel.isPrivacyPolicyAgreed,
-                        title: "[필수] 개인정보 처리방침",
-                        isBold: false,
-                        showDetail: true,
-                        detailURLString: viewModel.privacyPolicyTermsURL) {
-                            // checkbox closure
-                        } onDetailTappedClosure: { title, url in
-                            self.selectedAgreement = AgreementDetail(title: title, urlString: url)
+                        VStack(spacing: 0) {
+                            ForEach(Array(viewModel.terms.enumerated()), id: \.element.id) { index, term in
+                                AgreementRow(
+                                    isChecked: viewModel.binding(for: term),
+                                    title: formattedTitle(for: term),
+                                    isBold: false,
+                                    showDetail: viewModel.detailURL(for: term) != nil,
+                                    detailURLString: viewModel.detailURL(for: term),
+                                    onDetailTappedClosure: { title, url in
+                                        self.selectedAgreement = AgreementDetail(title: title, urlString: url)
+                                    }
+                                )
+                                
+                                if index < viewModel.terms.count - 1 {
+                                    Divider()
+                                        .background(Color.gray03)
+                                        .padding(.horizontal, 14)
+                                }
+                            }
                         }
+                        .background(Color.white)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray03, lineWidth: 2)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
                 }
-                .background(Color.white)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.gray03, lineWidth: 2)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
+            
+            if let errorMessage = viewModel.errorMessage, !viewModel.isLoading {
+                Text(errorMessage)
+                    .modifier(Font.Pretendard.captionMediumStyle())
+                    .foregroundColor(.red)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 4)
+            }
 
             Spacer()
 
             Button(action: {
-                // MARK: - 약관 동의 유무 UserDefaults에 저장
-                if UserSession.shared.user?.loginType == .kakao {
-                    UserDefaults.standard
-                        .set(true, forKey: "didAgreeToKakaoTerms")
-                    print("🟢 [TermsView] didAgreeToKakaoTerms 저장됨: \(UserDefaults.standard.bool(forKey: "didAgreeToKakaoTerms"))")
-                } else if UserSession.shared.user?.loginType == .apple {
-                    UserDefaults.standard
-                        .set(true, forKey: "didAgreeToAppleTerms")
-                    print("🟢 [TermsView] didAgreeToAppleTerms 저장됨: \(UserDefaults.standard.bool(forKey: "didAgreeToAppleTerms"))")
+                viewModel.submitAgreements { result in
+                    switch result {
+                    case .success:
+                        AnalyticsManager.shared.agreementLogAnalytics()
+                        completion()
+                    case .failure(let error):
+                        alertMessage = error.errorDescription ?? "약관 동의에 실패했습니다."
+                    }
                 }
-                
-                AnalyticsManager.shared.agreementLogAnalytics()
-                viewModel.isServiceTermsAgreed = false
-                viewModel.isPersonalInfoTermsAgreed = false
-                viewModel.isPrivacyPolicyAgreed = false
-                
-                completion()
             }) {
-                Text("가입")
-                    .foregroundColor(.white)
-                    .modifier(Font.Pretendard.b1BoldStyle())
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(viewModel.canProceed ? Color.blue01 : Color.gray02)
-                    .cornerRadius(8)
+                ZStack {
+                    Text("가입")
+                        .foregroundColor(.white)
+                        .modifier(Font.Pretendard.b1BoldStyle())
+                        .opacity(viewModel.isSubmitting ? 0 : 1)
+                    
+                    if viewModel.isSubmitting {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(viewModel.canProceed ? Color.blue01 : Color.gray02)
+                .cornerRadius(8)
             }
             .padding(20)
-            .disabled(!viewModel.canProceed)
+            .disabled(!viewModel.canProceed || viewModel.isSubmitting)
         }
         .background(Color.white)
         .cornerRadius(24)
@@ -153,7 +172,27 @@ public struct TermsView: View {
         }
         .onAppear {
             AnalyticsManager.shared.trackTermsViewLogAnalytics()
+            viewModel.loadTerms()
         }
+        .alert("알림", isPresented: Binding(
+            get: { alertMessage != nil },
+            set: { newValue in
+                if !newValue {
+                    alertMessage = nil
+                }
+            }
+        )) {
+            Button("확인", role: .cancel) {
+                alertMessage = nil
+            }
+        } message: {
+            Text(alertMessage ?? "")
+        }
+    }
+    
+    private func formattedTitle(for term: TermItem) -> String {
+        let prefix = term.isRequired ? "[필수] " : "[선택] "
+        return prefix + term.title
     }
 }
 /// 이용 약관 Row

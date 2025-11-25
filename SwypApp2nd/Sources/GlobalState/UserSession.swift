@@ -41,24 +41,30 @@ class UserSession: ObservableObject {
             print("🟢 [UserSession] updateUser 호출 - loginType 확인: \(user.loginType)")
 
             self.user = user
-            
-            // 로그인 타입에 따른 약관 동의 확인
-            switch user.loginType {
-            case .kakao:
-                print("🟢 [UserSession] updateUser 호출 - didAgreeToTerms 값: \(UserDefaults.standard.bool(forKey: "didAgreeToKakaoTerms"))")
-                let agreed = UserDefaults.standard.bool(
-                    forKey: "didAgreeToKakaoTerms"
-                )
-                self.appStep = agreed ? .home : .terms
-                print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
-
-            case .apple:
-                print("🟢 [UserSession] updateUser 호출 - didAgreeToTerms 값: \(UserDefaults.standard.bool(forKey: "didAgreeToAppleTerms"))")
-                let agreed = UserDefaults.standard.bool(
-                    forKey: "didAgreeToAppleTerms"
-                )
-                self.appStep = agreed ? .home : .terms
-                print("🟢 [UserSession] appStep 설정됨: \(self.appStep)")
+            self.evaluateTermsAgreement()
+        }
+    }
+    
+    private func evaluateTermsAgreement() {
+        guard let accessToken = TokenManager.shared.get(for: .server) else {
+            print("🔴 [UserSession] 서버 토큰 없음 - 약관 동의 상태를 확인할 수 없어 Terms 화면으로 이동")
+            self.appStep = .terms
+            return
+        }
+        
+        BackEndAuthService.shared.fetchMyTermsAgreements(accessToken: accessToken) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    let requiredAgreements = response.agreements.filter { $0.isRequired }
+                    let allRequiredAgreed = requiredAgreements.allSatisfy { $0.isAgreed }
+                    self.appStep = allRequiredAgreed ? .home : .terms
+                    print("🟢 [UserSession] 약관 동의 확인 완료 - appStep: \(self.appStep)")
+                case .failure(let error):
+                    print("🔴 [UserSession] 약관 동의 상태 조회 실패: \(error.localizedDescription)")
+                    self.appStep = .terms
+                }
             }
         }
     }
