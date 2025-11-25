@@ -23,16 +23,15 @@ public struct FriendMonthlyView: View {
                     LazyVStack(spacing: 24) {
                         // 챙겨야 하는 섹션
                         if !viewModel.pendingFriends.isEmpty {
-                            VStack(spacing: 0) {
-                                
-                                LazyVStack(spacing: 16) {
-                                    ForEach(viewModel.pendingFriends, id: \.friendId) { friend in
-                                        EachFriendCheckCell(people: friend, viewModel: viewModel)
-                                    }
+                            LazyVStack(spacing: 16) {
+                                ForEach(viewModel.pendingFriends, id: \.friendId) { friend in
+                                    EachFriendCheckCell(people: friend, viewModel: viewModel)
                                 }
-                                .background(Color.white)
-                                .cornerRadius(16)
                             }
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white)
+                            )
                         } // 챙겨야 하는 섹션
                         
                         // 챙김 완료한 섹션
@@ -48,8 +47,10 @@ public struct FriendMonthlyView: View {
                                         EachFriendCheckedCell(people: friend)
                                     }
                                 }
-                                .background(Color.white)
-                                .cornerRadius(16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color.white)
+                                )
                             }
                         } // 챙김 완료한 섹션
                     }
