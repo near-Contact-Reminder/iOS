@@ -20,54 +20,49 @@ struct MyProfileView: View {
     }
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 16) {
-                if let user = UserSession.shared.user {
-                    NavigationView {
-                        VStack(spacing: 20) {
-                            UserProfileSectionView(
-                                name: user.name,
-                                profilePic: user.profileImageURL
-                            )
-                            AccountSettingSectionView(loginType: user.loginType)
-                            NotificationSettingsView(viewModel: myViewModel)
-                            SimpleTermsView(termsViewModel: termsViewModel)
-                            WithdrawalButtonView(
-                                loginType: user.loginType,
-                                onWithdrawTap: {
-                                    showWithdrawalSheet = true
-                                },
-                                path: $path
-                            )
+        VStack(spacing: 16) {
+            if let user = UserSession.shared.user {
+                VStack(spacing: 20) {
+                    UserProfileSectionView(
+                        name: user.name,
+                        profilePic: user.profileImageURL
+                    )
+                    AccountSettingSectionView(loginType: user.loginType)
+                    NotificationSettingsView(viewModel: myViewModel)
+                    SimpleTermsView(termsViewModel: termsViewModel)
+                    WithdrawalButtonView(
+                        loginType: user.loginType,
+                        onWithdrawTap: {
+                            showWithdrawalSheet = true
+                        },
+                        path: $path
+                    )
+                }
+                .padding(.horizontal, 24)
+            } else {
+                ProgressView()
+                    .onAppear {
+                        DispatchQueue.main.async {
+                            $path.safeRemoveLast(ifLastIs: .my)
                         }
                     }
-                    .padding(.horizontal, 24)
-                } else {
-                    ProgressView()
-                        .onAppear {
-                            DispatchQueue.main.async {
-                                if path.last == .my {
-                                    path.removeLast()
-                                }
-                            }
-                        }
-                }
-
             }
-            .sheet(isPresented: $showWithdrawalSheet) {
-                NavigationStack {
-                    WithdrawalView(path: $path)
-                }
+
+        }
+        .sheet(isPresented: $showWithdrawalSheet) {
+            NavigationStack {
+                WithdrawalView(path: $path)
             }
         }
         .navigationBarBackButtonHidden()
+        .enableSwipeBackGesture()
         .onAppear {
             AnalyticsManager.shared.trackMyProfileViewLogAnalytics()
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: {
-                    path.removeLast()
+                    $path.safeRemoveLast()
                 }) {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.left")

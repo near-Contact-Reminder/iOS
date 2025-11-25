@@ -71,6 +71,7 @@ public struct FriendMonthlyView: View {
         }
         .background(Color.white)
         .navigationBarBackButtonHidden(true)
+        .enableSwipeBackGesture()
         .toolbarBackground(Color.white, for: .navigationBar) // 배경 흰색
         .toolbar {
             ToolbarItem(placement: .topBarLeading)  {

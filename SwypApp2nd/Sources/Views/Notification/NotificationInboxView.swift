@@ -15,10 +15,11 @@ struct NotificationInboxView: View {
             AnalyticsManager.shared.trackNotificationInboxLogAnalytics()
         }
         .navigationBarBackButtonHidden()
+        .enableSwipeBackGesture()
         .toolbar {
             ToolbarItem(placement: .topBarLeading)  {
                 Button(action: {
-                    path.removeLast()
+                    $path.safeRemoveLast()
                 }) {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.left")

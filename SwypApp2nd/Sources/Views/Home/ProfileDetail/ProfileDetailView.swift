@@ -74,6 +74,7 @@ struct ProfileDetailView: View {
         }
         .padding(.horizontal, 24)
         .navigationBarBackButtonHidden()
+        .enableSwipeBackGesture()
         .onAppear {
             viewModel.fetchFriendDetail(friendId: viewModel.people.id)
             viewModel.fetchFriendRecords(friendId: viewModel.people.id)
@@ -83,7 +84,7 @@ struct ProfileDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading)  {
                 Button(action: {
-                    path.removeLast()
+                    $path.safeRemoveLast()
                 }) {
                     HStack(spacing: 4) {
                         Image.Icon.backBlack
