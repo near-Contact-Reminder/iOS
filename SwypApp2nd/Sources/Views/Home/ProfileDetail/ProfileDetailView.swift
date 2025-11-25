@@ -428,6 +428,7 @@ private struct TabButton: View {
                 .frame(height: 3)
         }
         .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
     }
 }
 
