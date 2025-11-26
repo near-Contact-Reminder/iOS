@@ -37,14 +37,14 @@ struct ContactFrequencySettingsView: View {
                     .frame(height: 80)
 
                 Text("얼마나 자주\n챙기고 싶으세요?")
-                    .modifier(Font.Pretendard.h1BoldStyle())
+                    .modifier(Font.Pretendard.h1MediumStyle())
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("사람별로 챙기고 싶은 주기를 설정해주세요.")
                     .modifier(Font.Pretendard.b1MediumStyle())
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
-                    .foregroundColor(.gray02)
+                    .foregroundColor(.gray01)
                 
             }
             .padding(.horizontal, 20)
@@ -149,7 +149,7 @@ struct ContactFrequencySettingsView: View {
                     Text("이전")
                         .modifier(Font.Pretendard.b1BoldStyle())
                         .frame(maxWidth: .infinity)
-                        .frame(height: 52)
+                        .frame(height: 56)
                         .background(Color.white)
                         .foregroundStyle(Color.black)
                         .overlay(
@@ -179,7 +179,7 @@ struct ContactFrequencySettingsView: View {
                         .modifier(Font.Pretendard.b1BoldStyle())
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 52)
+                        .frame(height: 56)
                         .background(
                             viewModel.canComplete ? Color.blue01 : Color.gray01
                         )
@@ -187,7 +187,7 @@ struct ContactFrequencySettingsView: View {
                 }
                 .disabled(!viewModel.canComplete)
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
         .sheet(isPresented: $showFrequencyPicker, onDismiss: {
@@ -257,7 +257,7 @@ struct FrequencyPickerView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text("주기 설정")
-                .font(.headline)
+                .font(.Pretendard.b2Bold())
                 .padding(.top, 16)
                 .padding(.leading, 16)
             if let selected = tempSelected {
@@ -266,17 +266,17 @@ struct FrequencyPickerView: View {
                 let nextDateDayOfTheWeek = today.nextCheckInDateDayOfTheWeek(for: selected)
                 HStack {
                     Text("\(selected.rawValue) ")
-                        .font(.body)
+                        .font(.Pretendard.b2Medium())
                         .foregroundColor(.gray02)
                     Text(nextDateDayOfTheWeek)
-                        .font(.body)
+                        .font(.Pretendard.b2Bold())
                         .foregroundColor(.blue01)
                     Spacer()
                     Divider()
                         .foregroundColor(.gray02)
                         .frame(height: 20)
                     Text("다음 주기: \(nextDate)")
-                        .font(.caption)
+                        .font(.Pretendard.b2Medium())
                         .foregroundColor(.gray02)
                 }
                 .padding()
@@ -314,7 +314,7 @@ struct FrequencyPickerView: View {
                     dismiss()
                 }) {
                     Text("취소")
-                        .font(.body.bold())
+                        .font(.Pretendard.b1Bold())
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
                         .background(Color.white)
@@ -335,7 +335,7 @@ struct FrequencyPickerView: View {
                     }
                 }) {
                     Text("완료")
-                        .font(.body.bold())
+                        .font(.Pretendard.b1Bold())
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
                         .background(Color.blue01)

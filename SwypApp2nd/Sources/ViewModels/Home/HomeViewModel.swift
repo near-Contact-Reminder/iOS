@@ -18,6 +18,23 @@ class HomeViewModel: ObservableObject {
                 self?.allFriends = friends
             }
             .store(in: &cancellables)
+        
+        // FriendMonthlyViewModel의 옵저버
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(refreshMonthlyFriends),
+            name: NSNotification.Name("RefreshMonthlyFriends"),
+            object: nil
+        )
+    }
+    
+    @objc private func refreshMonthlyFriends() {
+        print("🟡 [HomeViewModel] 월간 친구 데이터 새로고침 요청 받음")
+        loadFriendList() 
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     func fetchAndSetImage(for friend: Friend, accessToken: String, completion: @escaping (UIImage?) -> Void) {
@@ -65,21 +82,39 @@ class HomeViewModel: ObservableObject {
     
     /// 이번달 챙길 사람 목록 가져오기
     func loadMonthlyFriends() {
-        guard let token = UserSession.shared.user?.serverAccessToken else { return }
+        guard let token = UserSession.shared.user?.serverAccessToken else { 
+            print("🔴 [HomeViewModel] accessToken 없음")
+            return 
+        }
+        
+        print("🟡 [HomeViewModel] loadMonthlyFriends 시작")
         
         BackEndAuthService.shared.getMonthlyFriends(accessToken: token) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let monthlyFriendDTOs):
+                    print("🟢 [HomeViewModel] 이번달 친구 목록 로드 성공: \(monthlyFriendDTOs.count)개")
                     self.thisMonthFriends = monthlyFriendDTOs.map { dto in
-                        FriendMonthlyResponse(
-                            friendId: dto.friendId,
-                                name: dto.name,
-                                type: dto.type.uppercased(),
-                                nextContactAt: dto.nextContactAt
-                            )
+                        print("🟡 [HomeViewModel] DTO: \(dto.name) - \(dto.type)")
                         
+                        // allFriends에서 해당 친구의 lastContactAt 찾기
+                        let matchingFriend = self.allFriends.first { friend in
+                            guard let dtoUUID = UUID(uuidString: dto.friendId) else { return false }
+                            return friend.id == dtoUUID
+                        }
+                        let lastContactAtString = matchingFriend?.lastContactAt?.formattedYYYYMMDDWithDot()
+                        
+                        print("🟡 [HomeViewModel] \(dto.name)의 lastContactAt: \(lastContactAtString ?? "nil")")
+                        
+                        return FriendMonthlyResponse(
+                            friendId: dto.friendId,
+                            name: dto.name,
+                            type: dto.type.uppercased(),
+                            nextContactAt: dto.nextContactAt,
+                            lastContactAt: lastContactAtString
+                        )
                     }
+                    print("🟢 [HomeViewModel] thisMonthFriends 설정 완료: \(self.thisMonthFriends.count)개")
                 case .failure(let error):
                     print("🔴 [HomeViewModel] 이번달 친구 목록 로드 실패: \(error)")
                 }
@@ -124,6 +159,8 @@ class HomeViewModel: ObservableObject {
                 group.notify(queue: .main) {
                     self.allFriends = loadedFriends
                     UserSession.shared.user?.friends = loadedFriends
+                    
+                    self.loadMonthlyFriends()
                     print("🟢 [HomeViewModel] 모든 친구 이미지 로드 완료")
                 }
             case .failure(let error):

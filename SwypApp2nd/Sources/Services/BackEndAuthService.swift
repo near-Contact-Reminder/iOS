@@ -158,11 +158,12 @@ struct FriendUpdateRequestAnniversaryDTO: Codable {
 }
 
 // MARK: - 이번달 챙길 친구
-struct FriendMonthlyResponse: Codable {
+struct FriendMonthlyResponse: Codable, Equatable {
     var friendId: String
     var name: String
     var type: String
     var nextContactAt: String
+    var lastContactAt: String? // 서버데이터X 직접 적용
 }
 
 // MARK: - 친구 순서 변경
@@ -193,6 +194,75 @@ final class BackEndAuthService {
         return ""
     }()
     
+    // MARK: - 공통 에러 핸들링 유틸리티
+    private func logDetailedError(_ error: Error, url: String, context: String, responseData: Data? = nil) {
+        print("🔴 [BackEndAuthService] \(context) 실패")
+        print("🔴 [BackEndAuthService] 요청 URL: \(url)")
+        print("🔴 [BackEndAuthService] 기본 에러: \(error.localizedDescription)")
+        
+        if let afError = error.asAFError {
+            print("🔴 [BackEndAuthService] Alamofire 에러 타입: \(afError)")
+            
+            if let responseCode = afError.responseCode {
+                print("🔴 [BackEndAuthService] HTTP 응답 코드: \(responseCode)")
+                logHTTPErrorDescription(responseCode, context: context)
+            }
+            
+            // 네트워크 에러 확인
+            if let underlyingError = afError.underlyingError {
+                print("🔴 [BackEndAuthService] 네트워크 에러: \(underlyingError.localizedDescription)")
+                
+                if let urlError = underlyingError as? URLError {
+                    logNetworkErrorDescription(urlError.code)
+                }
+            }
+        }
+        
+        // 응답 데이터 확인
+        if let data = responseData,
+           let responseString = String(data: data, encoding: .utf8) {
+            print("🔴 [BackEndAuthService] 서버 응답 내용: \(responseString)")
+        }
+    }
+    
+    private func logHTTPErrorDescription(_ statusCode: Int, context: String) {
+        switch statusCode {
+        case 400:
+            print("🔴 [BackEndAuthService] 400 Bad Request - 요청 파라미터 확인 필요")
+        case 401:
+            print("🔴 [BackEndAuthService] 401 Unauthorized - 토큰 유효성 확인 필요")
+        case 403:
+            print("🔴 [BackEndAuthService] 403 Forbidden - 권한 없음")
+        case 404:
+            print("🔴 [BackEndAuthService] 404 Not Found - API 엔드포인트 또는 리소스를 찾을 수 없음")
+        case 500:
+            print("🔴 [BackEndAuthService] 500 Internal Server Error - 서버 내부 오류")
+        case 502:
+            print("🔴 [BackEndAuthService] 502 Bad Gateway - 백엔드 서버 연결 문제")
+        case 503:
+            print("🔴 [BackEndAuthService] 503 Service Unavailable - 서버 일시적 이용 불가")
+        case 504:
+            print("🔴 [BackEndAuthService] 504 Gateway Timeout - 서버 응답 시간 초과")
+        default:
+            print("🔴 [BackEndAuthService] 기타 HTTP 에러: \(statusCode)")
+        }
+    }
+    
+    private func logNetworkErrorDescription(_ errorCode: URLError.Code) {
+        switch errorCode {
+        case .notConnectedToInternet:
+            print("🔴 [BackEndAuthService] 인터넷 연결 없음")
+        case .timedOut:
+            print("🔴 [BackEndAuthService] 요청 시간 초과")
+        case .cannotFindHost:
+            print("🔴 [BackEndAuthService] 호스트를 찾을 수 없음")
+        case .cannotConnectToHost:
+            print("🔴 [BackEndAuthService] 호스트에 연결할 수 없음")
+        default:
+            print("🔴 [BackEndAuthService] 기타 네트워크 에러: \(errorCode)")
+        }
+    }
+    
     /// 백엔드: fetch User Data
     func fetchMemberInfo(accessToken: String, completion: @escaping (Result<MemberMeInfoResponse, Error>) -> Void) {
         let url = "\(baseURL)/member/me"
@@ -205,8 +275,10 @@ final class BackEndAuthService {
             .responseDecodable(of: MemberMeInfoResponse.self) { response in
                 switch response.result {
                 case .success(let data):
+                    print("🟢 [BackEndAuthService] 사용자 정보 조회 성공 - \(data.nickname)")
                     completion(.success(data))
                 case .failure(let error):
+                    self.logDetailedError(error, url: url, context: "사용자 정보 조회", responseData: response.data)
                     completion(.failure(error))
                 }
             }
@@ -228,10 +300,7 @@ final class BackEndAuthService {
                     )
                     completion(.success(tokenResponse))
                 case .failure(let error):
-                    print("\(Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String ?? "")")
-                    print(
-                        "🔴 [BackEndAuthService] 카카오 로그인 실패: \(error.localizedDescription)"
-                    )
+                    self.logDetailedError(error, url: url, context: "카카오 로그인", responseData: response.data)
                     completion(.failure(error))
                 }
             }
@@ -256,10 +325,7 @@ final class BackEndAuthService {
                     )
                     completion(.success(tokenResponse))
                 case .failure(let error):
-                    print(
-                        // TODO: - AppleLogin은 실패중...
-                        "🔴 [BackEndAuthService] 애플 로그인 실패: \(error.localizedDescription)"
-                    )
+                    self.logDetailedError(error, url: url, context: "애플 로그인", responseData: response.data)
                     completion(.failure(error))
                 }
             }
@@ -279,7 +345,7 @@ final class BackEndAuthService {
                     print("🟢 [BackEndAuthService] access token 재발급 성공 - newAccessToken: \(tokenResponse.accessToken.prefix(10))...")
                     completion(.success(tokenResponse.accessToken))
                 case .failure(let error):
-                    print("🔴 [BackEndAuthService] access token 재발급 실패: \(error.localizedDescription)")
+                    self.logDetailedError(error, url: url, context: "access token 재발급", responseData: response.data)
                     completion(.failure(error))
                 }
             }
@@ -490,6 +556,75 @@ final class BackEndAuthService {
                     completion(.failure(error))
                 }
             }
+    }
+    
+    // MARK: - 약관
+    func fetchTermsList(completion: @escaping (Result<[TermResponse], Error>) -> Void) {
+        let url = "\(baseURL)/terms"
+        
+        AF.request(url, method: .get)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: [TermResponse].self) { response in
+                switch response.result {
+                case .success(let terms):
+                    print("🟢 [BackEndAuthService] 약관 목록 조회 성공 - \(terms.count)건")
+                    completion(.success(terms))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 약관 목록 조회 실패: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+    }
+    
+    func fetchMyTermsAgreements(accessToken: String, completion: @escaping (Result<MyTermsAgreementResponse, Error>) -> Void) {
+        let url = "\(baseURL)/terms/me"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        AF.request(url, method: .get, headers: headers)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: MyTermsAgreementResponse.self) { response in
+                switch response.result {
+                case .success(let agreements):
+                    print("🟢 [BackEndAuthService] 내 약관 동의 상태 조회 성공")
+                    completion(.success(agreements))
+                case .failure(let error):
+                    print("🔴 [BackEndAuthService] 내 약관 동의 상태 조회 실패: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+    }
+    
+    func submitTermsAgreements(
+        accessToken: String,
+        agreements: [TermAgreementRequest],
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        let url = "\(baseURL)/terms/me"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let body = TermsAgreementRequest(agreements: agreements)
+        
+        AF.request(
+            url,
+            method: .post,
+            parameters: body,
+            encoder: JSONParameterEncoder.default,
+            headers: headers
+        )
+        .validate(statusCode: 200..<300)
+        .response { response in
+            switch response.result {
+            case .success:
+                print("🟢 [BackEndAuthService] 약관 동의 전송 성공")
+                completion(.success(()))
+            case .failure(let error):
+                print("🔴 [BackEndAuthService] 약관 동의 전송 실패: \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }
     }
     
     /// 백엔드: 챙길 친구 리스트 조회
@@ -785,5 +920,4 @@ final class BackEndAuthService {
             }
     }
 }
-
 

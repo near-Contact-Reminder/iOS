@@ -1,7 +1,6 @@
 import Foundation
 import UIKit
 import KakaoSDKTalk
-import KakaoSDKFriend
 import KakaoSDKUser
 import KakaoSDKCommon
 import KakaoSDKAuth

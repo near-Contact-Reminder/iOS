@@ -6,6 +6,7 @@ struct ProfileDetailView: View {
     @Binding var path: [AppRoute]
     @State private var selectedTab: Tab = .profile
     @State private var showActionSheet = false
+    @State private var showDeleteConfirmation = false
     @State private var isEditing = false
     @State private var showToast = false
     @State private var toastTask: DispatchWorkItem?
@@ -34,21 +35,21 @@ struct ProfileDetailView: View {
                     .transition(.scale.combined(with: .opacity))
                     .zIndex(1)
             }
-            VStack(alignment: .leading, spacing: 28) {
+            VStack(alignment: .leading, spacing: 24) {
                 ProfileHeader(people: viewModel.people, checkInRecords: viewModel.checkInRecords, onDelete: {
                     viewModel.deleteFriend(friendId: viewModel.people.id) {
                         DispatchQueue.main.async {
                             path.removeAll()
                         }
                     }
-                }).padding(.top, 26)
+                }).padding(.top, 24)
                 ActionButtonRow(people: viewModel.people)
                 ZStack {
                     ProfileTabBar(selected: $selectedTab)
                     Rectangle()
                         .fill(Color.gray03)
                         .frame(height: 1)
-                        .offset(x: 0, y: 15)
+                        .offset(x: 0, y: 14)
                 }
                 
                 ZStack {
@@ -73,6 +74,7 @@ struct ProfileDetailView: View {
         }
         .padding(.horizontal, 24)
         .navigationBarBackButtonHidden()
+        .enableSwipeBackGesture()
         .onAppear {
             viewModel.fetchFriendDetail(friendId: viewModel.people.id)
             viewModel.fetchFriendRecords(friendId: viewModel.people.id)
@@ -82,16 +84,15 @@ struct ProfileDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading)  {
                 Button(action: {
-                    path.removeLast()
+                    $path.safeRemoveLast()
                 }) {
                     HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
+                        Image.Icon.backBlack
                         Text("프로필 상세")
                     }
                     .foregroundColor(.black)
                     .font(Font.Pretendard.b1Bold())
                 }
-                .padding(.leading, 12)
             }
             
             
@@ -99,33 +100,36 @@ struct ProfileDetailView: View {
                 Button(action: {
                     showActionSheet = true
                 }) {
-                    Image(systemName: "ellipsis")
-                        .resizable()
-                        .font(Font.Pretendard.b1Medium())
-                        .rotationEffect(.degrees(90))
-                        .foregroundColor(.black)
+                    Image.Icon.menu
                 }
-                .padding(.trailing, 12)
             }
             
         }
         .confirmationDialog("옵션", isPresented: $showActionSheet, titleVisibility: .visible) {
-                    Button("수정", role: .none) {
-                        isEditing = true
+            Button("수정", role: .none) {
+                isEditing = true
+            }
+            Button("삭제", role: .destructive) {
+                showDeleteConfirmation = true // 바로 삭제하지 않고 확인 alert 표시
+            }
+            Button("취소", role: .cancel) {}
+        }
+        // 삭제 확인 alert
+        .alert("정말 삭제하시겠어요?", isPresented: $showDeleteConfirmation) {
+            Button("삭제", role: .destructive) {
+                viewModel.deleteFriend(friendId: viewModel.people.id) {
+                    notificationViewModel
+                        .deleteRemindersEternally(person: viewModel.people)
+                            
+                    DispatchQueue.main.async {
+                        path.removeAll()
                     }
-                    Button("삭제", role: .destructive) {
-                        viewModel.deleteFriend(friendId: viewModel.people.id) {
-//                            print("삭제 버튼 클릭 됨")
-//                            print("❌ 리마인드 삭제")
-                            notificationViewModel.deleteRemindersEternally(person: viewModel.people)
-//                            print("❌ 리마인드 삭제")
-                            DispatchQueue.main.async {
-                                path.removeAll()
-                            }
-                        }
-                    }
-                    Button("취소", role: .cancel) {}
                 }
+            }
+            Button("취소", role: .cancel) {}
+        } message: {
+            Text("")
+        }
         .fullScreenCover(isPresented: $isEditing) {
             NavigationStack {
                 let profileEditViewModel = ProfileEditViewModel(person: viewModel.people)
@@ -264,7 +268,7 @@ private struct ProfileHeader: View {
                         .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(Color.blue01)
                 } else {
-                    Text("-")
+                    Text("")
                         .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(Color.blue01)
                 }
@@ -424,6 +428,7 @@ private struct TabButton: View {
                 .frame(height: 3)
         }
         .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
     }
 }
 
@@ -435,7 +440,19 @@ private struct ProfileInfoSection: View {
             InfoRow(label: "관계", value: displayLabel(for: people.relationship)  ?? "-")
             InfoRow(label: "연락 주기", value: people.frequency?.rawValue ?? "-")
             InfoRow(label: "생일", value: people.birthDay?.formattedYYYYMMDDWithDot() ?? "-")
-            InfoRow(label: "기념일", value: "\(people.anniversary?.title ?? "-") (\(people.anniversary?.Date?.formattedYYYYMMDDWithDot() ?? "-"))")
+            InfoRow(
+                label: "기념일",
+                value: {
+                    if let anniversary = people.anniversary,
+                       let title = anniversary.title,
+                       !title.isEmpty,
+                       let date = anniversary.Date {
+                        return "\(title) (\(date.formattedYYYYMMDDWithDot()))"
+                    } else {
+                        return "-"
+                    }
+                }()
+            )
             MemoRow(label: "메모", value: people.memo ?? "-")
         }
     }
@@ -485,9 +502,9 @@ private struct MemoRow: View {
             
             Spacer()
             
-            Text(value == "-" ? initialValue : value)
+            Text(value == "" ? initialValue : value)
                 .modifier(Font.Pretendard.b2MediumStyle())
-                .foregroundColor(value == "-" ? Color.gray02 : Color.black)
+                .foregroundColor(value == "" ? Color.gray02 : Color.black)
                 .multilineTextAlignment(.trailing)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -522,7 +539,7 @@ private struct ConfirmButton: View {
     }
 }
 
-private struct CareToastView: View {
+struct CareToastView: View {
     var body: some View {
         VStack(spacing: 12) {
             Image("img_100_character_success")
@@ -544,51 +561,3 @@ private struct CareToastView: View {
         .transition(.scale.combined(with: .opacity))
     }
 }
-
-struct ProfileDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            previewForDevice("iPhone 12 mini")
-            previewForDevice("iPhone 12")
-            previewForDevice("iPhone 13 mini")
-            previewForDevice("iPhone 16")
-            previewForDevice("iPhone 16 Pro")
-            previewForDevice("iPhone 16 Pro Max")
-        }
-    }
-
-    static func previewForDevice(_ deviceName: String) -> some View {
-        let friend = Friend(
-            id: UUID(),
-            name: "정종원",
-            image: nil,
-            imageURL: nil,
-            source: .kakao,
-            frequency: .monthly,
-            phoneNumber: "010-1234-5678",
-            relationship: "FRIEND",
-            birthDay: Date(),
-            anniversary: AnniversaryModel(title: "결혼기념일", Date: Date()),
-            memo: "작년에 생일에 키링 선물함 🎁",
-            nextContactAt: Date().addingTimeInterval(86400 * 30),
-            lastContactAt: Date().addingTimeInterval(-86400 * 10),
-            checkRate: 75,
-            position: 0,
-            fileName: ".jpg"
-        )
-
-        let viewModel = ProfileDetailViewModel(people: friend)
-        let notificationViewModel = NotificationViewModel()
-
-        return NavigationStack {
-            ProfileDetailView(
-                viewModel: viewModel,
-                notificationViewModel: notificationViewModel,
-                path: .constant([])
-            )
-        }
-        .previewDevice(PreviewDevice(rawValue: deviceName))
-        .previewDisplayName(deviceName)
-    }
-}
-

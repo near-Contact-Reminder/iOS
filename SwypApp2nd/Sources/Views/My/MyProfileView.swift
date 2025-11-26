@@ -20,55 +20,49 @@ struct MyProfileView: View {
     }
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 16) {
-                if let user = UserSession.shared.user {
-                    NavigationView {
-                        VStack(spacing: 20) {
-                            UserProfileSectionView(
-                                name: user.name,
-                                profilePic: user.profileImageURL
-                            )
-                            AccountSettingSectionView(loginType: user.loginType)
-                            NotificationSettingsView(viewModel: myViewModel)
-                            SimpleTermsView(termsViewModel: termsViewModel)
-                            WithdrawalButtonView(
-                                loginType: user.loginType,
-                                onWithdrawTap: {
-                                    showWithdrawalSheet = true
-                                },
-                                path: $path
-                            )
+        VStack(spacing: 16) {
+            if let user = UserSession.shared.user {
+                VStack(spacing: 20) {
+                    UserProfileSectionView(
+                        name: user.name,
+                        profilePic: user.profileImageURL
+                    )
+                    AccountSettingSectionView(loginType: user.loginType)
+                    NotificationSettingsView(viewModel: myViewModel)
+                    SimpleTermsView(termsViewModel: termsViewModel)
+                    WithdrawalButtonView(
+                        loginType: user.loginType,
+                        onWithdrawTap: {
+                            showWithdrawalSheet = true
+                        },
+                        path: $path
+                    )
+                }
+                .padding(.horizontal, 24)
+            } else {
+                ProgressView()
+                    .onAppear {
+                        DispatchQueue.main.async {
+                            $path.safeRemoveLast(ifLastIs: .my)
                         }
                     }
-                    .padding(.horizontal, 24)
-                } else {
-                    ProgressView()
-                        .onAppear {
-                            DispatchQueue.main.async {
-                                if path.last == .my {
-                                    path.removeLast()
-                                }
-                            }
-                        }
-                }
-
             }
-            .sheet(isPresented: $showWithdrawalSheet) {
-                NavigationStack {
-                    WithdrawalView(path: $path)
-                }
+
+        }
+        .sheet(isPresented: $showWithdrawalSheet) {
+            NavigationStack {
+                WithdrawalView(path: $path)
             }
         }
-        .padding(.horizontal, 12)
         .navigationBarBackButtonHidden()
+        .enableSwipeBackGesture()
         .onAppear {
             AnalyticsManager.shared.trackMyProfileViewLogAnalytics()
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: {
-                    path.removeLast()
+                    $path.safeRemoveLast()
                 }) {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.left")
@@ -77,7 +71,6 @@ struct MyProfileView: View {
                     .foregroundColor(.black)
                     .font(Font.Pretendard.b1Bold())
                 }
-                .padding(.leading, 12)
             }
         }
     }
@@ -124,13 +117,13 @@ struct AccountSettingSectionView: View {
                     Spacer()
                     let (loginName, imageName): (String, String) = {
                         switch loginType {
-                        case .kakao: return ("카카오", "img_32_kakao")
-                        case .apple: return ("애플", "img_32_apple")
+                        case .kakao: return ("Kakao", "img_32_kakao")
+                        case .apple: return ("Apple", "img_32_apple")
                         }
                     }()
                     HStack(spacing: 5) {
                         Text(loginName)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.black)
                         Image(imageName)
                     }
                 }
@@ -180,21 +173,7 @@ struct NotificationSettingsView: View {
 struct SimpleTermsView: View {
     @ObservedObject var termsViewModel: TermsViewModel
     @State private var selectedAgreement: AgreementDetail?
-
-    var terms: [AgreementDetail] {
-        [
-            AgreementDetail(
-                title: "서비스 이용 약관",
-                urlString: termsViewModel.serviceAgreedTermsURL),
-            AgreementDetail(
-                title: "개인정보 수집 및 이용 동의서",
-                urlString: termsViewModel.personalInfoTermsURL),
-            AgreementDetail(
-                title: "개인정보 처리방침",
-                urlString: termsViewModel.privacyPolicyTermsURL),
-        ]
-    }
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("서비스 정보")
@@ -202,28 +181,53 @@ struct SimpleTermsView: View {
                 .fontWeight(.bold)
                 .padding(.top, 42)
                 .padding(.bottom, 14)
-
-            ForEach(Array(terms.enumerated()), id: \.1.id) { index, term in
-                Button {
-                    selectedAgreement = term
-                } label: {
+            
+            Group {
+                if termsViewModel.isLoading && termsViewModel.terms.isEmpty {
                     HStack {
-                        Text(term.title)
+                        ProgressView()
+                        Text("약관 정보를 불러오는 중입니다.")
                             .modifier(Font.Pretendard.b2MediumStyle())
-                            .foregroundColor(.black)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.gray)
-                            .frame(width: 24, height: 24)
+                            .foregroundColor(Color.gray04)
                     }
-                }
-                if index < terms.count - 1 {
-                    Divider()
-                        .background(Color.gray02)
+                    .padding(.vertical, 8)
+                } else if termsViewModel.terms.isEmpty {
+                    Text("표시할 약관이 없습니다.")
+                        .modifier(Font.Pretendard.b2MediumStyle())
+                        .foregroundColor(Color.gray04)
+                        .padding(.vertical, 8)
+                } else {
+                    ForEach(Array(termsViewModel.terms.enumerated()), id: \.element.id) { index, term in
+                        let detailURL = termsViewModel.detailURL(for: term)
+                        Button {
+                            if let detailURL = detailURL {
+                                selectedAgreement = AgreementDetail(title: term.title, urlString: detailURL)
+                            }
+                        } label: {
+                            HStack {
+                                Text(term.title)
+                                    .modifier(Font.Pretendard.b2MediumStyle())
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.gray)
+                                    .frame(width: 24, height: 24)
+                            }
+                        }
+                        .disabled(detailURL == nil)
+                        .opacity(detailURL == nil ? 0.5 : 1)
+                        
+                        if index < termsViewModel.terms.count - 1 {
+                            Divider()
+                                .background(Color.gray03)
+                        }
+                    }
                 }
             }
         }
-
+        .onAppear {
+            termsViewModel.loadTerms()
+        }
         .fullScreenCover(item: $selectedAgreement) { agreement in
             NavigationStack {
                 TermsDetailView(
