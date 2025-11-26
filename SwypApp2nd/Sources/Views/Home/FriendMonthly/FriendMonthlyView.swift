@@ -77,7 +77,7 @@ public struct FriendMonthlyView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading)  {
                 Button(action: {
-                    path.removeLast()
+                    $path.safeRemoveLast()
                 }) {
                     HStack(spacing: 4) {
                         Image.Icon.backBlack
