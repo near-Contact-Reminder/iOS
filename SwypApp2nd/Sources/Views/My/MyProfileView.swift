@@ -266,7 +266,7 @@ struct WithdrawalButtonView: View {
                     UserSession.shared.kakaoLogout { success in
                         if success {
                             DispatchQueue.main.async {
-                                path.removeLast()
+                                $path.safeRemoveLast()
                             }
                         }
                     }
@@ -274,7 +274,7 @@ struct WithdrawalButtonView: View {
                     UserSession.shared.appleLogout { success in
                         if success {
                             DispatchQueue.main.async {
-                                path.removeLast()
+                                $path.safeRemoveLast()
                             }
                         }
                     }
