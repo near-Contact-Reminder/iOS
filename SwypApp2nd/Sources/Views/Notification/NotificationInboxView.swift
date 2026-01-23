@@ -8,7 +8,6 @@ struct NotificationInboxView: View {
         VStack {
             bodyView
         }
-//        .navigationTitle("알림")
         .onAppear {
             notificationViewModel.loadAllReminders()
             
@@ -36,9 +35,14 @@ struct NotificationInboxView: View {
     private var bodyView: some View {
         VStack {
             if notificationViewModel.visibleReminders.isEmpty {
-                Text("오늘 예정된 알림이 없어요!")
-                    .foregroundColor(.gray)
-                    .padding()
+                VStack(alignment: .center){
+                    // TODO tuist image로 어떻게 바꾸는 건가유
+                    Image("img_100_character_empty")
+                    Text("지금은 챙김 알림이 없어요.\n필요한 순간에 알려드릴게요.")
+                        .foregroundColor(Color.gray01)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                }
             } else {
                 VStack(spacing: 12) {
                     Button(action: {
@@ -142,18 +146,19 @@ private struct ReminderContent: View {
     }
 }
 
-//struct NotificationInboxView_Previews: PreviewProvider {
-//    struct PreviewWrapper: View {
-//        @State var dummyPath: [AppRoute] = []
-//
-//        var body: some View {
-//            NotificationInboxView(path: $dummyPath)
-//                .environmentObject(UserSession.shared)
-//                .environmentObject(NotificationManager.shared.notificationViewModel)
-//        }
-//    }
-//
-//    static var previews: some View {
-//        PreviewWrapper()
-//    }
-//}
+struct NotificationInboxView_Previews: PreviewProvider {
+    static var previews: some View {
+        let mockVM = NotificationViewModel()
+        
+        // 1. 필요한 경우 mock 데이터 강제 삽입 (ViewModel 내부 구현에 따라 다름)
+        // mockVM.visibleReminders = [ ... 가짜 데이터 ... ]
+
+        return NavigationStack {
+            NotificationInboxView(
+                path: .constant([]),
+                notificationViewModel: mockVM
+            )
+        }
+        .environmentObject(UserSession.shared)
+    }
+}

@@ -6,25 +6,28 @@ struct WithdrawalView: View {
     @FocusState private var isCustomReasonFocused: Bool
     @StateObject var viewModel = MyViewModel()
     var user = UserSession.shared.user!
-        
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            WithdrawalHeaderView(name: user.name)
-            
-            WithdrawalReasonListView(
-                selectedReason: $viewModel.selectedReason,
-                isCustomReasonFocused: _isCustomReasonFocused
-            )
-            
-            if viewModel.selectedReason == "기타" {
-                CustomReasonInputView(
-                    customReason: $viewModel.customReason,
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                WithdrawalHeaderView(name: user.name)
+                WithdrawalReasonListView(
+                    selectedReason: $viewModel.selectedReason,
                     isCustomReasonFocused: _isCustomReasonFocused
                 )
+
+                if viewModel.selectedReason == "기타" {
+                    CustomReasonInputView(
+                        customReason: $viewModel.customReason,
+                        isCustomReasonFocused: _isCustomReasonFocused
+                    )
+                }
             }
-            
-            Spacer()
-            
+            .padding(.top, 20)
+
+            // 버튼을 바닥에 가깝게 배치하기 위한 Spacer
+             Spacer()
+                 .frame(minHeight: 100)
             WithdrawalActionButtonsView(
                 isValid: viewModel.isValidCustomReason,
                 onWithdraw: { viewModel.submitWithdrawal(loginType: user.loginType, completion: { success in
@@ -36,9 +39,9 @@ struct WithdrawalView: View {
             },
             onCancel: { presentationMode.wrappedValue.dismiss() }
             )
+            .padding(.bottom, 20)
         }
         .padding(.horizontal, 24)
-        .padding(.top, 20)
         .onAppear {
             AnalyticsManager.shared.trackWithDrawalViewLogAnalytics()
         }
@@ -73,7 +76,7 @@ struct WithdrawalHeaderView: View {
                     .foregroundColor(Color.black)
             }
         }
-        
+
         Text("\(name)님, \n떠나는 이유를 알려주시면 \n큰 도움이 될 거예요.")
             .modifier(Font.Pretendard.h1MediumStyle())
             .lineLimit(nil)
@@ -83,6 +86,7 @@ struct WithdrawalHeaderView: View {
         Text("소중한 의견을 받아 \n더 나은 서비스를 만들어갈게요.")
             .modifier(Font.Pretendard.b1MediumStyle())
             .foregroundColor(.gray)
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.bottom, 42)
     }
 }
@@ -102,8 +106,7 @@ struct WithdrawalReasonListView: View {
     var body: some View {
         ForEach(reasons, id: \.self) { reason in
             HStack {
-                Image(systemName: "largecircle.fill.circle")
-                    .foregroundColor(selectedReason == reason ? Color.blue01 : Color.gray03)
+                Image(selectedReason == reason ? "radio_24_blue" : "radio_24_gray")
                 Text(reason)
                 Spacer()
             }
@@ -120,7 +123,7 @@ struct WithdrawalReasonListView: View {
         }
     }
 }
-    
+
 struct CustomReasonInputView: View {
     @Binding var customReason: String
     @FocusState var isCustomReasonFocused: Bool
@@ -179,7 +182,7 @@ struct CustomReasonInputView: View {
 }
 
 struct WithdrawalActionButtonsView: View {
-    
+
     var isValid: Bool
     var onWithdraw: () -> Void
     var onCancel: () -> Void
@@ -233,9 +236,9 @@ struct WithdrawalView_Previews: PreviewProvider {
             previewForDevice("iPhone 16 Pro Max")
         }
     }
-    
+
     static func previewForDevice(_ deviceName: String) -> some View {
-        
+
         let fakeFriends = [
             Friend(
                 id: UUID(), name: "정종원1", image: nil, imageURL: nil,
@@ -244,7 +247,7 @@ struct WithdrawalView_Previews: PreviewProvider {
                 checkRate: 20, position: 0
             )
         ]
-        
+
         UserSession.shared.user = User(
             id: "preview", name: "프리뷰",
             friends: fakeFriends,
@@ -252,19 +255,18 @@ struct WithdrawalView_Previews: PreviewProvider {
             serverAccessToken: "token",
             serverRefreshToken: "refresh"
         )
-        
+
         return MyProfileWrapper()
             .previewDevice(PreviewDevice(rawValue: deviceName))
             .previewDisplayName(deviceName)
     }
-    
-    
+
     struct MyProfileWrapper: View {
         @State var path: [AppRoute] = [.my]
-        
+
         var body: some View {
             WithdrawalView(path: $path)
         }
-        
+
     }
 }

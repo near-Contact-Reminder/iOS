@@ -183,7 +183,8 @@ final class BackEndAuthService {
 
     private let baseURL: String = {
     #if DEBUG
-        if let host = Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String {
+//        if let host = Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String {
+        if let host = Bundle.main.infoDictionary?["RELEASE_BASE_URL"] as? String {
             return "https://\(host)"
         }
     #else

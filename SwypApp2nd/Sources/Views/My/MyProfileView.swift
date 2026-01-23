@@ -27,8 +27,12 @@ struct MyProfileView: View {
                         name: user.name,
                         profilePic: user.profileImageURL
                     )
-                    AccountSettingSectionView(loginType: user.loginType)
-                    NotificationSettingsView(viewModel: myViewModel)
+                    VStack(spacing: 12) {
+                        AccountSettingSectionView(loginType: user.loginType)
+                        Divider()
+                            .background(Color.gray03)
+                        NotificationSettingsView(viewModel: myViewModel)
+                    }
                     SimpleTermsView(termsViewModel: termsViewModel)
                     WithdrawalButtonView(
                         loginType: user.loginType,
@@ -65,7 +69,7 @@ struct MyProfileView: View {
                     $path.safeRemoveLast()
                 }) {
                     HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
+                        Image.Icon.backBlack
                         Text("MY")
                     }
                     .foregroundColor(.black)
@@ -112,7 +116,7 @@ struct AccountSettingSectionView: View {
 
                 HStack {
                     Text("연결계정")
-                        .modifier(Font.Pretendard.b1MediumStyle())
+                        .modifier(Font.Pretendard.b2RegularStyle())
                         .foregroundColor(.black)
                     Spacer()
                     let (loginName, imageName): (String, String) = {
@@ -123,6 +127,7 @@ struct AccountSettingSectionView: View {
                     }()
                     HStack(spacing: 5) {
                         Text(loginName)
+                            .modifier(Font.Pretendard.b2RegularStyle())
                             .foregroundColor(.black)
                         Image(imageName)
                     }
@@ -137,7 +142,7 @@ struct NotificationSettingsView: View {
     var body: some View {
         HStack {
             Text("알림설정")
-                .modifier(Font.Pretendard.b1MediumStyle())
+                .modifier(Font.Pretendard.b2RegularStyle())
             Spacer()
             Toggle("", isOn: $viewModel.isNotificationOn)
                 .tint(Color.blue02)
@@ -173,7 +178,13 @@ struct NotificationSettingsView: View {
 struct SimpleTermsView: View {
     @ObservedObject var termsViewModel: TermsViewModel
     @State private var selectedAgreement: AgreementDetail?
-    
+    private var serviceTitles: [String] {
+        [
+            "서비스 이용 약관",
+            "개인정보 수집 및 이용 동의서",
+            "개인정보 처리방침"
+        ]
+    }
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("서비스 정보")
@@ -181,46 +192,30 @@ struct SimpleTermsView: View {
                 .fontWeight(.bold)
                 .padding(.top, 42)
                 .padding(.bottom, 14)
-            
-            Group {
-                if termsViewModel.isLoading && termsViewModel.terms.isEmpty {
-                    HStack {
-                        ProgressView()
-                        Text("약관 정보를 불러오는 중입니다.")
-                            .modifier(Font.Pretendard.b2MediumStyle())
-                            .foregroundColor(Color.gray04)
+            VStack(spacing: 14) {
+                ForEach(serviceTitles.indices, id: \.self) { index in
+                    let title = serviceTitles[index]
+                    Button {
+                        if let agreementDetail = termsViewModel.getAgreementDetail(for: title) {
+                            selectedAgreement = AgreementDetail(
+                                title: agreementDetail.term?.title ?? title,
+                                urlString: agreementDetail.urlString
+                            )
+                        }
+                    } label: {
+                        HStack {
+                            Text(title)
+                                .modifier(Font.Pretendard.b2RegularStyle())
+                                .foregroundColor(.black)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.gray)
+                                .frame(width: 24, height: 24)
+                        }
                     }
-                    .padding(.vertical, 8)
-                } else if termsViewModel.terms.isEmpty {
-                    Text("표시할 약관이 없습니다.")
-                        .modifier(Font.Pretendard.b2MediumStyle())
-                        .foregroundColor(Color.gray04)
-                        .padding(.vertical, 8)
-                } else {
-                    ForEach(Array(termsViewModel.terms.enumerated()), id: \.element.id) { index, term in
-                        let detailURL = termsViewModel.detailURL(for: term)
-                        Button {
-                            if let detailURL = detailURL {
-                                selectedAgreement = AgreementDetail(title: term.title, urlString: detailURL)
-                            }
-                        } label: {
-                            HStack {
-                                Text(term.title)
-                                    .modifier(Font.Pretendard.b2MediumStyle())
-                                    .foregroundColor(.black)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.gray)
-                                    .frame(width: 24, height: 24)
-                            }
-                        }
-                        .disabled(detailURL == nil)
-                        .opacity(detailURL == nil ? 0.5 : 1)
-                        
-                        if index < termsViewModel.terms.count - 1 {
-                            Divider()
-                                .background(Color.gray03)
-                        }
+                    if index < serviceTitles.count - 1 {
+                        Divider()
+                            .background(Color.gray03)
                     }
                 }
             }

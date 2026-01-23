@@ -27,6 +27,11 @@ extension Font {
         static func b2Medium(size: CGFloat = 14) -> Font {
             Font.custom("Pretendard-Medium", size: size)
         }
+        
+        static func b2Regular(size: CGFloat = 14) -> Font {
+            Font.custom("Pretendard-Regular", size: size)
+        }
+        
         static func captionBold(size: CGFloat = 12) -> Font {
             Font.custom("Pretendard-Bold", size: size)
         }
@@ -59,7 +64,12 @@ extension Font {
         static func b2MediumStyle() -> PretendardTextStyle { 
             .init(font: b2Medium(), fontSize: 14, designLineHeight: 20, letterSpacing: -0.25) 
         }
-        static func captionBoldStyle() -> PretendardTextStyle { 
+        
+        static func b2RegularStyle() -> PretendardTextStyle {
+            .init(font: b2Regular(), fontSize: 14, designLineHeight: 20, letterSpacing: -0.25)
+        }
+    
+        static func captionBoldStyle() -> PretendardTextStyle {
             .init(font: captionBold(), fontSize: 12, designLineHeight: 18, letterSpacing: -0.25) 
         }
         static func captionMediumStyle() -> PretendardTextStyle { 

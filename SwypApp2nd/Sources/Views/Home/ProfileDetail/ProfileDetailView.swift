@@ -509,7 +509,7 @@ private struct MemoRow: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding()
-        .frame(maxWidth: .infinity, minHeight: 72, maxHeight:100, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
         .background(Color.white)
         .cornerRadius(10)
         .overlay(

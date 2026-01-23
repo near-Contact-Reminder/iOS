@@ -5,6 +5,15 @@ import CoreData
 class ProfileEditViewModel: ObservableObject {
     @Published var person: Friend
     
+    struct ValidationErrors {
+        var nameError: String?
+        var anniversaryError: String?
+        
+        var hasError: Bool {
+            nameError != nil || anniversaryError != nil
+        }
+    }
+    
 //    private let personRepo = PersonRepository()
     private let reminderRepo = ReminderRepository()
     
@@ -52,5 +61,24 @@ class ProfileEditViewModel: ObservableObject {
                 print("🔴 [ProfileDetailViewModel] 친구 상세 정보 업데이트 실패: \(error)")
             }
         }
+    }
+
+    /// 입력값 검증: 이름 필수, 기념일 제목/날짜 모두 필요
+    func validateInputs() -> ValidationErrors? {
+        var errors = ValidationErrors()
+        
+        let trimmedName = person.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedName.isEmpty {
+            errors.nameError = "이름을 입력해주세요."
+        }
+
+        let anniversary = person.anniversary
+        let title = anniversary?.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let date = anniversary?.Date
+        if anniversary == nil || title.isEmpty || date == nil {
+            errors.anniversaryError = "기념일 이름과 날짜를 모두 입력해주세요."
+        }
+
+        return errors.hasError ? errors : nil
     }
 }

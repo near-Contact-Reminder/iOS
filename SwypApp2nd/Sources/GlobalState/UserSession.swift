@@ -48,25 +48,26 @@ class UserSession: ObservableObject {
     private func evaluateTermsAgreement() {
         guard let accessToken = TokenManager.shared.get(for: .server) else {
             print("🔴 [UserSession] 서버 토큰 없음 - 약관 동의 상태를 확인할 수 없어 Terms 화면으로 이동")
-            self.appStep = .terms
+            self.appStep = .home
             return
         }
+        self.appStep = .home
         
-        BackEndAuthService.shared.fetchMyTermsAgreements(accessToken: accessToken) { [weak self] result in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                switch result {
-                case .success(let response):
-                    let requiredAgreements = response.agreements.filter { $0.isRequired }
-                    let allRequiredAgreed = requiredAgreements.allSatisfy { $0.isAgreed }
-                    self.appStep = allRequiredAgreed ? .home : .terms
-                    print("🟢 [UserSession] 약관 동의 확인 완료 - appStep: \(self.appStep)")
-                case .failure(let error):
-                    print("🔴 [UserSession] 약관 동의 상태 조회 실패: \(error.localizedDescription)")
-                    self.appStep = .terms
-                }
-            }
-        }
+//        BackEndAuthService.shared.fetchMyTermsAgreements(accessToken: accessToken) { [weak self] result in
+//            DispatchQueue.main.async {
+//                guard let self = self else { return }
+//                switch result {
+//                case .success(let response):
+//                    let requiredAgreements = response.agreements.filter { $0.isRequired }
+//                    let allRequiredAgreed = requiredAgreements.allSatisfy { $0.isAgreed }
+//                    self.appStep = allRequiredAgreed ? .home : .terms
+//                    print("🟢 [UserSession] 약관 동의 확인 완료 - appStep: \(self.appStep)")
+//                case .failure(let error):
+//                    print("🔴 [UserSession] 약관 동의 상태 조회 실패: \(error.localizedDescription)")
+//                    self.appStep = .terms
+//                }
+//            }
+//        }
     }
 
     /// 로그아웃 처리

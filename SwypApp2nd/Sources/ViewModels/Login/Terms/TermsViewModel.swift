@@ -228,4 +228,32 @@ final class TermsViewModel: ObservableObject {
         }
         return host.hasPrefix("http") ? host : "https://\(host)"
     }
+
+     func findTerm(byKeyword keyword: String) -> TermItem? {
+         if keyword.contains("서비스") {
+             return terms.first { $0.title.contains("서비스") }
+         } else if keyword.contains("수집") {
+             return terms.first { $0.title.contains("수집") }
+         } else if keyword.contains("처리") {
+             return terms.first { $0.title.contains("처리") }
+         }
+         return nil
+     }
+
+    /// 제목으로 약관 정보를 찾아 반환 (약관 객체가 없더라도 fallback URL이 있으면 반환)
+    func getAgreementDetail(for title: String) -> (term: TermItem?, urlString: String)? {
+        // 1. 서버에서 가져온 약관 목록 중 제목이 일치하는 것이 있는지 확인
+        let term = findTerm(byKeyword: title)
+        
+        // 2. 우선순위에 따라 URL 결정
+        //   - 1순위: 서버 약관 객체의 detail URL (detailURL 함수가 있다고 가정)
+        //   - 2순위: fallbackURL(for:)를 통한 로컬 정의 URL
+        let urlString = (term != nil ? detailURL(for: term!) : nil) ?? fallbackURL(for: title)
+        
+        // 3. URL이 최종적으로 없다면 nil 반환
+        guard let finalURL = urlString else { return nil }
+        
+        return (term: term, urlString: finalURL)
+    }
+    
 }

@@ -8,7 +8,8 @@ extension Image {
         static let arrowRight = Image("icon_12_arrow_right")
         static let arrowChat = Image("icon_24_arrow_chat")
         static let copy = Image("icon_24_copy")
-        static let down = Image("icon_24_down")
+        static let downGray = Image("icon_24_down_gray")
+        static let downBlack = Image("icon_24_down_black")
         static let handle = Image("icon_24_handle")
         static let next = Image("icon_24_next")
         static let share = Image("icon_24_share")
@@ -20,6 +21,10 @@ extension Image {
         static let backBlack = Image("icon_back_32_black")
         static let close24Black = Image("icon_close_24_black")
         static let close32Black = Image("icon_close_32_black")
+//        static let radio16Gray = Image("icon_radio_16_gray")
+//        static let radio16Blue = Image("icon_radio_16_blue")
+//        static let radio24Gray = Image("icon_radio_24_gray")
+//        static let radio24Blue = Image("icon_radio_24_blue")
     }
     
     // Visual Icons
