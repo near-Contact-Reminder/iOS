@@ -11,7 +11,7 @@ import SwiftUI
 public struct CareToastView: View {
     public var body: some View {
         VStack(spacing: 12) {
-            Image("img_100_character_success")
+            Image.Character.success
                 .resizable()
                 .scaledToFit()
                 .frame(width: 100, height: 100)

@@ -93,7 +93,7 @@ struct UserProfileSectionView: View {
                     .frame(width: 80, height: 80)
                     .clipShape(Circle())
             } else {
-                Image("_img_80_user1")
+                Image.Profile.user1_80
                     .frame(width: 80, height: 80)
             }
             Text(name)
@@ -208,9 +208,7 @@ struct SimpleTermsView: View {
                                 .modifier(Font.Pretendard.b2RegularStyle())
                                 .foregroundColor(.black)
                             Spacer()
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.gray)
-                                .frame(width: 24, height: 24)
+                            Image.Icon.next
                         }
                     }
                     if index < serviceTitles.count - 1 {

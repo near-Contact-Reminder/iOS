@@ -253,7 +253,9 @@ public struct AgreementRow: View {
                     }
                 } else {
                     // 하단 3개의 약관 체크 아이콘
-                    Image(isChecked.wrappedValue ? "icon_check_blue" : "icon_check_gray")
+                    (isChecked.wrappedValue ?
+                          Image.Icon.checkBlue
+                          : Image.Icon.checkGray)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 14, height: 14)
@@ -270,7 +272,7 @@ public struct AgreementRow: View {
                 Button {
                     onDetailTappedClosure?(title, detailURLString)
                 } label: {
-                    Image(systemName: "chevron.right")
+                    Image.Icon.next
                         .foregroundColor(Color(hex: "888888"))
                 }
             }

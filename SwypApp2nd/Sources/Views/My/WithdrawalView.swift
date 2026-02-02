@@ -106,7 +106,7 @@ struct WithdrawalReasonListView: View {
     var body: some View {
         ForEach(reasons, id: \.self) { reason in
             HStack {
-                Image(selectedReason == reason ? "radio_24_blue" : "radio_24_gray")
+                (selectedReason == reason ? Image.Icon.radio24Blue : Image.Icon.radio24Gray)
                 Text(reason)
                 Spacer()
             }
@@ -206,12 +206,12 @@ struct WithdrawalActionButtonsView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.clear)
-                    .foregroundColor(isValid ? Color.black : Color.gray)
+                    .foregroundColor(isValid ? Color.black : Color.gray02)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
+                            .inset(by: 0.5)
                             .stroke(isValid ? Color.black : Color.gray, lineWidth: 1)
                     )
-                    .cornerRadius(12)
                 }
             .disabled(!isValid)
             .alert("정말 탈퇴하시겠어요?", isPresented: $showConfirmAlert) {

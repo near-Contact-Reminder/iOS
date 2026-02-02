@@ -38,7 +38,7 @@ struct ProfileEditView: View {
                     .id("memoSection")
                 }
             }
-            .onChange(of: isMemoFocused) { focused in
+            .onChange(of: isMemoFocused) { _, focused in
                 if focused {
                     withAnimation {
                         proxy.scrollTo("memoSection", anchor: .bottom)
@@ -53,12 +53,12 @@ struct ProfileEditView: View {
         .onAppear {
             AnalyticsManager.shared.trackProfileEditViewLogAnalytics()
         }
-        .toolbar {
+        .toolbar{
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
                     onComplete() // 뒤로 가기 혹은 닫기
                 }) {
-                    Image(systemName: "chevron.left")
+                    Image.Icon.backBlack
                         .foregroundColor(.black)
                 }
             }
@@ -155,7 +155,7 @@ struct RelationshipSection: View {
                             relationship = rawValue(for: option)
                         }) {
                             HStack(spacing: 6) {
-                                Image(displayLabel(for: relationship) == option ? "radio_24_blue" : "radio_24_gray")
+                                (displayLabel(for: relationship) == option ? Image.Icon.radio24Blue : Image.Icon.radio24Gray)
                                     .resizable()
                                     .frame(width: 20, height: 20)
                                 Text(option)
@@ -591,4 +591,3 @@ struct FrequencySection: View {
             .previewDevice("iPhone 15")
         }
     }
-

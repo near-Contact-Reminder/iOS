@@ -183,8 +183,7 @@ final class BackEndAuthService {
 
     private let baseURL: String = {
     #if DEBUG
-//        if let host = Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String {
-        if let host = Bundle.main.infoDictionary?["RELEASE_BASE_URL"] as? String {
+        if let host = Bundle.main.infoDictionary?["DEV_BASE_URL"] as? String {
             return "https://\(host)"
         }
     #else
@@ -515,7 +514,7 @@ final class BackEndAuthService {
     func sendReminder(friendId: UUID, accessToken: String, completion: @escaping (Result<Void, Error>) -> Void) {
         let url = "\(baseURL)/friend/reminder/\(friendId.uuidString)"
         let headers : HTTPHeaders = ["Authorization":  "Bearer \(accessToken)"]
-//        let params: Parameters = [ "friend-id": friendId.uuidString]
+        let params: Parameters = [ "friend-id": friendId.uuidString]
 
         AF.request(url, method: .post, headers: headers)
             .validate(statusCode: 200..<300)
@@ -586,12 +585,25 @@ final class BackEndAuthService {
         AF.request(url, method: .get, headers: headers)
             .validate(statusCode: 200..<300)
             .responseDecodable(of: MyTermsAgreementResponse.self) { response in
+                // Debug: log status code and raw body to help diagnose failures
+                if let httpResponse = response.response {
+                    print("🟡 [BackEndAuthService] fetchMyTermsAgreements HTTP status: \(httpResponse.statusCode) for url: \(url)")
+                } else {
+                    print("🟡 [BackEndAuthService] fetchMyTermsAgreements no HTTP response received (network error?)")
+                }
+                if let data = response.data, let raw = String(data: data, encoding: .utf8) {
+                    print("🟡 [BackEndAuthService] fetchMyTermsAgreements raw response: \n\(raw)")
+                }
                 switch response.result {
                 case .success(let agreements):
                     print("🟢 [BackEndAuthService] 내 약관 동의 상태 조회 성공")
                     completion(.success(agreements))
                 case .failure(let error):
                     print("🔴 [BackEndAuthService] 내 약관 동의 상태 조회 실패: \(error.localizedDescription)")
+                    // additionally log detailed AF error info
+                    if let afError = error.asAFError, let code = afError.responseCode {
+                        print("🔴 [BackEndAuthService] Alamofire response code: \(code)")
+                    }
                     completion(.failure(error))
                 }
             }
@@ -921,4 +933,3 @@ final class BackEndAuthService {
             }
     }
 }
-

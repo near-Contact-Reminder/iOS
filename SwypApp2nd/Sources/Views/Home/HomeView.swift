@@ -182,7 +182,7 @@ struct ThisMonthSection: View {
                             Text("전체보기")
                                 .modifier(Font.Pretendard.b2MediumStyle())
                                 .foregroundColor(Color.gray04)
-                            Image("icon_12_arrow_right")
+                            Image.Icon.arrowRight
                                 .renderingMode(.template)
                                 .foregroundColor(Color.gray04)
                         }
@@ -234,7 +234,7 @@ struct ThisMonthContactCell: View {
                         .resizable()
                         .frame(width: 24, height: 24)
                 } else {
-                    Image("icon_visual_mail")
+                    Image.Visual.mail
                         .resizable()
                         .frame(width: 24, height: 24)
                 }
@@ -646,3 +646,100 @@ struct PersonCircleView: View {
         }
     }
 }
+
+// Preview
+#if DEBUG
+struct HomeView_Previews: PreviewProvider {
+    // Static sample data so nested classes can reference them safely
+    static let sampleFriends: [Friend] = [
+        Friend(
+            id: UUID(),
+            name: "민지",
+            image: nil,
+            imageURL: nil,
+            source: .phone,
+            frequency: .weekly,
+            remindCategory: nil,
+            phoneNumber: "010-1111-2222",
+            relationship: "FRIEND",
+            birthDay: Date(timeIntervalSince1970: 631152000),
+            anniversary: AnniversaryModel(id: 1, title: "기념일", Date: Date()),
+            memo: "오랜만이야",
+            nextContactAt: Date(),
+            lastContactAt: Calendar.current.date(byAdding: .day, value: -3, to: Date()),
+            checkRate: 72,
+            position: 0,
+            fileName: nil
+        ),
+        Friend(
+            id: UUID(),
+            name: "지우",
+            image: nil,
+            imageURL: nil,
+            source: .kakao,
+            frequency: .monthly,
+            remindCategory: nil,
+            phoneNumber: nil,
+            relationship: "FAMILY",
+            birthDay: nil,
+            anniversary: nil,
+            memo: nil,
+            nextContactAt: Date(),
+            lastContactAt: nil,
+            checkRate: 40,
+            position: 1,
+            fileName: nil
+        )
+    ]
+
+    static let sampleMonthly: [FriendMonthlyResponse] = [
+        FriendMonthlyResponse(friendId: sampleFriends[0].id.uuidString, name: sampleFriends[0].name, type: "MESSAGE", nextContactAt: "2026-02-10", lastContactAt: sampleFriends[0].lastContactAt?.formattedYYYYMMDDWithDot()),
+        FriendMonthlyResponse(friendId: sampleFriends[1].id.uuidString, name: sampleFriends[1].name, type: "BIRTHDAY", nextContactAt: "2026-02-20", lastContactAt: sampleFriends[1].lastContactAt?.formattedYYYYMMDDWithDot())
+    ]
+
+    // Subclass real view models so we can pass them directly to HomeView
+    final class PreviewHomeViewModel: HomeViewModel {
+        override init() {
+            super.init()
+            self.allFriends = HomeView_Previews.sampleFriends
+            self.thisMonthFriends = HomeView_Previews.sampleMonthly
+        }
+        override func loadFriendList() {}
+        override func getUserCheckRate() {}
+    }
+
+    final class PreviewNotificationViewModel: NotificationViewModel {
+        override init() {
+            super.init()
+            self.showBadge = true
+            self.navigateToPerson = nil
+        }
+        override func loadAllReminders() {}
+    }
+
+    static var previews: some View {
+        // User session with a sample user
+        let session = UserSession()
+        session.user = User(
+            id: "preview-user",
+            name: "테스트 유저",
+            email: nil,
+            profileImageURL: nil,
+            friends: sampleFriends,
+            checkRate: 72,
+            loginType: .apple,
+            serverAccessToken: "preview-token",
+            serverRefreshToken: "preview-refresh"
+        )
+
+        let homeVM = PreviewHomeViewModel()
+        let notifVM = PreviewNotificationViewModel()
+
+        return NavigationStack {
+            HomeView(homeViewModel: homeVM, notificationViewModel: notifVM, path: .constant([]))
+                .environmentObject(session)
+        }
+        .previewDevice("iPhone 14")
+    }
+}
+#endif

@@ -105,25 +105,25 @@ public struct ContentView: View {
                 }
             }
         }
-//        .sheet(isPresented: Binding<Bool>(
-//            get: { userSession.appStep == .terms },
-//            set: { isPresented in
-//                if !isPresented {
-//                    if userSession.appStep == .terms {
-//                        userSession.appStep = .login
-//                    }
-//                }
-//            }
-//        )) {
-//            TermsView(viewModel: termsViewModel) {
-//                DispatchQueue.main.async {
-//                    userSession.appStep = .registerFriends
-//                }
-//            }
-//            .presentationDetents([.medium])
-//            .presentationDragIndicator(.visible)
-//            .presentationCornerRadius(20)
-//        }
+        .sheet(isPresented: Binding<Bool>(
+            get: { userSession.appStep == .terms },
+            set: { isPresented in
+                if !isPresented {
+                    if userSession.appStep == .terms {
+                        userSession.appStep = .login
+                    }
+                }
+            }
+        )) {
+            TermsView(viewModel: termsViewModel) {
+                DispatchQueue.main.async {
+                    userSession.appStep = .registerFriends
+                }
+            }
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(20)
+        }
         .animation(.easeInOut(duration: 0.4), value: userSession.appStep)
         .environmentObject(userSession)
     }

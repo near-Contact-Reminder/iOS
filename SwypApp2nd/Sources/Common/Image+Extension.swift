@@ -18,13 +18,19 @@ extension Image {
         static let menu = Image("icon_32_menu")
         static let down40 = Image("icon_40_down")
         static let addUser = Image("icon_64_adduser")
+        
         static let backBlack = Image("icon_back_32_black")
         static let close24Black = Image("icon_close_24_black")
         static let close32Black = Image("icon_close_32_black")
-//        static let radio16Gray = Image("icon_radio_16_gray")
-//        static let radio16Blue = Image("icon_radio_16_blue")
-//        static let radio24Gray = Image("icon_radio_24_gray")
-//        static let radio24Blue = Image("icon_radio_24_blue")
+        
+        static let checkBlue = Image("icon_check_blue")
+        static let checkGray = Image("icon_check_gray")
+        static let checkWhite = Image("icon_check_white")
+        
+        static let radio16Gray = Image("icon_radio_16_gray")
+        static let radio16Blue = Image("icon_radio_16_blue")
+        static let radio24Gray = Image("icon_radio_24_gray")
+        static let radio24Blue = Image("icon_radio_24_blue")
     }
     
     // Visual Icons

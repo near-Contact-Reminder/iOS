@@ -33,7 +33,7 @@ struct ContactFrequencySettingsView: View {
                 Spacer()
                     .frame( height: 20)
 
-                Image("img_100_character_default")
+                Image.Character.default
                     .frame(height: 80)
 
                 Text("얼마나 자주\n챙기고 싶으세요?")
@@ -75,7 +75,7 @@ struct ContactFrequencySettingsView: View {
                                     isChecked ? Color.blue01 : Color.gray03
                                 )
                                 .cornerRadius(6)
-                            Image("icon_check_white")
+                            Image.Icon.checkWhite
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 14, height: 14)
@@ -105,8 +105,7 @@ struct ContactFrequencySettingsView: View {
                             viewModel.unifiedFrequency == nil ? .gray02 : .black
                         )
                         Spacer()
-                        Image(systemName: "chevron.down")
-                            .foregroundColor(.gray02)
+                        Image.Icon.downGray
                     }
                     .padding()
                     .padding(.horizontal, 8)
@@ -234,7 +233,7 @@ struct FrequencyRow: View {
             ) {
                 Text(person.frequency?.rawValue ?? "주기 선택")
                     .modifier(Font.Pretendard.b2MediumStyle())
-                Image(systemName: "chevron.down")
+                Image.Icon.downGray
             }
             .foregroundStyle(Color.gray01)
             
@@ -296,7 +295,7 @@ struct FrequencyPickerView: View {
                                 .foregroundColor(.black)
                             Spacer()
                             if frequency == tempSelected {
-                                Image("icon_check_blue")
+                                Image.Icon.checkBlue
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 14, height: 14)

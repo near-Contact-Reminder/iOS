@@ -15,21 +15,23 @@ struct NotificationInboxView: View {
         }
         .navigationBarBackButtonHidden()
         .enableSwipeBackGesture()
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading)  {
+            ToolbarItem(placement: .navigationBarLeading)  {
                 Button(action: {
                     $path.safeRemoveLast()
                 }) {
                     HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
+                        Image.Icon.backBlack
                         Text("알림")
                     }
                     .foregroundColor(.black)
                     .font(Font.Pretendard.b1Bold())
                 }
-                .padding(.leading, 12)
+                .buttonStyle(.plain)
+                .offset(x: -8)
             }
-        }
+         }
     }
 
     private var bodyView: some View {
@@ -37,7 +39,7 @@ struct NotificationInboxView: View {
             if notificationViewModel.visibleReminders.isEmpty {
                 VStack(alignment: .center){
                     // TODO tuist image로 어떻게 바꾸는 건가유
-                    Image("img_100_character_empty")
+                    Image.Character.empty
                     Text("지금은 챙김 알림이 없어요.\n필요한 순간에 알려드릴게요.")
                         .foregroundColor(Color.gray01)
                         .multilineTextAlignment(.center)

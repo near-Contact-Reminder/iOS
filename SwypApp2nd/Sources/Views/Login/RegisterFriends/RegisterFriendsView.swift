@@ -42,7 +42,7 @@ struct RegisterFriendView: View {
                 Spacer()
                     .frame( height: 20)
 
-                Image("img_100_character_default")
+                Image.Character.default
                     .frame(height: 80)
 
                 Text("가까워지고 싶은 사람\n10명까지 선택해주세요")
@@ -66,7 +66,7 @@ struct RegisterFriendView: View {
                     // 연락처
                     VStack(spacing: 12) {
                         CardButton(
-                            icon: Image("img_32_contact_square"),
+                            icon: Image.Login.contactSquare32,
                             title: "연락처에서 불러오기",
                             hasContacts: !viewModel.phoneContacts.isEmpty,
                             action: {
@@ -190,7 +190,7 @@ struct CardButton: View {
                         .modifier(Font.Pretendard.b2MediumStyle())
                         .foregroundColor(.blue01)
                 } else {
-                    Image("icon_24_next")
+                    Image.Icon.next
                 }
             }
             .padding()
@@ -209,7 +209,7 @@ struct ContactRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(.img24Contact)
+            Image.Icon.next
                 .resizable()
                 .frame(width: 24, height: 24)
 

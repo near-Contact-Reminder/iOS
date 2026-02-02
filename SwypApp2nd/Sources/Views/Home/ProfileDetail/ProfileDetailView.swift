@@ -172,8 +172,7 @@ struct HistorySection: View {
                 if records.isEmpty {
                     VStack {
                         Spacer()
-                        Image("img_100_character_empty")
-//                        Spacer()
+                        Image.Character.empty
                         Text("챙긴 기록이 없어요.\n오늘 챙겨볼까요?")
                             .modifier(Font.Pretendard.b2MediumStyle())
                             .foregroundColor(Color.gray01)
@@ -196,7 +195,7 @@ struct HistorySection: View {
                                         )
                                     
                                     VStack(spacing: 4) {
-                                        Image("img_100_character_success")
+                                        Image.Character.success
                                             .resizable()
                                             .scaledToFit()
                                             .frame(width: 40, height: 40)
@@ -245,9 +244,7 @@ private struct ProfileHeader: View {
                         .clipShape(Circle())
                         .frame(width: 80, height: 80)
                 } else {
-                    Image("_img_80_user1")
-                        .resizable()
-                        .frame(width: 80, height: 80)
+                    Image.Profile.user1_80
                 }
                 
                 Image(emojiImageName)
@@ -286,6 +283,7 @@ private struct ActionButtonRow: View {
     @State private var selectedPhone: String?
     @State private var selectedMessage: String?
     @State private var selectedMessageComment: String?
+    @Environment(\.openURL) private var openURL
     
     let messagePairs: [(message: String, comment: String)] = [
         (
@@ -343,11 +341,10 @@ private struct ActionButtonRow: View {
             
             Button("문자하기", role: .none) {
                 if let phone = selectedPhone, let message = selectedMessage {
-                    if let url = URL(
-                        string: "sms:\(phone)&body=\(message.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
-                    ),
-                       UIApplication.shared.canOpenURL(url) {
-                        UIApplication.shared.open(url)
+                    // Updated to SwiftUI's openURL which is preview-safe. Encode body parameter.
+                    let encoded = message.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+                    if let url = URL(string: "sms:\\(phone)&body=\\(encoded)") {
+                        openURL(url)
                     }
                 }
             }
@@ -357,11 +354,8 @@ private struct ActionButtonRow: View {
         }
         .alert("추천 메시지로 연락해보세요.", isPresented: $showCallAlert) {
             Button("전화걸기", role: .none) {
-                if let phone = selectedPhone {
-                    if let url = URL(string: "tel://\(phone)"),
-                       UIApplication.shared.canOpenURL(url) {
-                        UIApplication.shared.open(url)
-                    }
+                if let phone = selectedPhone, let url = URL(string: "tel:\\(phone)") {
+                    openURL(url)
                 }
             }
             Button("취소", role: .cancel) {}
@@ -483,7 +477,7 @@ private struct InfoRow: View {
         .padding()
         .frame(minHeight: 54)
         .background(Color.white)
-        .cornerRadius(10)
+//        .cornerRadius(10)
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray03))
     }
 }
@@ -511,7 +505,7 @@ private struct MemoRow: View {
         .padding()
         .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
         .background(Color.white)
-        .cornerRadius(10)
+//        .cornerRadius(10)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.gray03)
@@ -538,3 +532,40 @@ private struct ConfirmButton: View {
         .frame(height: 56)
     }
 }
+
+// Preview
+#if DEBUG
+struct ProfileDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        // Sample Friend for preview
+        let sampleFriend = Friend(
+            id: UUID(),
+            name: "민지",
+            image: nil,
+            imageURL: nil,
+            source: .phone,
+            frequency: .weekly,
+            remindCategory: nil,
+            phoneNumber: "010-1234-5678",
+            relationship: "FRIEND",
+            birthDay: Date(timeIntervalSince1970: 631152000), // 1990-01-01
+            anniversary: AnniversaryModel(id: 1, title: "기념일", Date: Date()),
+            memo: "잘 지내?",
+            nextContactAt: Calendar.current.date(byAdding: .day, value: 7, to: Date()),
+            lastContactAt: Date(),
+            checkRate: 72,
+            position: 1,
+            fileName: nil
+        )
+
+        // Use real view models — their network/CoreData calls are guarded, so this is safe in previews.
+        let viewModel = ProfileDetailViewModel(people: sampleFriend)
+        let notificationVM = NotificationViewModel()
+
+        return NavigationStack {
+            ProfileDetailView(viewModel: viewModel, notificationViewModel: notificationVM, path: .constant([]))
+        }
+        .previewDevice("iPhone 14")
+    }
+}
+#endif
